@@ -1,0 +1,132 @@
+package com.member.model;
+
+import java.io.Serializable;
+import java.sql.Timestamp;
+import org.hibernate.annotations.CreationTimestamp;
+
+import jakarta.persistence.*;
+
+@Entity //告訴Spring這是一個對應資料表的物件
+@Table(name = "member_db") //指定對應的資料表名稱(必須要和我的資料庫一致)
+public class memVO implements Serializable {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer memberId;
+	
+	@Column(name = "memberAccount",nullable = false, unique = true)//不允許為null,必須為唯一
+	private String memberAccount;
+	
+	@Column(nullable = false)//不允許為null
+	private String memberName;
+	
+	@Column(nullable = false)//不允許為null
+	private String memberPassword;
+	
+	private String memberEmail;
+	private String memberPhone;
+	private String memberStatus;
+	
+	@Lob
+	@Basic(fetch = FetchType.EAGER) 
+	//這樣在Hibernate查詢會員時，就會自動讀出圖片資料
+	private byte[] avatar;
+	
+	
+	@Column(updatable = false)
+	@CreationTimestamp
+	private Timestamp createTime;
+	
+//===============================================================
+	public memVO() {}
+
+	public memVO(Integer memberId, String memberAccount, String memberName, String memberPassword, String memberEmail,
+			String memberPhone, String memberStatus, byte[] avatar, Timestamp createTime) {
+		super();
+		this.memberId = memberId;
+		this.memberAccount = memberAccount;
+		this.memberName = memberName;
+		this.memberPassword = memberPassword;
+		this.memberEmail = memberEmail;
+		this.memberPhone = memberPhone;
+		this.memberStatus = memberStatus;
+		this.avatar = avatar;
+		this.createTime = createTime;
+	}
+
+	public Integer getMemberId() {
+		return memberId;
+	}
+
+	public void setMemberId(Integer memberId) {
+		this.memberId = memberId;
+	}
+
+	public String getMemberAccount() {
+		return memberAccount;
+	}
+
+	public void setMemberAccount(String memberAccount) {
+		this.memberAccount = memberAccount;
+	}
+
+	public String getMemberName() {
+		return memberName;
+	}
+
+	public void setMemberName(String memberName) {
+		this.memberName = memberName;
+	}
+
+	public String getMemberPassword() {
+		return memberPassword;
+	}
+
+	public void setMemberPassword(String memberPassword) {
+		this.memberPassword = memberPassword;
+	}
+
+	public String getMemberEmail() {
+		return memberEmail;
+	}
+
+	public void setMemberEmail(String memberEmail) {
+		this.memberEmail = memberEmail;
+	}
+
+	public String getMemberPhone() {
+		return memberPhone;
+	}
+
+	public void setMemberPhone(String memberPhone) {
+		this.memberPhone = memberPhone;
+	}
+
+	public String getMemberStatus() {
+		return memberStatus;
+	}
+
+	public void setMemberStatus(String memberStatus) {
+		this.memberStatus = memberStatus;
+	}
+
+	public byte[] getAvatar() {
+		return avatar;
+	}
+
+	public void setAvatar(byte[] avatar) {
+		this.avatar = avatar;
+	}
+
+	public Timestamp getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Timestamp createTime) {
+		this.createTime = createTime;
+	}
+	
+	
+	
+	
+}
