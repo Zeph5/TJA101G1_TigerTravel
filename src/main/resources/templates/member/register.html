@@ -1,0 +1,18 @@
+<!-- register.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>會員註冊</title>
+</head>
+<body>
+    <h1>註冊會員</h1>
+    <form th:action="@{/member/register}" method="post" enctype="multipart/form-data">
+        <input type="text" name="memberAccount" placeholder="帳號" required>
+        <input type="password" name="memberPassword" placeholder="密碼" required>
+        <input type="text" name="memberName" placeholder="姓名" required>
+        <input type="file" name="avatar">
+        <button type="submit">註冊</button>
+    </form>
+</body>
+</html>

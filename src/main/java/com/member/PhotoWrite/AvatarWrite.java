@@ -2,6 +2,7 @@ package com.member.PhotoWrite;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -9,44 +10,44 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class AvatarWrite {
+	
+	private static final String DB_URL = "jdbc:mysql://localhost:3306/tigertraveldb?serverTimezone=Asia/Taipei";
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "123456";
 
 	public static void main(String argv[]) {
-		Connection con = null;
-		PreparedStatement pstmt = null;
-		InputStream fin = null;
-		String url = "jdbc:mysql://localhost:3306/tigertraveldb?serverTimezone=Asia/Taipei";
-		String userid = "root";
-		String passwd = "123456";
-		String photos = "src/main/resources/static/member/member_avatar"; //測試用圖片已置於【專案錄徑】底下的【resources/DB_photos1】目錄內
-		String update = "update member set upFiles =? where member_id=?";
+		String folderPath = "src/main/resources/templates/member/member_avatar"; //測試用圖片已置於【專案錄徑】底下的【resources/DB_photos1】目錄內
 
-		int count = 1;
-		try {
-			con = DriverManager.getConnection(url, userid, passwd);
-			pstmt = con.prepareStatement(update);
-			File[] photoFiles = new File(photos).listFiles();
-			for (File f : photoFiles) {
-				fin = new FileInputStream(f);
-				pstmt = con.prepareStatement(update);
-				pstmt.setInt(2, count);
-				pstmt.setBinaryStream(1, fin);
-				pstmt.executeUpdate();
-				count++;
-				System.out.print(" update the database...");
-				System.out.println(f.toString());
-			}
+		try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String sql = "UPDATE member SET avatar = ? WHERE member_id = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
 
-			fin.close();
-			pstmt.close();
-			System.out.println("加入圖片-更新成功.........");
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				con.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+            for (int i = 1; i <= 10; i++) {
+                File imageFile = new File(folderPath, i + ".jpg");
+
+                if (!imageFile.exists()) {
+                    System.out.println("找不到圖片：" + imageFile.getName());
+                    continue;
+                }
+
+                try (FileInputStream fis = new FileInputStream(imageFile)) {
+                    pstmt.setBinaryStream(1, fis, (int) imageFile.length());
+                    pstmt.setInt(2, i);
+                    int rowsUpdated = pstmt.executeUpdate();
+
+                    if (rowsUpdated > 0) {
+                        System.out.println("✅ 成功更新會員 " + i);
+                    } else {
+                        System.out.println("⚠️ 找不到 member_id=" + i);
+                    }
+                } catch (IOException e) {
+                    System.out.println("❌ 圖片讀取錯誤：" + imageFile.getName());
+                }
+            }
+
+            pstmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

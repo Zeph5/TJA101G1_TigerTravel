@@ -18,8 +18,8 @@ import jakarta.validation.Valid;
 
 @RestController
 public class ManagerController {
-	@Autowired
-	private InManagerService inManagerService;
+//	@Autowired
+//	private InManagerService inManagerService;
 	
 	@PostMapping("/manager/login")
 	public ResponseEntity<ResponseMessage<String>> login(@Valid @RequestBody ManagerLoginDTO loginDTO) {

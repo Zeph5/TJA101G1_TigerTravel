@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MemberRepository extends JpaRepository<memVO, Integer> {
 	
-	@Query("SELECT m.avatar FROM memVO m WHERE m.member_id = :id")
+	@Query("SELECT m.avatar FROM memVO m WHERE m.memberId = :id")
 	Optional<byte[]> findAvatarById(Integer id);
 	
 	Optional<memVO> findByMemberAccount(String memberAccount);

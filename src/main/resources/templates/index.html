@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>首頁</title>
+</head>
+<body>
+
+    <h1>歡迎來到旅遊網站首頁</h1>
+
+    <!--若使用者已登入-->
+
+    <div sec:authorize="isAuthenticated()">
+        <p>您好，<span sec:authentication="principal.member.memberName"></span>！您已登入。</p>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit">登出</button>
+        </form>
+        <a th:href="@{/member/home}">
+		    <button type="button">會員中心</button>
+		</a>
+
+    </div>
+
+    <!-- 若使用者尚未登入 -->
+
+    <div sec:authorize="isAnonymous()">
+        <p>您尚未登入。請先 <a th:href="@{/login}">登入</a> 或 <a th:href="@{/register}">註冊</a>。</p>
+    </div>
+    
+</body>
+</html>
