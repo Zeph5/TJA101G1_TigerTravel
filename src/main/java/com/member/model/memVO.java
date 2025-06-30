@@ -7,25 +7,33 @@ import org.hibernate.annotations.CreationTimestamp;
 import jakarta.persistence.*;
 
 @Entity //告訴Spring這是一個對應資料表的物件
-@Table(name = "member_db") //指定對應的資料表名稱(必須要和我的資料庫一致)
+@Table(name = "member") //指定對應的資料表名稱(必須要和我的資料庫一致)
 public class memVO implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer memberId;
 	
-	@Column(name = "memberAccount",nullable = false, unique = true)//不允許為null,必須為唯一
+	@Column(name = "mem_account",nullable = false, unique = true)//不允許為null,必須為唯一
 	private String memberAccount;
 	
-	@Column(nullable = false)//不允許為null
+	@Column(name = "mem_name",nullable = false)//不允許為null
 	private String memberName;
 	
-	@Column(nullable = false)//不允許為null
+	@Column(name = "mem_password",nullable = false)//不允許為null
 	private String memberPassword;
 	
+	@Column(name = "mem_email")
 	private String memberEmail;
+	
+	@Column(name = "mem_phone")
 	private String memberPhone;
+	
+	@Column(name = "mem_status")
 	private String memberStatus;
+	
+	@Column(name = "mem_address")
+	private String memberAddress;
 	
 	@Lob
 	@Basic(fetch = FetchType.EAGER) 
@@ -50,8 +58,17 @@ public class memVO implements Serializable {
 		this.memberEmail = memberEmail;
 		this.memberPhone = memberPhone;
 		this.memberStatus = memberStatus;
+		this.memberAddress = memberAddress;
 		this.avatar = avatar;
 		this.createTime = createTime;
+	}
+
+	public String getMemberAddress() {
+		return memberAddress;
+	}
+
+	public void setMemberAddress(String memberAddress) {
+		this.memberAddress = memberAddress;
 	}
 
 	public Integer getMemberId() {
