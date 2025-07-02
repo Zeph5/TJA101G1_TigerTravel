@@ -6,50 +6,73 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.*;
 
-@Entity //告訴Spring這是一個對應資料表的物件
-@Table(name = "member") //指定對應的資料表名稱(必須要和我的資料庫一致)
+@Entity // 告訴Spring這是一個對應資料表的物件
+@Table(name = "member") // 指定對應的資料表名稱(必須要和我的資料庫一致)
 public class memVO implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer memberId;
-	
-	@Column(name = "mem_account",nullable = false, unique = true)//不允許為null,必須為唯一
+
+	@Column(name = "mem_account", nullable = false, unique = true) // 不允許為null,必須為唯一
 	private String memberAccount;
-	
-	@Column(name = "mem_name",nullable = false)//不允許為null
+
+	@Column(name = "mem_name", nullable = false) // 不允許為null
 	private String memberName;
-	
-	@Column(name = "mem_password",nullable = false)//不允許為null
+
+	@Column(name = "mem_password", nullable = false) // 不允許為null
 	private String memberPassword;
-	
+
 	@Column(name = "mem_email")
 	private String memberEmail;
-	
+
 	@Column(name = "mem_phone")
 	private String memberPhone;
-	
+
 	@Column(name = "mem_status")
 	private String memberStatus;
-	
+
 	@Column(name = "mem_address")
 	private String memberAddress;
-	
+
 	@Lob
-	@Basic(fetch = FetchType.EAGER) 
-	//這樣在Hibernate查詢會員時，就會自動讀出圖片資料
+	@Basic(fetch = FetchType.EAGER)
+	// 這樣在Hibernate查詢會員時，就會自動讀出圖片資
+//	@Transient
 	private byte[] avatar;
-	
-	
+
 	@Column(updatable = false)
 	@CreationTimestamp
 	private Timestamp createTime;
-	
-//===============================================================
-	public memVO() {}
+
+	//=====驗證功能=======
+	private Boolean emailVerified = false; // 是否以驗證信箱
+	private String verifyToken; // 驗證用的唯一 token
+
+	public Boolean getEmailVerified() {
+		return emailVerified;
+	}
+
+	public void setEmailVerified(Boolean emailVerified) {
+		this.emailVerified = emailVerified;
+	}
+
+	public String getVerifyToken() {
+		return verifyToken;
+	}
+
+	public void setVerifyToken(String verifyToken) {
+		this.verifyToken = verifyToken;
+	}
+
+	// ===============================================================
+	public memVO() {
+	}
 
 	public memVO(Integer memberId, String memberAccount, String memberName, String memberPassword, String memberEmail,
-			String memberPhone, String memberStatus, byte[] avatar, Timestamp createTime) {
+			String memberPhone, String memberStatus, String memberAddress, Boolean emailVerified, String verifyToken,
+			byte[] avatar, Timestamp createTime) {
+
 		super();
 		this.memberId = memberId;
 		this.memberAccount = memberAccount;
@@ -59,6 +82,8 @@ public class memVO implements Serializable {
 		this.memberPhone = memberPhone;
 		this.memberStatus = memberStatus;
 		this.memberAddress = memberAddress;
+		this.emailVerified = emailVerified;
+		this.verifyToken = verifyToken;
 		this.avatar = avatar;
 		this.createTime = createTime;
 	}
@@ -142,8 +167,5 @@ public class memVO implements Serializable {
 	public void setCreateTime(Timestamp createTime) {
 		this.createTime = createTime;
 	}
-	
-	
-	
-	
+
 }

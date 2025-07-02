@@ -1,10 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>Insert title here</title>
+    <meta charset="UTF-8">
+    <title>編輯會員資料</title>
 </head>
 <body>
+
+<h2>會員資料編輯</h2>
+
+<form th:action="@{/member/edit}" th:object="${member}" method="post" enctype="multipart/form-data">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    
+    <label>姓名：</label>
+    <input type="text" th:field="*{memberName}" required /><br><br>
+
+    <label>Email：</label>
+    <input type="email" th:field="*{memberEmail}" required /><br><br>
+
+    <label>電話：</label>
+    <input type="text" th:field="*{memberPhone}" /><br><br>
+
+    <label>地址：</label>
+    <input type="text" th:field="*{memberAddress}" /><br><br>
+
+	<label>上傳新頭像：</label>
+	<input type="file" name="avatarFile" accept="image/*"/><br><br>
+	
+    <button type="submit">儲存</button>
+</form>
+
+<p><a th:href="@{/index}">回首頁</a></p>
 
 </body>
 </html>
