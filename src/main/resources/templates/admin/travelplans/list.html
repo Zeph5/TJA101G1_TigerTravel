@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>旅行計畫管理</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/css/styles.css}" /> <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .actions a { margin-right: 10px; text-decoration: none; color: blue; }
+        .actions button { background: none; border: none; color: red; cursor: pointer; text-decoration: underline; }
+        .create-button { margin-bottom: 20px; display: inline-block; padding: 10px 15px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px;}
+        .alert { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; }
+        .alert-success { color: #3c763d; background-color: #dff0d8; border-color: #d6e9c6; }
+        .alert-danger { color: #a94442; background-color: #f2dede; border-color: #ebccd1; }
+    </style>
+</head>
+<body>
+    <h1>旅行計畫列表</h1>
+
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+    <a th:href="@{/admin/travelplans/new}" class="create-button">新增旅行計畫</a>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>標題</th>
+                <th>描述</th>
+                <th>橫幅圖片</th>
+                <th>發布日期</th>
+                <th>最後修改</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="plan : ${travelPlans}">
+                <td th:text="${plan.travelPlanId}">1</td>
+                <td th:text="${plan.travelTitle}">台灣環島十日遊</td>          <td th:text="${plan.travelPlanDescription}">探索台灣的美麗風光和文化</td> <td>
+                    <img th:if="${plan.travelPlanBannerUrl}" th:src="@{${plan.travelPlanBannerUrl}}" alt="Banner" style="width: 100px; height: auto;"> <span th:unless="${plan.travelPlanBannerUrl}">無圖片</span> </td>
+                <td th:text="${#temporals.format(plan.publishedDate, 'yyyy-MM-dd HH:mm')}">2023-01-01</td>
+                <td th:text="${#temporals.format(plan.lastModifiedDate, 'yyyy-MM-dd HH:mm')}">2023-01-01</td>
+                <td class="actions">
+                    <a th:href="@{/admin/travelplans/{id}/edit(id=${plan.travelPlanId})}">編輯</a>
+                    <form th:action="@{/admin/travelplans/{id}(id=${plan.travelPlanId})}" method="post" style="display:inline;"
+                          onsubmit="return confirm('您確定要刪除這個旅行計畫嗎？');">
+                        <input type="hidden" name="_method" value="delete" /> <button type="submit">刪除</button>
+                    </form>
+                    <a th:href="@{/admin/travelplans/{id}(id=${plan.travelPlanId})}">詳情</a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(travelPlans)}">
+                <td colspan="7">目前沒有旅行計畫。</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
