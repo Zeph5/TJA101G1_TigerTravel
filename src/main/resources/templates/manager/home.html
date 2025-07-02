@@ -20,7 +20,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>歡迎來到管理員儀表板</h1>
+        <h1>歡迎來到管理專區</h1>
         
         <p class="welcome-message" th:if="${username}">您好，管理員：<span th:text="${username}"></span></p>
         <p class="welcome-message" th:unless="${username}">您好，管理員！</p>
@@ -29,9 +29,9 @@
         <p>您可以在這裡管理網站內容。</p>
 
         <div class="nav-links">
-            <a href="#">使用者管理</a>
-            <a href="#">訂單管理</a>
-            <a href="#">產品管理</a>
+		    <a href="#">使用者管理</a>
+		    <a href="#">訂單管理</a>
+		    <a th:href="@{/admin/travelplans}">產品管理</a> 
         </div>
 
         <form th:action="@{/manager/logout}" method="post" class="logout-form">

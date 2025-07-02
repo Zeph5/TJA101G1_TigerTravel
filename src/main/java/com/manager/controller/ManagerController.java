@@ -1,6 +1,7 @@
 package com.manager.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -55,5 +56,15 @@ public class ManagerController {
 		return "manager/register"; // 返回註冊頁面顯示錯誤
 	}
 }
+	@GetMapping("/home")
+	public String managerHomePage(Model model,Authentication authentication) {
+		// 取得登入的使用者資訊
+		if (authentication != null ) {
+			
+			model.addAttribute("username", authentication.getName()); // 將使用者名稱加入模型
+		}
+		return "manager/home"; // 返回管理員首頁
+		
+	}
 }
 

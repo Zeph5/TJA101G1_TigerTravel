@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增/編輯旅行計畫 - 步驟 1: 基本資訊</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding-top: 50px; background-color: #f8f9fa; }
+        .container { max-width: 800px; background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; margin-bottom: 30px; color: #333; }
+        .form-label { font-weight: bold; }
+        .error-message { color: red; font-size: 0.9em; margin-top: 5px; }
+        .btn-primary { background-color: #007bff; border-color: #007bff; }
+        .btn-primary:hover { background-color: #0056b3; border-color: #0056b3; }
+        .alert { margin-top: 20px; }
+        .existing-image { max-width: 200px; height: auto; margin-top: 10px; border: 1px solid #ddd; padding: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>新增/編輯旅行計畫 - 步驟 1: 基本資訊</h2>
+
+        <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}">
+            計畫基本資訊儲存成功，請繼續編輯行程細節。
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}">
+            圖片上傳失敗。
+        </div>
+        <div th:if="${#fields.hasErrors('global')}" class="alert alert-danger" role="alert">
+            <p th:each="err : ${#fields.errors('global')}" th:text="${err}"></p>
+        </div>
+
+
+        <form th:action="@{/admin/travelplans}" th:object="${travelPlanCreationDto}" method="post" enctype="multipart/form-data">
+
+            <input type="hidden" th:field="*{travelPlanId}" />
+
+            <div class="mb-3">
+                <label for="traveltitle" class="form-label">計畫標題:</label>
+                <input type="text" id="traveltitle" th:field="*{traveltitle}" class="form-control" />
+                <p th:if="${#fields.hasErrors('traveltitle')}" th:errors="*{traveltitle}" class="error-message"></p>
+            </div>
+
+            <div class="mb-3">
+                <label for="travelplandescription" class="form-label">計畫描述:</label>
+                <textarea id="travelplandescription" th:field="*{travelplandescription}" rows="5" class="form-control"></textarea>
+                <p th:if="${#fields.hasErrors('travelplandescription')}" th:errors="*{travelplandescription}" class="error-message"></p>
+            </div>
+
+            <div class="mb-3">
+                <label for="bannerImage" class="form-label">上傳橫幅圖片:</label>
+                <input type="file" id="bannerImage" name="bannerImage" class="form-control" accept="image/*" />
+                <p class="form-text text-muted">請上傳一張圖片作為旅行計畫的橫幅 (JPG, PNG, GIF)。</p>
+                <div th:if="${travelPlanCreationDto.travelPlanId != null and travelPlanCreationDto.existingBannerImageUrl != null}">
+                    <p>目前圖片:</p>
+                    <img th:src="@{${travelPlanCreationDto.existingBannerImageUrl}}" alt="現有橫幅圖片" class="existing-image" />
+                </div>
+                <p th:if="${#fields.hasErrors('bannerImage')}" th:errors="*{bannerImage}" class="error-message"></p>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">下一步 (編輯行程細節)</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

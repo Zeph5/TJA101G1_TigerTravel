@@ -43,10 +43,12 @@ public class SecurityConfig {
 	@Order(2) // 設定這個 SecurityFilterChain 的優先順序
 	public SecurityFilterChain filterChain(HttpSecurity http
 			,AuthenticationProvider memberAuthenticationProvider) throws Exception {
-		http.csrf(csrf -> csrf.disable()) // 停用保護 可以用get之外的請求方式
+			http.csrf(csrf -> csrf.disable()) // 停用保護 可以用get之外的請求方式
+				.securityMatcher("/", "/index", "/login", "/register", "/member/**", "/login?error", "/error",
+				"/css/**", "/js/**", "/images/**")
 				.authorizeHttpRequests(auth -> auth
 						// requestMatchers指的是這些網站大家都可以看
-						.requestMatchers("/login", "/index", "/register", "/manager/register", "/login?error", "/error",
+						.requestMatchers("/login", "/index", "/register",  "/login?error", "/error",
 								"/css/**", "/js/**", "/images/**")
 						.permitAll()
 						// 其他所有頁面，都需要登入才能看
