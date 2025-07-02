@@ -8,15 +8,9 @@ import jakarta.validation.Valid;
 
 public interface InManagerService {
 
-	static String login(@Valid ManagerLoginDTO loginDTO) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	String login(ManagerLoginDTO loginDTO);
 
-	static String register(@Valid ManagerRegisterDTO registerDTO) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	String register(ManagerRegisterDTO registerDTO);
 
 	
 

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增/編輯旅行計畫 - 步驟 2: 行程細節</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding-top: 50px; background-color: #f8f9fa; }
+        .container { max-width: 900px; background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; margin-bottom: 30px; color: #333; }
+        .itinerary-item { border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin-bottom: 20px; background-color: #fdfdfd; }
+        .itinerary-item .row { align-items: flex-end; }
+        .btn-add-item { margin-top: 20px; }
+        .btn-remove-item { margin-top: 32px; } /* 調整對齊 */
+        .btn-back { background-color: #6c757d; border-color: #6c757d; }
+        .btn-back:hover { background-color: #5a6268; border-color: #5a6268; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>新增/編輯旅行計畫 - 步驟 2: 行程細節</h2>
+
+        <p class="text-muted text-center">正在編輯計畫 ID: <span th:text="${travelPlanId}"></span></p>
+        <p class="text-muted text-center">您可以新增每日行程、景點、活動等。</p>
+
+        <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+
+        <form th:action="@{/admin/travelplans/{id}/itinerary(id=${travelPlanId})}" method="post" th:object="${itineraryFormDto}">
+
+            <div id="itinerary-items-container">
+                <div class="itinerary-item" th:each="item, stat : *{itineraryItems}">
+                    <h4>第 <span th:text="${stat.index + 1}"></span> 項行程</h4>
+                    <input type="hidden" th:field="*{itineraryItems[__${stat.index}__].itineraryItemId}" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label th:for="${'itineraryItems' + stat.index + '.title'}" class="form-label">標題/日期:</label>
+                            <input type="text" th:field="*{itineraryItems[__${stat.index}__].title}" class="form-control" />
+                            <p th:if="${#fields.hasErrors('itineraryItems[' + stat.index + '].title')}" th:errors="*{itineraryItems[__${stat.index}__].title}" class="error-message"></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label th:for="${'itineraryItems' + stat.index + '.location'}" class="form-label">地點:</label>
+                            <input type="text" th:field="*{itineraryItems[__${stat.index}__].location}" class="form-control" />
+                            <p th:if="${#fields.hasErrors('itineraryItems[' + stat.index + '].location')}" th:errors="*{itineraryItems[__${stat.index}__].location}" class="error-message"></p>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label th:for="${'itineraryItems' + stat.index + '.description'}" class="form-label">描述:</label>
+                        <textarea th:field="*{itineraryItems[__${stat.index}__].description}" rows="3" class="form-control"></textarea>
+                        <p th:if="${#fields.hasErrors('itineraryItems[' + stat.index + '].description')}" th:errors="*{itineraryItems[__${stat.index}__].description}" class="error-message"></p>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-outline-danger btn-sm btn-remove-item">移除此項目</button>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" id="add-itinerary-item" class="btn btn-secondary btn-add-item">新增行程項目</button>
+
+            <hr/>
+            <div class="d-flex justify-content-between mt-4">
+                <a th:href="@{/admin/travelplans/{id}/edit(id=${travelPlanId})}" class="btn btn-back">上一步 (編輯基本資訊)</a>
+                <button type="submit" class="btn btn-primary">下一步 (預覽與發布)</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script th:inline="javascript">
+       //
+    </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Insert title here</title>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-md navbar-dark bg-success fixed-top justify-content-center">
+		 <div align="center"> <h2>sceneryindex.html</h2>
+		 <h3><a class="navbar-brand" th:href="@{/}"></a></h3></div>
+</nav>
+
+	<h4><span>資料查詢:</span></h4>
+	<div class="errorblock" th:utext="${errorMessage}"></div><br>
+	<div class="a">
+	  <ul>
+		<li><h5><a href='listallscenery'>List</a> all Scenery. <br><br></h5></li>
+
+		<li>
+			<form method="post" th:action="@{listonescenery}">
+				輸入景點編號:
+				<input type="text" name="sceneryId" th:value="${param.sceneryId}" > 
+				<input type="submit" value="送出">
+			</form><br>
+		</li>
+
+		
+		
+		
+		<li><form method="post" th:action="@{listonescenery}">
+				選擇景點編號:
+				<select name="sceneryId">
+				     <option th:each="SceneryVO : ${sceneryListData}" th:value="${SceneryVO.sceneryId}" th:text="${SceneryVO.sceneryId}" />
+			    </select>
+				<input type="submit" value="送出">
+			</form><br>
+		</li>
+
+		
+		
+		
+		<li><form method="post" th:action="@{listonescenery}">
+				選擇景點名稱:
+				<select name="sceneryId">
+				     <option th:each="SceneryVO : ${sceneryListData}" th:value="${SceneryVO.sceneryId}" th:text="${eSceneryVO.sceneryName}" />
+			    </select>
+				<input type="submit" value="送出">
+			</form><br>
+		</li>
+		
+		
+
+</ul>	
+	
+      <h4><span>員工管理</span></h4>
+	  <ul>
+		  <li><h5><a href='addscenery'>Add</a> a new scenery.</h5></li>
+	  </ul>
+	</div>
+    
+    <div class="b" th:if="${SceneryVO!=null}">
+       <div th:insert="~{/scenery/listonescenery :: listonescenery-div}"></div>
+    </div>
+
+</body>
+</html>
