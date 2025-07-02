@@ -1,10 +1,13 @@
-package com.member.model;
+package com.member.service;
 
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.member.model.MemberRepository;
+import com.member.model.memVO;
 
 @Service
 public class MemberService {

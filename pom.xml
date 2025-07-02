@@ -49,6 +49,19 @@
 		    <artifactId>thymeleaf-extras-springsecurity6</artifactId>
 		</dependency>
 
+		<!-- 06/30 Lezzy新增 給Mail 相關依賴 -->
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+		
+		<!-- 若使用 Maven，需加入 commons-codec -->
+		<dependency>
+		    <groupId>commons-codec</groupId>
+		    <artifactId>commons-codec</artifactId>
+		    <version>1.15</version>
+		</dependency>
+
 
 
 

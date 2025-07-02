@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>輸入驗證碼</title></head>
+<body>
+<h2>請輸入收到的驗證碼</h2>
+
+<p th:if="${error}" th:text="${error}" style="color:red;"></p>
+
+<form action="/member/verify" method="post">
+    <label>驗證碼：</label>
+    <input type="text" name="code" required />
+    <button type="submit">送出</button>
+</form>
+</body>
+</html>

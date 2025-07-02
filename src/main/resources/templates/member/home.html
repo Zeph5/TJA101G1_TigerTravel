@@ -18,6 +18,10 @@
     <p th:if="${#strings.isEmpty(avatarBase64)}">尚未上傳頭像</p>
 </div>
 
+ <p>
+  <a th:href="@{/member/edit}">✏️ 編輯我的會員資料</a>
+</p>
+
 
 <form th:action="@{/logout}" method="post">
 	<button type="submit">登出</button>
