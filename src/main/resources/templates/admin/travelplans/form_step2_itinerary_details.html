@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增/編輯旅行計畫 - 步驟 2: 行程細節</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding-top: 50px; background-color: #f8f9fa; }
+        .container { max-width: 900px; background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; margin-bottom: 30px; color: #333; }
+        .itinerary-item { border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin-bottom: 20px; background-color: #fdfdfd; }
+        .itinerary-item .row { align-items: flex-end; }
+        .btn-add-item { margin-top: 20px; }
+        .btn-remove-item { margin-top: 32px; } /* 調整對齊 */
+        .btn-back { background-color: #6c757d; border-color: #6c757d; }
+        .btn-back:hover { background-color: #5a6268; border-color: #5a6268; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>新增/編輯旅行計畫 - 步驟 2: 行程細節</h2>
+
+        <p class="text-muted text-center">正在編輯計畫 ID: <span th:text="${travelPlanId}"></span></p>
+        <p class="text-muted text-center">您可以新增每日行程、景點、活動等。</p>
+
+        <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+
+        <form th:action="@{/admin/travelplans/{id}/itinerary(id=${travelPlanId})}" method="post" th:object="${itineraryFormDto}">
+
+            <div id="itinerary-items-container">
+                <div class="itinerary-item" th:each="item, stat : *{itineraryItems}">
+                    <h4>第 <span th:text="${stat.index + 1}"></span> 項行程</h4>
+                    <input type="hidden" th:field="*{itineraryItems[__${stat.index}__].travelPlanDayId}" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label th:for="${'itineraryItems' + stat.index + '.traveltime'}" class="form-label">旅行日期:</label>
+                            <input type="date" th:field="*{itineraryItems[__${stat.index}__].traveltime}" class="form-control" />
+                            <p th:if="${#fields.hasErrors('itineraryItems[' + stat.index + '].traveltime')}" th:errors="*{itineraryItems[__${stat.index}__].traveltime}" class="error-message"></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label th:for="${'itineraryItems' + stat.index + '.sceneryId'}" class="form-label">景點 ID:</label>
+                            <input type="number" th:field="*{itineraryItems[__${stat.index}__].sceneryId}" class="form-control" />
+                            <p th:if="${#fields.hasErrors('itineraryItems[' + stat.index + '].sceneryId')}" th:errors="*{itineraryItems[__${stat.index}__].sceneryId}" class="error-message"></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label th:for="${'itineraryItems' + stat.index + '.travelDayNumber'}" class="form-label">天數:</label>
+                            <input type="number" th:field="*{itineraryItems[__${stat.index}__].travelDayNumber}" class="form-control" />
+                            <p th:if="${#fields.hasErrors('itineraryItems[' + stat.index + '].travelDayNumber')}" th:errors="*{itineraryItems[__${stat.index}__].travelDayNumber}" class="error-message"></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label th:for="${'itineraryItems' + stat.index + '.travelSequenceNumber'}" class="form-label">行程順序:</label>
+                            <input type="number" th:field="*{itineraryItems[__${stat.index}__].travelSequenceNumber}" class="form-control" />
+                            <p th:if="${#fields.hasErrors('itineraryItems[' + stat.index + '].travelSequenceNumber')}" th:errors="*{itineraryItems[__${stat.index}__].travelSequenceNumber}" class="error-message"></p>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-outline-danger btn-sm btn-remove-item">移除此項目</button>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" id="add-itinerary-item" class="btn btn-secondary btn-add-item">新增行程項目</button>
+
+            <hr/>
+            <div class="d-flex justify-content-between mt-4">
+                <a th:href="@{/admin/travelplans/{id}/edit(id=${travelPlanId})}" class="btn btn-back">上一步 (編輯基本資訊)</a>
+                <button type="submit" class="btn btn-primary">下一步 (預覽與發布)</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script th:inline="javascript">
+       // 新增行程項目的 JavaScript 邏輯也需要修改，以創建新的 TravelPlanDayDTO 結構的輸入欄位
+       // 這個部分會更複雜，需要動態生成符合 TravelPlanDayDTO 屬性的 input 欄位
+       // 簡單範例：
+       $(document).ready(function() {
+           $('#add-itinerary-item').click(function() {
+               var index = $('#itinerary-items-container .itinerary-item').length;
+               var newItemHtml = `
+                   <div class="itinerary-item">
+                       <h4>第 <span>${index + 1}</span> 項行程</h4>
+                       <input type="hidden" name="itineraryItems[${index}].travelPlanDayId" value="" />
+                       <div class="row">
+                           <div class="col-md-6 mb-3">
+                               <label for="itineraryItems${index}.traveltime" class="form-label">旅行日期:</label>
+                               <input type="date" name="itineraryItems[${index}].traveltime" class="form-control" />
+                           </div>
+                           <div class="col-md-6 mb-3">
+                               <label for="itineraryItems${index}.sceneryId" class="form-label">景點 ID:</label>
+                               <input type="number" name="itineraryItems[${index}].sceneryId" class="form-control" />
+                           </div>
+                       </div>
+                       <div class="row">
+                           <div class="col-md-6 mb-3">
+                               <label for="itineraryItems${index}.travelDayNumber" class="form-label">天數:</label>
+                               <input type="number" name="itineraryItems[${index}].travelDayNumber" class="form-control" />
+                           </div>
+                           <div class="col-md-6 mb-3">
+                               <label for="itineraryItems${index}.travelSequenceNumber" class="form-label">行程順序:</label>
+                               <input type="number" name="itineraryItems[${index}].travelSequenceNumber" class="form-control" />
+                           </div>
+                       </div>
+                       <div class="text-end">
+                           <button type="button" class="btn btn-outline-danger btn-sm btn-remove-item">移除此項目</button>
+                       </div>
+                   </div>
+               `;
+               $('#itinerary-items-container').append(newItemHtml);
+           });
+
+           // 移除項目按鈕的邏輯
+           $(document).on('click', '.btn-remove-item', function() {
+               $(this).closest('.itinerary-item').remove();
+               // 移除後可能需要重新計算並更新索引
+               $('#itinerary-items-container .itinerary-item').each(function(idx) {
+                   $(this).find('h4 span').text(idx + 1);
+                   // 更新所有 name 和 id 屬性以匹配新索引，這是一個複雜的任務
+                   // 如果沒有更新，提交表單時可能會導致數據錯亂
+                   // 簡單的方法是重新加載頁面，或使用更複雜的JS庫
+                   $(this).find('[name^="itineraryItems["]').each(function() {
+                       var currentName = $(this).attr('name');
+                       var newName = currentName.replace(/\[\d+\]/, '[' + idx + ']');
+                       $(this).attr('name', newName);
+                       var currentId = $(this).attr('id');
+                       if (currentId) {
+                           var newId = currentId.replace(/itineraryItems\d+\./, 'itineraryItems' + idx + '.');
+                           $(this).attr('id', newId);
+                       }
+                   });
+                   $(this).find('label[for^="itineraryItems"]').each(function() {
+                       var currentFor = $(this).attr('for');
+                       var newFor = currentFor.replace(/itineraryItems\d+\./, 'itineraryItems' + idx + '.');
+                       $(this).attr('for', newFor);
+                   });
+               });
+           });
+       });
+    </script>
+</body>
+</html>

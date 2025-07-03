@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Insert title here</title>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-md navbar-dark bg-success fixed-top justify-content-center">
+		 <div align="center"> <h2>listonescenery.html</h2>
+		 <h3><a class="navbar-brand" th:href="@{/scenery/sceneryindex}">回sceneryindex</a></h3></div>
+</nav>
+
+	<div align="center" th:fragment="listonescenery-div">
+		<h3><span>查詢結果 :</span></h3>
+		<span>景點編號:</span><span th:text="${SceneryVO.sceneryId}"></span><br/>
+		<span>景點名稱:</span><span th:text="${SceneryVO.sceneryName}"></span><br/>
+		<span>景點介紹:</span><span th:text="${SceneryVO.sceneryIntro}"></span><br/>
+		<span>景點總評分:</span><span th:text="${SceneryVO.sceneryTotalScore}"></span><br/>
+		<span>景點總評分人數:</span><span th:text="${SceneryVO.sceneryTotalScoreCount}"></span><br/>
+		<span>景點地址:</span><span th:text="${SceneryVO.sceneryAddress}"></span><br/>
+		<span>景點經度:</span><span th:text="${SceneryVO.sceneryLongitude}"></span><br/>
+		<span>景點緯度:</span><span th:text="${SceneryVO.sceneryLatitude}"></span><br/>
+		<span>創建時間:</span><span th:text="${SceneryVO.createTime}"></span><br/>
+	</div>
+
+</body>
+</html>

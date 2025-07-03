@@ -14,6 +14,7 @@ public class Manager {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "manager_id", nullable = false, unique = true)
 	private Integer id;
 	@Column(name = "manager_name",nullable = false, length = 50)
 	private String name;
@@ -23,7 +24,7 @@ public class Manager {
 	private String password;
 	@Column(name = "manager_account", nullable = false, unique = true, length = 50)
 	private String account;
-	@Column(name = "manager_create_date", nullable = false,updatable = false)
+	@Column(name = "create_date", nullable = false,updatable = false)
 	private LocalDateTime createDate;
 	public Integer getId() {
 		return id;

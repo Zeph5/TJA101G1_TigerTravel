@@ -43,6 +43,24 @@
 		    <artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
+		<!-- 06/27 Lezzy新增 給Spring Security判斷 -->
+		<dependency>
+		    <groupId>org.thymeleaf.extras</groupId>
+		    <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+		</dependency>
+
+		<!-- 06/30 Lezzy新增 給Mail 相關依賴 -->
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+		
+		<!-- 若使用 Maven，需加入 commons-codec -->
+		<dependency>
+		    <groupId>commons-codec</groupId>
+		    <artifactId>commons-codec</artifactId>
+		    <version>1.15</version>
+		</dependency>
 
 
 
@@ -190,7 +208,7 @@
 
 		
 		
-		
+	
 		
 		
 		
@@ -257,7 +275,6 @@
             <artifactId>jakarta.el</artifactId>
             <version>4.0.2</version>
         </dependency>
-
 
 	</dependencies>
 

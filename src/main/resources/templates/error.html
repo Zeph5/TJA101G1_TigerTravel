@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>錯誤頁</title>
+</head>
+<body>
+    <h1>⚠ 發生錯誤</h1>
+    <p><strong>時間：</strong> <span th:text="${timestamp}">N/A</span></p>
+    <p><strong>狀態碼：</strong> <span th:text="${status}">N/A</span></p>
+    <p><strong>錯誤：</strong> <span th:text="${error}">N/A</span></p>
+    <p><strong>訊息：</strong> <span th:text="${message}">N/A</span></p>
+    <p><strong>路徑：</strong> <span th:text="${path}">N/A</span></p>
+</body>
+</html>
