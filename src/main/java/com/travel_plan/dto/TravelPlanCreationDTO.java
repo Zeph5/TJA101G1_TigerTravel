@@ -18,7 +18,7 @@ public class TravelPlanCreationDTO {
 	@Size(max = 500, message = "旅行計畫描述長度不能超過500個字")
 	private String travelplandescription; // 旅行計畫描述
 	
-	private MultipartFile bannerImg; // 旅行計畫橫幅圖片URL
+	private MultipartFile bannerImage; // 旅行計畫橫幅圖片URL
 
 	public Integer getTravelPlanId() {
 		return travelPlanId;
@@ -44,19 +44,21 @@ public class TravelPlanCreationDTO {
 		this.travelplandescription = travelplandescription;
 	}
 
-	public MultipartFile getBannerImg() {
-		return bannerImg;
+	public MultipartFile getBannerImage() {
+		return bannerImage;
 	}
 
-	public void setBannerImg(MultipartFile bannerImg) {
-		this.bannerImg = bannerImg;
+	public void setBannerImage(MultipartFile bannerImage) {
+		this.bannerImage = bannerImage;
 	}
 
 	@Override
 	public String toString() {
 		return "TravelPlanCreatDTO [travelPlanId=" + travelPlanId + ", traveltitle=" + traveltitle
-				+ ", travelplandescription=" + travelplandescription + ", bannerImg=" + bannerImg + "]";
+				+ ", travelplandescription=" + travelplandescription + ", bannerImage=" + bannerImage + "]";
 	}
+
+
 	
 	
 	

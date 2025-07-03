@@ -79,4 +79,5 @@ public class TravelPlan {
 				+ publishedDate + ", lastModifiedDate=" + lastModifiedDate + "]"; // <-- toString 也要改
 	}
 	
+	
 }
