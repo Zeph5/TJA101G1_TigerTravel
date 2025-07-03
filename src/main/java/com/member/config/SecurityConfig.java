@@ -1,6 +1,7 @@
 package com.member.config;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -14,6 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.manager.security.ManagerUserDetailService;
+import com.member.security.CustomAuthenticationFailureHandler;
 import com.member.security.MemberUserDetailsService;
 
 @Configuration
@@ -22,6 +24,9 @@ public class SecurityConfig {
 
     @Autowired
     private MemberUserDetailsService memberDetailsService;
+    
+    @Autowired
+    private CustomAuthenticationFailureHandler failureHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -44,8 +49,8 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/login") // 顯示登入畫面
                 .loginProcessingUrl("/member/login") // 表單送出處理路徑（與 login.html 表單一致）
-                .defaultSuccessUrl("/index", true) // 登入成功後導向
-                .failureUrl("/login?error") // 登入失敗導向
+                .defaultSuccessUrl("/index") // 登入成功後導向
+                .failureHandler(failureHandler) //使用自訂處理器
                 .permitAll()
             )
 
@@ -59,9 +64,13 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // ❗ 僅供開發測試用，正式環境請改為 BCryptPasswordEncoder
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
+    public AuthenticationProvider authenticationProvider() {
+    	DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+    	authProvider.setUserDetailsService(memberDetailsService);
+    	//指定會員服務
+    	authProvider.setPasswordEncoder(NoOpPasswordEncoder.getInstance()); 
+    	//明碼比對
+    	return authProvider;
     }
 }

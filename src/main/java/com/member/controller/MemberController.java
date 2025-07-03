@@ -86,12 +86,19 @@ public class MemberController {
 
                 // 頭像處理
                 if (avatarFile != null && !avatarFile.isEmpty()) {
+                	byte[] avatarBytes = avatarFile.getBytes();
                     member.setAvatar(avatarFile.getBytes());
                     session.setAttribute("avatarBytes", member.getAvatar());
+                    
+                    String base64Image = Base64.getEncoder().encodeToString(avatarBytes);
+                    session.setAttribute("avatarPreview", base64Image);
                 } else {
                     byte[] oldAvatar = (byte[]) session.getAttribute("avatarBytes");
                     if (oldAvatar != null) {
                         member.setAvatar(oldAvatar);
+                        
+                        String base64Image = Base64.getEncoder().encodeToString(oldAvatar);
+                        session.setAttribute("avatarPreview", base64Image);
                     }
                 }
 
@@ -110,6 +117,9 @@ public class MemberController {
                 memVO tempMember = (memVO) session.getAttribute("tempMember");
 
                 if (savedCode != null && savedCode.equalsIgnoreCase(inputCode)) {
+                    //設定會員狀態為啟用
+                    tempMember.setMemberStatus((byte) 1);
+
                     // 恢復圖像
                     byte[] avatarBytes = (byte[]) session.getAttribute("avatarBytes");
                     if (avatarBytes != null) {
@@ -118,9 +128,10 @@ public class MemberController {
 
                     memberService.save(tempMember);
                     session.invalidate();
-                    return "redirect:/login?verifySuccess";
 
-                } else {
+                    // ✅ 改這裡：註冊成功後導向 register_success.html 頁面
+                    return "member/register_success";
+                }else {
                     model.addAttribute("error", "驗證碼錯誤，請重新輸入！");
                     memVO retryMember = (memVO) session.getAttribute("tempMember");
                     if (retryMember != null) {
@@ -207,19 +218,19 @@ public class MemberController {
 	
     
 //====================登入登入登入登入登入登入================
-	@PostMapping("/login")
-	public String login(@RequestParam String memberAccount , @RequestParam String memberPassword, Model model, HttpSession session) {
-		
-		Optional<memVO> memberOpt = memberService.findByAccount(memberAccount);
-		
-		if(memberOpt.isPresent() && memberOpt.get().getMemberPassword().equals(memberPassword)) {
-			session.setAttribute("loginMember", memberOpt.get());
-			return "redirect:/member/" + memberOpt.get().getMemberId(); //登入後導向個人資訊頁面
-		}else {
-			model.addAttribute("error", "帳號或密碼錯誤");
-			return "member/login";
-		}
-	}
+//	@PostMapping("/login")
+//	public String login(@RequestParam String memberAccount , @RequestParam String memberPassword, Model model, HttpSession session) {
+//		
+//		Optional<memVO> memberOpt = memberService.findByAccount(memberAccount);
+//		
+//		if(memberOpt.isPresent() && memberOpt.get().getMemberPassword().equals(memberPassword)) {
+//			session.setAttribute("loginMember", memberOpt.get());
+//			return "redirect:/member/" + memberOpt.get().getMemberId(); //登入後導向個人資訊頁面
+//		}else {
+//			model.addAttribute("error", "帳號或密碼錯誤");
+//			return "member/login";
+//		}
+//	}
 	
 	//導向errorpage動作
 	@Controller

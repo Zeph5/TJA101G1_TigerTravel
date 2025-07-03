@@ -110,7 +110,7 @@
     <!-- 使用session 中的 avatarBytes 作為預覽圖 -->
     <div th:if="${session.avatarBytes != null}">
     	<label>目前圖像預覽：</label>
-    	<img th:src="'data:image/jpeg;base64,'+${T(org.apache.tomcat.util.codec.binary.Base64).encdeBase64String(session.avatarBytes)}"
+    	<img th:src="'data:image/jpeg;base64,' + ${session.avatarPreview}"
     			style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
     </div>
 
