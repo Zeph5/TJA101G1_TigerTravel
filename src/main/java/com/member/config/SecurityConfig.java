@@ -14,6 +14,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.security.web.SecurityFilterChain;
@@ -164,6 +166,7 @@ public class SecurityConfig {
 
 		provider.setPasswordEncoder(passwordEncoder);
 
+
 		return provider;
 
 	}
@@ -181,4 +184,5 @@ public class SecurityConfig {
 		return provider;
 
 	}
+
 }
