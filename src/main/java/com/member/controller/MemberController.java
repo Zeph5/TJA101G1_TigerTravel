@@ -271,16 +271,21 @@ public class MemberController {
 //	}
 	
 	//導向errorpage動作
-	@Controller
-	public class LoginPageController {
-	    @GetMapping("/login")
-	    public String loginPage(@RequestParam(value = "error", required =false) String error,Model model) {
-	    	if(error != null) {
-	    		model.addAttribute("error","帳號或密碼錯誤，請再試一次");
-	    	}
-	    return "member/login"; 
-	    }
-	}
+    @Controller
+    public class LoginPageController {
+
+        @GetMapping("/login")
+        public String loginPage(@RequestParam(value = "error", required = false) String error, Model model) {
+            if ("disabled".equals(error)) {
+                model.addAttribute("error", "此帳號尚未啟用，請確認是否已完成驗證");
+            } else if ("badCredentials".equals(error)) {
+                model.addAttribute("error", "帳號或密碼錯誤，請再試一次");
+            } else if ("unknown".equals(error)) {
+                model.addAttribute("error", "登入失敗，請稍後再試");
+            }
+            return "member/login";
+        }
+    }
 	
 	//導向首頁動作
 	@Controller
@@ -307,7 +312,7 @@ public class MemberController {
 	    return "index";
 	}
 
-	
+//============編輯編輯編輯編輯編輯編輯編輯編輯============
 	//進入編輯畫面
 	@GetMapping("/edit")
 	public String showEditForm(Model model, @AuthenticationPrincipal MemberUserDetails loginUser) {
@@ -358,5 +363,29 @@ public class MemberController {
 		memberService.findById(id).ifPresent(m ->model.addAttribute("member", m));
 		return "member/detail";
 	}
+	
+//===========清單清單清單清單===============
+	//管理員查看所有會員
+	@GetMapping("/member/list")
+	public String showAllMembers(Model model) {
+		List<memVO> members = memberService.findAllMembers();
+		model.addAttribute("members", members);
+		return "member/member_list";
+	}
+	//管理員修改會員狀態
+	@PostMapping("/member/updateStatus")
+	public String updateMemberStatus(@RequestParam Integer memberId, 
+									@RequestParam Byte status) {
+		Optional<memVO> memberOpt = memberService.findById(memberId);
+		if(memberOpt.isPresent()) {
+			memVO member = memberOpt.get();
+			member.setMemberStatus(status);
+			memberService.save(member);
+		}
+		return "redirect:/member/manage";
+	}
+	
+	
+	
 	
 }

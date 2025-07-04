@@ -22,15 +22,11 @@ public class SceneryScoreVO implements java.io.Serializable{
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer scoreId;
 	
-	@ManyToOne
-	@JoinColumn(name = "member_id")
 	private Integer memberId;
 	
 	@Column(name = "score")
 	private Integer score;
 	
-	@OneToMany
-	@JoinColumn(name = "scenery_id")
 	private Integer sceneryId;
 	
 	@Column(name = "sce_comment")

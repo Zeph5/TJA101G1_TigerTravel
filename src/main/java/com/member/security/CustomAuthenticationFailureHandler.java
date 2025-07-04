@@ -19,6 +19,7 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
             HttpServletResponse response,
             org.springframework.security.core.AuthenticationException exception)
             throws IOException, ServletException {
+    	System.out.println("🔥 [FailureHandler] 登入失敗類型：" + exception.getClass().getSimpleName());
 
         if (exception instanceof DisabledException) {
             // 帳號被停權（來自 isEnabled() 回傳 false）

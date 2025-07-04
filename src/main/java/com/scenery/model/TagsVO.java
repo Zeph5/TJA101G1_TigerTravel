@@ -22,12 +22,8 @@ public class TagsVO implements java.io.Serializable{
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer tagsId;
 	
-	@ManyToOne
-	@JoinColumn(name = "tagsdb_id")
 	private Integer tagsdbId;
 	
-	@OneToMany
-	@JoinColumn(name = "scenery_id")
 	private Integer sceneryId;
 	
 	

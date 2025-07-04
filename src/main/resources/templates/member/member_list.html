@@ -1,0 +1,23 @@
+<table class="table">
+    <thead>
+        <tr><th>ID</th><th>帳號</th><th>姓名</th><th>Status</th><th>操作</th></tr>
+    </thead>
+    <tbody>
+        <tr th:each="mem : ${members}">
+            <td th:text="${mem.memberId}"></td>
+            <td th:text="${mem.memberAccount}"></td>
+            <td th:text="${mem.memberName}"></td>
+            <td th:text="${mem.memberStatus == 1 ? '啟用' : '停用'}"></td>
+            <td>
+                <form th:action="@{/member/updateStatus}" method="post">
+                    <input type="hidden" name="memberId" th:value="${mem.memberId}" />
+                    <select name="status">
+                        <option value="1" th:selected="${mem.memberStatus == 1}">啟用</option>
+                        <option value="0" th:selected="${mem.memberStatus == 0}">停用</option>
+                    </select>
+                    <button type="submit">修改</button>
+                </form>
+            </td>
+        </tr>
+    </tbody>
+</table>
