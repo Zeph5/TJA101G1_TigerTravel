@@ -14,5 +14,7 @@ public interface MemberRepository extends JpaRepository<memVO, Integer> {
 	Optional<byte[]> findAvatarById(Integer id);
 	
 	Optional<memVO> findByMemberAccount(String memberAccount);
+	
+	Optional<memVO> findByVerifyToken(String verifyToken);
 
 }

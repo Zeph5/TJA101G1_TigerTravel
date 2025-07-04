@@ -18,6 +18,8 @@ public class MemberService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    private MemberService memberService;
 
     //會員註冊(新增)動作
     public memVO register(memVO member) {
@@ -52,6 +54,16 @@ public class MemberService {
     //XX刪除會員
     public void deleteById(Integer id) {
     	memberRepository.deleteById(id);
+    }
+    
+    
+    public Optional<memVO> findByToken(String token){
+        System.out.println("收到驗證 token: " + token);
+        
+        Optional<memVO> optionalMember = memberRepository.findByVerifyToken(token);
+        System.out.println("是否查到會員: " + optionalMember.isPresent());
+        
+        return optionalMember;
     }
     
 }

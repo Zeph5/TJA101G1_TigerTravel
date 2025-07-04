@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>驗證成功</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: '帳號驗證成功！🎉',
+        text: '系統將在 3 秒後自動前往登入頁面',
+        showConfirmButton: true,
+        confirmButtonText: '立即前往登入',
+        timer: 3000,
+        timerProgressBar: true,
+        willClose: () => {
+            window.location.href = '/login';
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '/login';
+        }
+    });
+</script>
+
+</body>
+</html>

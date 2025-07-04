@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
@@ -27,6 +28,19 @@ public class SecurityConfig {
     
     @Autowired
     private CustomAuthenticationFailureHandler failureHandler;
+    
+    
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//        http
+//                .csrf(csrf -> csrf.disable())
+//                .cors(cors -> cors.disable())
+//                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll()) // 暫時全開
+//                .sessionManagement(session -> session.disable())
+//                .httpBasic(Customizer.withDefaults())
+//                .formLogin(Customizer.withDefaults());
+//        return http.build();
+//    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -38,7 +52,8 @@ public class SecurityConfig {
                     "/login", "/member/login",         // 登入畫面與登入處理
                     "/register", "/member/register",   // 註冊畫面與送出
                     "/index", "/error", "/login?error", // 首頁、錯誤頁
-                    "/css/**", "/js/**", "/images/**"  // 靜態資源
+                    "/css/**", "/js/**", "/images/**",// 靜態資源
+                    "/member/verify"
                 ).permitAll()
 
                 // 🔐 其他 /member/** 路徑需登入
