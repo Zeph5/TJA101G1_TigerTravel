@@ -6,12 +6,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <style>
         .ticket-card img {
-            max-height: 160px;
+            max-height: 120px;
             object-fit: cover;
         }
         .ticket-card {
             margin-bottom: 30px;
         }
+        /* 自訂分隔線樣式 */
         .section-divider {
             border-top: 3px dashed #888;
             margin: 2rem 0 2rem 0;
@@ -37,7 +38,7 @@
                     <div th:each="ticket : ${searchList}" class="col-md-6 col-lg-4 ticket-card">
                         <div class="card h-100 shadow-sm">
                             <div class="card-img-top text-center bg-light" style="height:140px;">
-                                <img th:if="${ticket.ticketImage != null}" th:src="'/ticket/image/' + ${ticket.ticketId}"
+                                <img th:if="${ticket.ticketImage != null}" th:src="'data:image/jpeg;base64,' + ${T(org.apache.tomcat.util.codec.binary.Base64).encodeBase64String(ticket.ticketImage)}"
                                      class="img-fluid h-100" alt="票券圖片"/>
                                 <span th:if="${ticket.ticketImage == null}" class="text-muted align-middle">無圖片</span>
                             </div>
@@ -69,7 +70,7 @@
                 <div th:each="ticket : ${ticketPage.content}" class="col-md-6 col-lg-4 ticket-card">
                     <div class="card h-100 shadow-sm">
                         <div class="card-img-top text-center bg-light" style="height:140px;">
-                            <img th:if="${ticket.ticketImage != null}" th:src="'/ticket/image/' + ${ticket.ticketId}"
+                            <img th:if="${ticket.ticketImage != null}" th:src="'data:image/jpeg;base64,' + ${T(org.apache.tomcat.util.codec.binary.Base64).encodeBase64String(ticket.ticketImage)}"
                                  class="img-fluid h-100" alt="票券圖片"/>
                             <span th:if="${ticket.ticketImage == null}" class="text-muted align-middle">無圖片</span>
                         </div>

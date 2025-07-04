@@ -20,9 +20,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-
-  
-
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.security.web.SecurityFilterChain;
@@ -257,19 +255,4 @@ provider.setPasswordEncoder(passwordEncoder);
 return provider;
 
 }
-
-  
-
-@Bean // <-- 確保有這個 @Bean 註解
-
-public AuthenticationProvider memberAuthenticationProvider(PasswordEncoder passwordEncoder) {
-
-DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-
-provider.setUserDetailsService(memberUserDetailsService); // 使用建構子注入的 memberUserDetailsService
-
-provider.setPasswordEncoder(passwordEncoder);
-
-return provider;
-
-}}
+}
