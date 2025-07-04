@@ -2,6 +2,7 @@ package com.member.controller;
 
 import java.io.IOException;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -25,6 +27,8 @@ import com.member.model.memVO;
 import com.member.security.MemberUserDetails;
 import com.member.service.MailService;
 import com.member.service.MemberService;
+import com.scenery.model.SceneryService;
+import com.scenery.model.SceneryVO;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -38,14 +42,11 @@ public class MemberController {
 	private MemberRepository memberRepository;
 	@Autowired
 	private MailService mailService;
+	@Autowired
+	private SceneryService sceneryService;
 	
 	public MemberController(MemberService memberService) {
 		this.memberService = memberService;
-	}
-	
-	@GetMapping("/test")
-	public String test() {
-	    return "test";
 	}
 	
 	//會員中心
@@ -71,73 +72,104 @@ public class MemberController {
         return "member/register";
     }
 
-    // 處理註冊表單送出 → 暫時寄送驗證碼 + 留在頁面上顯示連結
+    // 處理註冊流程
     @PostMapping("/register")
-    public String register(@ModelAttribute memVO member,
-                           @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile,
-                           @RequestParam(value = "code", required = false) String inputCode,
-                           @RequestParam("action") String action,
-                           HttpSession session,
-                           Model model) {
+    public String processRegister(@ModelAttribute memVO member,
+                                   @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile,
+                                   @RequestParam(value = "code", required = false) String inputCode,
+                                   @RequestParam("action") String action,
+                                   HttpSession session,
+                                   Model model) {
         try {
-            if ("send".equals(action)) {
-                String code = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-                session.setAttribute("verificationCode", code);
+//            if ("send".equals(action)) {
+//                // 產生驗證碼
+//                String code = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+//                session.setAttribute("verificationCode", code);
+//
+//                // 頭像處理（預覽 + 暫存）
+//                if (avatarFile != null && !avatarFile.isEmpty()) {
+//                    byte[] avatarBytes = avatarFile.getBytes();
+//                    member.setAvatar(avatarBytes);
+//
+//                    session.setAttribute("avatarBytes", avatarBytes);
+//                    session.setAttribute("avatarPreview", Base64.getEncoder().encodeToString(avatarBytes));
+//                } else {
+//                    byte[] oldAvatar = (byte[]) session.getAttribute("avatarBytes");
+//                    if (oldAvatar != null) {
+//                        member.setAvatar(oldAvatar);
+//                        session.setAttribute("avatarPreview", Base64.getEncoder().encodeToString(oldAvatar));
+//                    }
+//                }
+//
+//                // 暫存使用者資訊
+//                session.setAttribute("tempMember", member);
+//
+//                // ✅ 防止寄信錯誤導致 response commit
+//                try {
+//                    mailService.sendVerificationEmail(member.getMemberEmail(), code);
+//                    model.addAttribute("message", "驗證碼已寄出，請查收 Email！");
+//                } catch (Exception e) {
+//                    model.addAttribute("error", "寄送驗證碼失敗：" + e.getMessage());
+//                }
+//
+//                model.addAttribute("member", member);
+//                return "member/register";
+//            }
 
-                // 頭像處理
-                if (avatarFile != null && !avatarFile.isEmpty()) {
-                    member.setAvatar(avatarFile.getBytes());
-                    session.setAttribute("avatarBytes", member.getAvatar());
-                } else {
-                    byte[] oldAvatar = (byte[]) session.getAttribute("avatarBytes");
-                    if (oldAvatar != null) {
-                        member.setAvatar(oldAvatar);
-                    }
-                }
+            // 確認註冊按鈕：驗證碼比對
+            if ("register".equals(action)) {
+//                memVO tempMember = (memVO) session.getAttribute("tempMember");
+                
+                	//檢查帳號是否已存在
+                	Optional<memVO> existing = memberService.findByAccount(inputCode);
+                	if(existing.isPresent()) {
+                		model.addAttribute("error", "此帳號已有人使用，請更換帳號");
+                		model.addAttribute("member", member);
+                		return "member/register";
+                	}
+                	
+                	//圖片處理：轉成byte[] 存進member
+                	if (!avatarFile.isEmpty()) {
+                	    member.setAvatar(avatarFile.getBytes());
+                	}
+                	
+                	// 建立驗證用token
+                	String token = UUID.randomUUID().toString();
+                	member.setVerifyToken(token);
+                	member.setEmailVerified(false); //可用Boolen / Byte
+                    member.setMemberStatus((byte) 0); //尚未啟用
 
-                // 暫存 member
-                session.setAttribute("tempMember", member);
-
-                // 發送驗證碼
-                mailService.sendVerificationEmail(member.getMemberEmail(), code);
-
-                model.addAttribute("message", "驗證碼已寄出，請查收 Email！");
-                model.addAttribute("member", member);
-                return "member/register";
-
-            } else if ("register".equals(action)) {
-                String savedCode = (String) session.getAttribute("verificationCode");
-                memVO tempMember = (memVO) session.getAttribute("tempMember");
-
-                if (savedCode != null && savedCode.equalsIgnoreCase(inputCode)) {
-                    // 恢復圖像
+                    // 還原頭像（保險起見）
                     byte[] avatarBytes = (byte[]) session.getAttribute("avatarBytes");
                     if (avatarBytes != null) {
-                        tempMember.setAvatar(avatarBytes);
+                        member.setAvatar(avatarBytes);
                     }
+                    //儲存會員(未啟用)
+                    memberService.save(member);
+                  
+                    //寄出驗證信
+                    String verifyUrl = "http://localhost:8080/member/verify?token=" + token;
+                    mailService.sendVerificationLink(member.getMemberEmail(), verifyUrl);
+                    
+                    session.invalidate(); // 註冊完成清除 session
 
-                    memberService.save(tempMember);
-                    session.invalidate();
-                    return "redirect:/login?verifySuccess";
-
-                } else {
-                    model.addAttribute("error", "驗證碼錯誤，請重新輸入！");
-                    memVO retryMember = (memVO) session.getAttribute("tempMember");
-                    if (retryMember != null) {
-                        model.addAttribute("member", retryMember);
-                    } else {
-                        model.addAttribute("member", new memVO());
-                    }
-                    return "member/register";
-                }
+                    //顯示通知畫面
+                    return "member/register_result";
             }
 
+            // 未知操作
             model.addAttribute("error", "操作錯誤，請重新操作。");
             model.addAttribute("member", member);
             return "member/register";
 
-        } catch (IOException e) {
-            model.addAttribute("error", "註冊失敗：" + e.getMessage());
+        } 
+//        catch (IOException e) {
+//            model.addAttribute("error", "頭像處理失敗：" + e.getMessage());
+//            model.addAttribute("member", member);
+//            return "member/register";
+//        } 
+        catch (Exception e) {
+            model.addAttribute("error", "註冊發生錯誤：" + e.getMessage());
             model.addAttribute("member", member);
             return "member/register";
         }
@@ -151,29 +183,46 @@ public class MemberController {
 
     
     //顯示驗證碼輸入頁面
-    @GetMapping("/member/verify")
-    public String showVerifyPage() {
-    	return "member/verify";
+    @GetMapping("/verify")
+    public String verifyEmail(@RequestParam("token") String token, Model model) {
+        Optional<memVO> optionalMember = memberService.findByToken(token);
+
+        if (optionalMember.isPresent()) {
+            memVO member = optionalMember.get();
+
+            if (!Boolean.TRUE.equals(member.getEmailVerified())) {
+                member.setEmailVerified(true);
+                member.setMemberStatus((byte) 1);
+                member.setVerifyToken(null);
+                memberService.save(member);
+            }
+
+            model.addAttribute("message", "驗證成功！請重新登入系統");
+            return "member/verify/verify_success";
+        } else {
+            model.addAttribute("error", "連結無效或已過期");
+            return "member/verify/verify_fail";
+        }
     }
 
     //驗證使用者輸入的驗證碼
-    @PostMapping("/member/verify")
-    public String handleVerify(@RequestParam("code") String inputCode,
-    						HttpSession session,
-    						RedirectAttributes ra) {
-    	String savedCode = (String)session.getAttribute("verificationCode");
-    	memVO tempMember = (memVO) session.getAttribute("tempMember");
-    	
-    	if(savedCode != null && savedCode.equalsIgnoreCase(inputCode)) {
-    		memberService.save(tempMember);
-    		session.removeAttribute("verificationCode");
-    		session.removeAttribute("tempMember");
-    		return "redirect:/login?verifySuccess";
-    	}else {
-    		ra.addFlashAttribute("error" , "驗證碼錯誤，請重新輸入");
-    		return "redirect:/member/verify";
-    	}
-    }
+//    @PostMapping("/member/verify")
+//    public String handleVerify(@RequestParam("code") String inputCode,
+//    						HttpSession session,
+//    						RedirectAttributes ra) {
+//    	String savedCode = (String)session.getAttribute("verificationCode");
+//    	memVO tempMember = (memVO) session.getAttribute("tempMember");
+//    	
+//    	if(savedCode != null && savedCode.equalsIgnoreCase(inputCode)) {
+//    		memberService.save(tempMember);
+//    		session.removeAttribute("verificationCode");
+//    		session.removeAttribute("tempMember");
+//    		return "redirect:/login?verifySuccess";
+//    	}else {
+//    		ra.addFlashAttribute("error" , "驗證碼錯誤，請重新輸入");
+//    		return "redirect:/member/verify";
+//    	}
+//    }
     
 	
 //	@PostMapping("/member/register")
@@ -207,19 +256,19 @@ public class MemberController {
 	
     
 //====================登入登入登入登入登入登入================
-	@PostMapping("/login")
-	public String login(@RequestParam String memberAccount , @RequestParam String memberPassword, Model model, HttpSession session) {
-		
-		Optional<memVO> memberOpt = memberService.findByAccount(memberAccount);
-		
-		if(memberOpt.isPresent() && memberOpt.get().getMemberPassword().equals(memberPassword)) {
-			session.setAttribute("loginMember", memberOpt.get());
-			return "redirect:/member/" + memberOpt.get().getMemberId(); //登入後導向個人資訊頁面
-		}else {
-			model.addAttribute("error", "帳號或密碼錯誤");
-			return "member/login";
-		}
-	}
+//	@PostMapping("/login")
+//	public String login(@RequestParam String memberAccount , @RequestParam String memberPassword, Model model, HttpSession session) {
+//		
+//		Optional<memVO> memberOpt = memberService.findByAccount(memberAccount);
+//		
+//		if(memberOpt.isPresent() && memberOpt.get().getMemberPassword().equals(memberPassword)) {
+//			session.setAttribute("loginMember", memberOpt.get());
+//			return "redirect:/member/" + memberOpt.get().getMemberId(); //登入後導向個人資訊頁面
+//		}else {
+//			model.addAttribute("error", "帳號或密碼錯誤");
+//			return "member/login";
+//		}
+//	}
 	
 	//導向errorpage動作
 	@Controller
@@ -251,7 +300,10 @@ public class MemberController {
 	        String avatarBase64 = Base64.getEncoder().encodeToString(member.getAvatar());
 	        model.addAttribute("avatarBase64", avatarBase64);
 	    }
-
+	    
+	    List<SceneryVO> sceneries = sceneryService.findAllScenery(); //
+	    model.addAttribute("sceneries", sceneries);
+	    
 	    return "index";
 	}
 

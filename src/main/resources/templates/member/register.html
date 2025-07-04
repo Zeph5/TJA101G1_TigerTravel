@@ -1,131 +1,109 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <title>會員註冊</title>
-    <style>
-        body { font-family: "Microsoft JhengHei"; background: #f4f6f9; padding: 40px; }
-        .form-group { margin-bottom: 16px; }
-        label { display: inline-block; width: 100px; }
-        input { padding: 5px; }
-        .btn { padding: 8px 16px; margin-right: 10px; }
-        #preview {
-            display: block;
-            margin-top: 10px;
-            max-width: 150px;
-            max-height: 150px;
-            border: 1px solid #ccc;
-        }
-    </style>
-    <script th:inline="javascript">
-        function checkPasswordMatch() {
-            const pw1 = document.getElementById("memberPassword").value;
-            const pw2 = document.getElementById("confirmPassword").value;
-            const warning = document.getElementById("pw-warning");
-            const submitBtn = document.getElementById("submitBtn");
-            const sendBtn = document.getElementById("sendBtn");
-
-            if (pw1 && pw2 && pw1 !== pw2) {
-                warning.textContent = "⚠️ 密碼不一致";
-                submitBtn.disabled = true;
-                sendBtn.disabled = true;
-            } else {
-                warning.textContent = "";
-                submitBtn.disabled = false;
-                sendBtn.disabled = false;
-            }
-        }
-
-        function disableCodeRequired() {
-            const codeInput = document.querySelector('input[name="code"]');
-            if (codeInput) {
-                codeInput.removeAttribute("required");
-            }
-        }
-
-        function previewImage(input) {
-            const preview = document.getElementById('preview');
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                }
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                preview.src = '';
-                preview.style.display = 'none';
-            }
-        }
-
-        window.onload = function () {
-            let savedPw = /*[[${member.memberPassword}]]*/ '';
-            if (savedPw) {
-                document.getElementById("memberPassword").value = savedPw;
-                document.getElementById("confirmPassword").value = savedPw;
-            }
-        }
-    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body>
+<body class="bg-gradient-to-r from-blue-100 to-blue-200 min-h-screen flex items-center justify-center">
 
-<h1>註冊會員</h1>
+<div class="bg-white shadow-2xl rounded-2xl p-10 w-full max-w-md animate-fade-in">
+    <h1 class="text-2xl font-bold text-center text-gray-700 mb-6">註冊會員</h1>
 
-<div th:if="${error}" style="color:red;"><p th:text="${error}"></p></div>
-<div th:if="${message}" style="color:green;"><p th:text="${message}"></p></div>
+    <div th:if="${error}" class="text-red-600 text-sm mb-4 text-center" th:text="${error}"></div>
+    <div th:if="${message}" class="text-green-600 text-sm mb-4 text-center" th:text="${message}"></div>
 
-<form th:action="@{/member/register}" method="post" enctype="multipart/form-data" th:object="${member}">
-    <div class="form-group">
-        <label>帳號：</label>
-        <input type="text" th:field="*{memberAccount}" required>
-    </div>
+    <form th:action="@{/member/register}" method="post" enctype="multipart/form-data" th:object="${member}" class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium">帳號</label>
+            <input type="text" th:field="*{memberAccount}" required class="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:ring-blue-400 focus:outline-none">
+        </div>
 
-    <div class="form-group">
-        <label>密碼：</label>
-        <input type="password" th:field="*{memberPassword}" id="memberPassword" oninput="checkPasswordMatch()" required>
-    </div>
+        <div>
+            <label class="block text-sm font-medium">密碼</label>
+            <input type="password" th:field="*{memberPassword}" id="memberPassword" oninput="checkPasswordMatch()" required class="w-full mt-1 p-2 border border-gray-300 rounded-lg">
+        </div>
 
-    <div class="form-group">
-        <label>再次輸入：</label>
-        <input type="password" id="confirmPassword" oninput="checkPasswordMatch()" required>
-        <span id="pw-warning" style="color:red;"></span>
-    </div>
+        <div>
+            <label class="block text-sm font-medium">再次輸入密碼</label>
+            <input type="password" id="confirmPassword" oninput="checkPasswordMatch()" required class="w-full mt-1 p-2 border border-gray-300 rounded-lg">
+            <span id="pw-warning" class="text-red-500 text-sm"></span>
+        </div>
 
-    <div class="form-group">
-        <label>姓名：</label>
-        <input type="text" th:field="*{memberName}" required>
-    </div>
+        <div>
+            <label class="block text-sm font-medium">姓名</label>
+            <input type="text" th:field="*{memberName}" required class="w-full mt-1 p-2 border border-gray-300 rounded-lg">
+        </div>
 
-    <div class="form-group">
-        <label>Email：</label>
-        <input type="email" th:field="*{memberEmail}" required>
-    </div>
+        <div>
+            <label class="block text-sm font-medium">電話</label>
+            <input type="text" th:field="*{memberPhone}" placeholder="請輸入聯絡電話" class="w-full mt-1 p-2 border border-gray-300 rounded-lg">
+        </div>
 
-    <div class="form-group">
-        <label>頭像：</label>
-        <input type="file" name="avatarFile" onchange="previewImage(this)">
-        <img id="preview" style="display:none;" />
-    </div>
-    
-    <!-- 使用session 中的 avatarBytes 作為預覽圖 -->
-    <div th:if="${session.avatarBytes != null}">
-    	<label>目前圖像預覽：</label>
-    	<img th:src="'data:image/jpeg;base64,'+${T(org.apache.tomcat.util.codec.binary.Base64).encdeBase64String(session.avatarBytes)}"
-    			style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
-    </div>
+        <div>
+            <label class="block text-sm font-medium">地址</label>
+            <input type="text" th:field="*{memberAddress}" placeholder="請輸入通訊地址" class="w-full mt-1 p-2 border border-gray-300 rounded-lg">
+        </div>
 
-    <div class="form-group" th:if="${session.verificationCode != null}">
-        <label>驗證碼：</label>
-        <input type="text" name="code" placeholder="請輸入驗證碼" required>
-    </div>
+        <div>
+            <label class="block text-sm font-medium">Email</label>
+            <input type="email" th:field="*{memberEmail}" required class="w-full mt-1 p-2 border border-gray-300 rounded-lg">
+        </div>
 
-    <div>
-        <button class="btn" type="submit" name="action" value="send" id="sendBtn" onclick="disableCodeRequired()">📩 取得驗證碼</button>
-        <button class="btn" type="submit" name="action" value="register" id="submitBtn">✅ 完成註冊</button>
-    </div>
-</form>
+        <div>
+            <label class="block text-sm font-medium">頭像</label>
+            <input type="file" name="avatarFile" onchange="previewImage(this)" class="block mt-1">
+            <img id="preview" class="mt-2 rounded-xl border max-w-full max-h-40 hidden"/>
+        </div>
 
-<p><a th:href="@{/login}">回登入頁</a></p>
+        <div th:if="${session.avatarBytes != null}">
+            <label class="block text-sm font-medium">目前圖像預覽</label>
+            <img th:src="'data:image/jpeg;base64,' + ${session.avatarPreview}" class="rounded-xl border max-w-full max-h-40 mt-2"/>
+        </div>
+
+        <button type="submit" name="action" value="register" id="submitBtn"
+                class="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-md transition-all duration-300">
+            完成註冊
+        </button>
+    </form>
+
+    <p class="text-center text-sm text-gray-600 mt-4">
+        已有帳號？ <a th:href="@{/login}" class="text-blue-500 hover:underline">前往登入</a>
+    </p>
+</div>
+
+<script>
+    function checkPasswordMatch() {
+        const pw1 = document.getElementById("memberPassword").value;
+        const pw2 = document.getElementById("confirmPassword").value;
+        const warning = document.getElementById("pw-warning");
+        const submitBtn = document.getElementById("submitBtn");
+
+        if (pw1 && pw2 && pw1 !== pw2) {
+            warning.textContent = "⚠️ 密碼不一致";
+            submitBtn.disabled = true;
+        } else {
+            warning.textContent = "";
+            submitBtn.disabled = false;
+        }
+    }
+
+    function previewImage(input) {
+        const preview = document.getElementById('preview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.src = '';
+            preview.style.display = 'none';
+        }
+    }
+</script>
 
 </body>
 </html>

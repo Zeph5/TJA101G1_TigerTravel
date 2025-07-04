@@ -2,30 +2,39 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
+    <meta charset="UTF-8">
     <title>會員中心</title>
 </head>
 <body>
-<h2>會員中心</h2>
+    <h2>會員中心</h2>
 
-<p>會員帳號：<span th:text="${member.memberAccount}"></span></p>
-<p>會員姓名：<span th:text="${member.memberName}"></span></p>
-<p>電子信箱：<span th:text="${member.memberEmail}"></span></p>
-<p>電話：<span th:text="${member.memberPhone}"></span></p>
+    <p><strong>會員帳號：</strong> <span th:text="${member.memberAccount}"></span></p>
+    <p><strong>會員姓名：</strong> <span th:text="${member.memberName}"></span></p>
 
-<div>
-    <img th:if="${avatarBase64}" th:src="'data:image/jpeg;base64,' + ${avatarBase64}" 
-         alt="會員頭像" width="150" height="150" style="border-radius: 50%; border: 2px solid #ccc;"/>
-    <p th:if="${#strings.isEmpty(avatarBase64)}">尚未上傳頭像</p>
-</div>
+    <!-- 建議密碼不要顯示明碼 -->
+    <p><strong>會員密碼：</strong> ********</p>
 
- <p>
-  <a th:href="@{/member/edit}">✏️ 編輯我的會員資料</a>
-</p>
+    <p><strong>電子信箱：</strong> <span th:text="${member.memberEmail}"></span></p>
+    <p><strong>電話：</strong> <span th:text="${member.memberPhone} ?: '未填寫'"></span></p>
+    <p><strong>地址：</strong> <span th:text="${member.memberAddress} ?: '未填寫'"></span></p>
 
+    <p><strong>會員狀態：</strong> 
+        <span th:text="${member.memberStatus == 1 ? '啟用中' : '停權'}"></span>
+    </p>
 
-<form th:action="@{/logout}" method="post">
-	<button type="submit">登出</button>
-</form>
+    <!-- 頭像圖 -->
+    <div th:if="${avatarBase64 != null}">
+        <img th:src="'data:image/jpeg;base64,' + ${avatarBase64}"
+             alt="會員頭像"
+             style="width: 200px; height: 200px; border-radius: 50%;">
+    </div>
 
+    <p>
+        <a th:href="@{/member/edit}">✏️ 編輯我的會員資料</a>
+    </p>
+
+    <form th:action="@{/logout}" method="post">
+        <button type="submit">登出</button>
+    </form>
 </body>
 </html>

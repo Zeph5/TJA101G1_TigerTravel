@@ -3,26 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <title>會員登入</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(to right, #fceabb, #f8b500);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            color: #4B3E2A;
+            margin-bottom: 20px;
+        }
+
+        form {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ffd36f;
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 20px;
+            width: 100%;
+            background-color: #ffbe00;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #f5a300;
+        }
+
+        p {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.95rem;
+            color: #333;
+        }
+
+        a {
+            color: #d35400;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h1>會員登入</h1>
+    <h1>🐾 會員登入</h1>
 
     <form th:action="@{/member/login}" method="post">
         <label for="memberAccount">帳號：</label>
-        <input type="text" id="memberAccount" name="username" required><br><br>
+        <input type="text" id="memberAccount" name="username" required>
 
         <label for="memberPassword">密碼：</label>
-        <input type="password" id="memberPassword" name="password" required><br><br>
+        <input type="password" id="memberPassword" name="password" required>
 
         <button type="submit">登入</button>
     </form>
 
-    <p>尚未註冊？<a th:href="@{/register}">前往註冊</a></p>
-    <p>去首頁<a th:href="@{/index}">前往首頁</a></p>
+    <p>尚未註冊？<a th:href="@{/register}">點我加入🐣</a></p>
+    <p><a th:href="@{/index}">🏡 回首頁</a></p>
 
-    <div th:if="${error != null}" style="color: red;">
-        <p th:text="${error}">登入失敗</p>
-    </div>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <script>
+        window.onload = function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get("error");
+            const registerSuccess = urlParams.get("registerSuccess");
+
+            if (registerSuccess !== null) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '註冊成功！',
+                    text: '歡迎加入，請登入開始使用 💛',
+                    confirmButtonText: '登入去！',
+                    customClass: {
+                        popup: 'swal2-rounded'
+                    }
+                });
+            }
+
+            if (error === "disabled") {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '帳號未啟用',
+                    text: '此帳號權限已被關閉，請聯絡客服 🙇‍♀️',
+                    confirmButtonText: '我知道了'
+                });
+            } else if (error === "badCredentials") {
+                Swal.fire({
+                    icon: 'error',
+                    title: '登入失敗',
+                    text: '帳號或密碼錯誤，請重新輸入 😣',
+                    confirmButtonText: '重試一次'
+                });
+            } else if (error === "unknown") {
+                Swal.fire({
+                    icon: 'error',
+                    title: '發生錯誤',
+                    text: '登入失敗，請稍後再試 🙏',
+                    confirmButtonText: '知道了'
+                });
+            }
+        };
+    </script>
 </body>
 </html>

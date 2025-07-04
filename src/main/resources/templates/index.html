@@ -31,8 +31,28 @@
     <!-- 若使用者尚未登入 -->
 
     <div sec:authorize="isAnonymous()">
-        <p>您尚未登入。請先 <a th:href="@{/login}">登入</a> 或 <a th:href="@{/register}">註冊</a>。</p>
+        <p>您尚未登入。請先 <a th:href="@{/login}">登入</a> 或 <a th:href="@{/member/register}">註冊</a>。</p>
     </div>
+    
+    <div class="container mt-5">
+    <h2 class="mb-4">探索熱門景點</h2>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="col" th:each="scenery : ${sceneries}">
+            <div class="card h-100">
+                <!-- 圖片預留 -->
+                <img src="/images/sample.jpg" class="card-img-top" alt="景點圖片" style="height: 200px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${scenery.sceneryName}">景點名稱</h5>
+                    <p class="card-text" th:text="${scenery.description}">景點簡介</p>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">地點：<span th:text="${scenery.address}">台北市</span></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
     
 </body>
 </html>
