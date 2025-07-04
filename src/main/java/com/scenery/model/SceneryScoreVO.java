@@ -4,38 +4,32 @@ import java.sql.Timestamp;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import com.member.model.memVO;
+
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "scenery_score")
-public class SceneryScoreVO implements java.io.Serializable{
+public class SceneryScoreVO implements java.io.Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer scoreId;
-	
+
 	@ManyToOne
-	@JoinColumn(name = "member_id")
-	private Integer memberId;
-	
+	@JoinColumn(name = "member_id", nullable = false)
+	private memVO member;
+
+	@ManyToOne
+	@JoinColumn(name = "scenery_id", nullable = false)
+	private SceneryVO scenery;
+
 	@Column(name = "score")
 	private Integer score;
-	
-	@OneToMany
-	@JoinColumn(name = "scenery_id")
-	private Integer sceneryId;
-	
+
 	@Column(name = "sce_comment")
 	private String sceneryComment;
-	
+
 	@Column(updatable = false)
 	@CreationTimestamp
 	private Timestamp createTime;
@@ -44,13 +38,13 @@ public class SceneryScoreVO implements java.io.Serializable{
 		super();
 	}
 
-	public SceneryScoreVO(Integer scoreId, Integer memberId, Integer score, Integer sceneryId, String sceneryComment,
+	public SceneryScoreVO(Integer scoreId, memVO member, SceneryVO scenery, Integer score, String sceneryComment,
 			Timestamp createTime) {
 		super();
 		this.scoreId = scoreId;
-		this.memberId = memberId;
+		this.member = member;
+		this.scenery = scenery;
 		this.score = score;
-		this.sceneryId = sceneryId;
 		this.sceneryComment = sceneryComment;
 		this.createTime = createTime;
 	}
@@ -63,12 +57,20 @@ public class SceneryScoreVO implements java.io.Serializable{
 		this.scoreId = scoreId;
 	}
 
-	public Integer getMemberId() {
-		return memberId;
+	public memVO getMember() {
+		return member;
 	}
 
-	public void setMemberId(Integer memberId) {
-		this.memberId = memberId;
+	public void setMember(memVO member) {
+		this.member = member;
+	}
+
+	public SceneryVO getScenery() {
+		return scenery;
+	}
+
+	public void setScenery(SceneryVO scenery) {
+		this.scenery = scenery;
 	}
 
 	public Integer getScore() {
@@ -77,14 +79,6 @@ public class SceneryScoreVO implements java.io.Serializable{
 
 	public void setScore(Integer score) {
 		this.score = score;
-	}
-
-	public Integer getSceneryId() {
-		return sceneryId;
-	}
-
-	public void setSceneryId(Integer sceneryId) {
-		this.sceneryId = sceneryId;
 	}
 
 	public String getSceneryComment() {
@@ -102,6 +96,4 @@ public class SceneryScoreVO implements java.io.Serializable{
 	public void setCreateTime(Timestamp createTime) {
 		this.createTime = createTime;
 	}
-	
-	
 }
