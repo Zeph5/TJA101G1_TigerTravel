@@ -1,10 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Insert title here</title>
 </head>
 <body>
+
+<nav class="navbar navbar-expand-md navbar-dark bg-success fixed-top justify-content-center">
+		 <div align="center"> <h2>addscenery.html</h2>
+		 <h3><a class="navbar-brand" th:href="@{/scenery/sceneryindex}">回查詢頁</a></h3></div>
+</nav>
+
+	<div align="center">
+		<h3><b>所有欄位皆為必填欄位</b></h3>
+		<form th:action="@{insert}" method="post" th:object="${SceneryVO}" enctype="multipart/form-data">
+			
+			
+			
+			
+			
+			
+			<div>
+			<label>景點名稱:</label>
+			<input type="text" th:field="*{sceneryName}" onclick="hideContent('sceneryName.errors');" /><br/>
+			<span  th:if="${#fields.hasErrors('sceneryName')}" th:errors="*{sceneryName}" class="error" id="sceneryName.errors"></span>
+			</div>
+			
+			<div>
+			<label>景點介紹:</label>
+			<input type="text" th:field="*{sceneryIntro}" onclick="hideContent('sceneryIntro.errors');" /><br/>
+			<span  th:if="${#fields.hasErrors('sceneryIntro')}" th:errors="*{sceneryIntro}" class="error" id="sceneryIntro.errors"></span>
+			</div>
+			
+			<div>
+			<label>景點地址:</label>
+			<input type="text" th:field="*{sceneryAddress}" onclick="hideContent('sceneryAddress.errors');" /><br/>
+			<span  th:if="${#fields.hasErrors('sceneryAddress')}" th:errors="*{sceneryAddress}" class="error" id="sceneryAddress.errors"></span>
+			</div>
+
+			<div>
+			<label>景點經度:</label>
+			<input type="text" th:field="*{sceneryLongitude}" onclick="hideContent('sceneryLongitude.errors');" /><br/>
+			<span  th:if="${#fields.hasErrors('sceneryLongitude')}" th:errors="*{sceneryLongitude}" class="error" id="sceneryLongitude.errors"></span>
+			</div>
+			
+			<div>
+			<label>景點緯度:</label>
+			<input type="text" th:field="*{sceneryLatitude}" onclick="hideContent('sceneryLatitude.errors');" /><br/>
+			<span  th:if="${#fields.hasErrors('sceneryLatitude')}" th:errors="*{sceneryLatitude}" class="error" id="sceneryLatitude.errors"></span>
+			</div>
+				
+			
+			<div>
+				<div></div>
+				<div><button type="submit" id="submit"> 送出新增 </button></div>
+				<div></div>
+			</div>		
+		</form>
+	
+	</div>
+
 
 </body>
 </html>
