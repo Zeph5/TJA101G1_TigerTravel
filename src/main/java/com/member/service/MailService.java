@@ -24,4 +24,19 @@ public class MailService {
 		mailSender.send(message);
 		
 	}
+	
+	//新增：寄送連結驗證信 (給正式Email 驗證用)
+	public void sendVerificationLink(String to, String link) {
+		String subject = "【TigerTravle】帳號啟用驗證信";
+		String text = "親愛的用戶您好，\n\n" +
+						"請點擊下方連結完成帳號驗證：\n" +
+						link + "\n\n" +
+						"若您未註冊此帳號，請忽略此封信件";
+		
+		SimpleMailMessage message = new SimpleMailMessage();
+		message.setTo(to);
+		message.setSubject(subject);
+		message.setText(text);
+		mailSender.send(message);
+	}
 }

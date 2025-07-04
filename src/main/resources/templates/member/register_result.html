@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>註冊完成</title>
+
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        window.onload = function () {
+            Swal.fire({
+                icon: 'success',
+                title: '註冊成功！',
+                text: '請至信箱點擊驗證連結完成帳號啟用',
+                confirmButtonText: '前往登入',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(() => {
+                window.location.href = '/login';
+            });
+        };
+    </script>
+
+    <style>
+        body {
+            background-color: #f2f6fc;
+            font-family: "Microsoft JhengHei", sans-serif;
+        }
+    </style>
+</head>
+<body>
+</body>
+</html>

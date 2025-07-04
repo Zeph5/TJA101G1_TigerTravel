@@ -43,11 +43,15 @@ public class MemberUserDetails implements UserDetails {
 	public String getUsername() {
 		return member.getMemberAccount();
 	}
+	
+	@Override
+	public boolean isEnabled() {
+	    return member.getMemberStatus() != null && member.getMemberStatus() == 1;
+	}
+	
 
 	//這會告訴使用者這帳號是不是「還能用」
 	@Override public boolean isAccountNonExpired() {return true;} //檢查帳號是否過期
 	@Override public boolean isAccountNonLocked() {return true;} //檢查有沒有被鎖定
 	@Override public boolean isCredentialsNonExpired() {return true;} //密碼是否過期?
-	@Override public boolean isEnabled() {return true;} //帳號有啟用嗎?
-	
 }

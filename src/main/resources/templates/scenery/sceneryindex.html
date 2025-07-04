@@ -6,6 +6,7 @@
 <title>Insert title here</title>
 </head>
 <body>
+<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
 <nav class="navbar navbar-expand-md navbar-dark bg-success fixed-top justify-content-center">
 		 <div align="center"> <h2>sceneryindex.html</h2>
@@ -44,7 +45,7 @@
 		<li><form method="post" th:action="@{listonescenery}">
 				選擇景點名稱:
 				<select name="sceneryId">
-				     <option th:each="SceneryVO : ${sceneryListData}" th:value="${SceneryVO.sceneryId}" th:text="${eSceneryVO.sceneryName}" />
+				     <option th:each="SceneryVO : ${sceneryListData}" th:value="${SceneryVO.sceneryId}" th:text="${SceneryVO.sceneryName}" />
 			    </select>
 				<input type="submit" value="送出">
 			</form><br>

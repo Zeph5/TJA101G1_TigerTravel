@@ -41,7 +41,7 @@ CREATE TABLE member (
 CREATE TABLE IF NOT EXISTS scenery (
     scenery_id INT AUTO_INCREMENT NOT NULL COMMENT '景點ID',
     sce_name VARCHAR(255) NOT NULL UNIQUE COMMENT '景點名稱',
-    sce_intro VARCHAR(500) NOT NULL COMMENT '評分留言',
+    sce_intro VARCHAR(1000) NOT NULL COMMENT '景點介紹',
     sce_total_score INT COMMENT '總評分數',
     score_sce_total_score INT COMMENT '總評分人數',
     sce_address VARCHAR(500) COMMENT '景點地址',

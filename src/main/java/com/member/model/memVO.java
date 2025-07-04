@@ -30,7 +30,7 @@ public class memVO implements Serializable {
 	private String memberPhone;
 
 	@Column(name = "mem_status")
-	private String memberStatus;
+	private Byte memberStatus;
 
 	@Column(name = "mem_address")
 	private String memberAddress;
@@ -70,7 +70,7 @@ public class memVO implements Serializable {
 	}
 
 	public memVO(Integer memberId, String memberAccount, String memberName, String memberPassword, String memberEmail,
-			String memberPhone, String memberStatus, String memberAddress, Boolean emailVerified, String verifyToken,
+			String memberPhone, Byte memberStatus, String memberAddress, Boolean emailVerified, String verifyToken,
 			byte[] avatar, Timestamp createTime) {
 
 		super();
@@ -144,11 +144,11 @@ public class memVO implements Serializable {
 		this.memberPhone = memberPhone;
 	}
 
-	public String getMemberStatus() {
+	public Byte getMemberStatus() {
 		return memberStatus;
 	}
 
-	public void setMemberStatus(String memberStatus) {
+	public void setMemberStatus(Byte memberStatus) {
 		this.memberStatus = memberStatus;
 	}
 
