@@ -14,20 +14,27 @@ public interface TravelPlanService {
 
 	
 
+	TravelPlanCreationDTO convertToCreationDto(TravelPlan entity);
+
+
+	
+
+
+	Optional<TravelPlanCreationDTO> getTravelPlanById(Integer id);
+
+
 	List<TravelPlan> getAllTravelPlans();
 
-	Optional<TravelPlan> getTravelPlanById(Integer id);
-
-	static TravelPlan getTravelPlanWithItinerary(Integer id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	TravelPlanCreationDTO convertToDto(TravelPlan existingPlan);
-
-	TravelPlan createTravelPlanFromDto(@Valid TravelPlanCreationDTO dto, MultipartFile bannerImage);
 
 	TravelPlan updateTravelPlan(Integer travelPlanId, @Valid TravelPlanCreationDTO dto, MultipartFile bannerImage);
 
+
+	TravelPlan createTravelPlanFromDto(@Valid TravelPlanCreationDTO dto, MultipartFile bannerImage);
+
+
+
+
+
+	Optional<TravelPlan> getTravelPlanEntityById(Integer planId);
 	
 }

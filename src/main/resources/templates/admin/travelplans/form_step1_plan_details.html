@@ -3,69 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>新增/編輯旅行計畫 - 步驟 1: 基本資訊</title>
+    <title>新增/編輯旅行計畫 - 步驟 1: 旅行計畫</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { padding-top: 50px; background-color: #f8f9fa; }
-        .container { max-width: 800px; background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; margin-bottom: 30px; color: #333; }
-        .form-label { font-weight: bold; }
-        .error-message { color: red; font-size: 0.9em; margin-top: 5px; }
-        .btn-primary { background-color: #007bff; border-color: #007bff; }
-        .btn-primary:hover { background-color: #0056b3; border-color: #0056b3; }
-        .alert { margin-top: 20px; }
-        .existing-image { max-width: 200px; height: auto; margin-top: 10px; border: 1px solid #ddd; padding: 5px; }
+        body {
+            padding-top: 50px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 700px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .error-message {
+            color: red;
+            font-size: 0.875em;
+            margin-top: 0.25em;
+        }
+        .required {
+            color: red;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>新增/編輯旅行計畫 - 步驟 1: 基本資訊</h2>
+        <h2>新增/編輯旅行計畫 - 步驟 1: 旅行計畫</h2>
+        <p class="text-muted text-center">請輸入旅行計畫的基本資訊。</p>
 
-        <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}">
-            計畫基本資訊儲存成功，請繼續編輯行程細節。
-        </div>
-        <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}">
-            圖片上傳失敗。
-        </div>
-        
+        <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
 
         <form th:action="@{/admin/travelplans}" th:object="${travelPlanCreationDto}" method="post" enctype="multipart/form-data">
-            
-            <div th:if="${#fields.hasErrors('global')}" class="alert alert-danger" role="alert">
-                <p th:each="err : ${#fields.errors('global')}" th:text="${err}"></p>
-            </div>
-
             <input type="hidden" th:field="*{travelPlanId}" />
 
+            <!-- 標題欄位 -->
             <div class="mb-3">
-                <label for="traveltitle" class="form-label">計畫標題:</label>
-                <input type="text" id="traveltitle" th:field="*{traveltitle}" class="form-control" />
-                <p th:if="${#fields.hasErrors('traveltitle')}" th:errors="*{traveltitle}" class="error-message"></p>
+                <label for="travelTitle" class="form-label">標題: <span class="required">*</span></label>
+                <input type="text" 
+                       id="travelTitle" 
+                       th:field="*{travelTitle}" 
+                       class="form-control" 
+                       required 
+                       maxlength="100"
+                       placeholder="請輸入旅行計畫標題..." />
+                <p th:if="${#fields.hasErrors('travelTitle')}" 
+                   th:errors="*{travelTitle}" 
+                   class="error-message"></p>
             </div>
 
+            <!-- 描述欄位 -->
             <div class="mb-3">
-                <label for="travelplandescription" class="form-label">計畫描述:</label>
-                <textarea id="travelplandescription" th:field="*{travelplandescription}" rows="5" class="form-control"></textarea>
-                <p th:if="${#fields.hasErrors('travelplandescription')}" th:errors="*{travelplandescription}" class="error-message"></p>
+                <label for="travelPlanDescription" class="form-label">描述: <span class="required">*</span></label>
+                <textarea id="travelPlanDescription" 
+                          th:field="*{travelPlanDescription}" 
+                          class="form-control" 
+                          rows="4" 
+                          required 
+                          minlength="10"
+                          maxlength="1000"
+                          placeholder="請輸入旅行計畫描述..."></textarea>
+                <p th:if="${#fields.hasErrors('travelPlanDescription')}" 
+                   th:errors="*{travelPlanDescription}" 
+                   class="error-message"></p>
             </div>
 
-            <div class="mb-3">
-                <label for="bannerImage" class="form-label">上傳橫幅圖片:</label>
-                <input type="file" id="bannerImage" name="bannerImage" class="form-control" accept="image/*" />
-                <p class="form-text text-muted">請上傳一張圖片作為旅行計畫的橫幅 (JPG, PNG, GIF)。</p>
-                <div th:if="${travelPlanCreationDto.travelPlanId != null and travelPlanCreationDto.existingBannerImageUrl != null}">
-                    <p>目前圖片:</p>
-                    <img th:src="@{${travelPlanCreationDto.existingBannerImageUrl}}" alt="現有橫幅圖片" class="existing-image" />
+            <!-- 日期欄位 -->
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="startDate" class="form-label">開始日期: <span class="required">*</span></label>
+                    <input type="date" 
+                           id="startDate" 
+                           th:field="*{startDate}" 
+                           class="form-control" 
+                           required />
+                    <p th:if="${#fields.hasErrors('startDate')}" 
+                       th:errors="*{startDate}" 
+                       class="error-message"></p>
                 </div>
-                <p th:if="${#fields.hasErrors('bannerImage')}" th:errors="*{bannerImage}" class="error-message"></p>
+                <div class="col-md-6 mb-3">
+                    <label for="endDate" class="form-label">結束日期: <span class="required">*</span></label>
+                    <input type="date" 
+                           id="endDate" 
+                           th:field="*{endDate}" 
+                           class="form-control" 
+                           required />
+                    <p th:if="${#fields.hasErrors('endDate')}" 
+                       th:errors="*{endDate}" 
+                       class="error-message"></p>
+                </div>
             </div>
 
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary btn-lg">下一步 (編輯行程細節)</button>
+            <!-- 橫幅圖片欄位 -->
+            <div class="mb-3">
+                <label for="bannerImage" class="form-label">橫幅圖片:</label>
+                <input type="file" 
+                       id="bannerImage" 
+                       th:field="*{bannerImage}" 
+                       class="form-control" 
+                       accept="image/*" />
+                <div class="form-text">支援格式：JPG, PNG, GIF (最大 5MB)</div>
+                <p th:if="${#fields.hasErrors('bannerImage')}" 
+                   th:errors="*{bannerImage}" 
+                   class="error-message"></p>
+                
+                <!-- 顯示現有圖片 -->
+                <div th:if="${travelPlanBannerUrl}">
+                    <p class="mt-2">目前圖片:</p>
+                    <img th:src="${travelPlanBannerUrl}" 
+                         alt="現有橫幅圖片" 
+                         style="max-width: 200px; height: auto;" 
+                         class="img-thumbnail" />
+                </div>
+            </div>
+
+            <!-- 提交按鈕 -->
+            <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">下一步</button>
+                <a href="/admin/travelplans" class="btn btn-secondary">取消</a>
             </div>
         </form>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 表單驗證 JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const startDate = document.getElementById('startDate');
+            const endDate = document.getElementById('endDate');
+            
+            // 設定最小日期為今天
+            const today = new Date().toISOString().split('T')[0];
+            startDate.min = today;
+            endDate.min = today;
+            
+            // 驗證結束日期不能早於開始日期
+            function validateDates() {
+                if (startDate.value && endDate.value) {
+                    if (endDate.value < startDate.value) {
+                        endDate.setCustomValidity('結束日期不能早於開始日期');
+                    } else {
+                        endDate.setCustomValidity('');
+                    }
+                }
+            }
+            
+            startDate.addEventListener('change', function() {
+                endDate.min = this.value;
+                validateDates();
+            });
+            
+            endDate.addEventListener('change', validateDates);
+            
+            // 表單提交驗證
+            form.addEventListener('submit', function(e) {
+                validateDates();
+                if (!this.checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                this.classList.add('was-validated');
+            });
+        });
+    </script>
 </body>
 </html>

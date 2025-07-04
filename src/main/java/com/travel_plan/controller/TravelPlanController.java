@@ -62,6 +62,11 @@ public class TravelPlanController {
 			BindingResult result, RedirectAttributes redirectAttributes,
 			@RequestParam(value = "bannerImage", required = false) MultipartFile bannerImage, HttpSession session,
 			Model model) {
+		 if (result.hasErrors()) {
+		        model.addAttribute("travelPlanCreationDto", dto);		   
+		        model.addAttribute("errorMessage", "資料驗證失敗，請檢查輸入。");
+		        return "admin/travelplans/form_step1_plan_details"; // 返回表單頁面
+		    }
 		
 		TravelPlan savedPlan ; // 用於儲存新建立的旅行計畫實體
 		 if (dto.getTravelPlanId() != null && dto.getTravelPlanId() != 0) {
@@ -80,7 +85,7 @@ public class TravelPlanController {
 		// 添加成功訊息，並在重定向後顯示
 		redirectAttributes.addFlashAttribute("successMessage", "計畫基本資訊儲存成功，請繼續編輯行程細節。");
 		// 重定向到下一步的行程細節編輯頁面
-		return "redirect:/admin/travelplans/" + savedPlan.getTravelPlanId() + "/itinerary/new";
+		return "redirect:/admin/travelplans/" + savedPlan.getTravelPlanId() + "/itinerary/overview";
 	}
 
 	// 編輯現有計畫的入口點 (可重用第一步表單)
@@ -89,11 +94,11 @@ public class TravelPlanController {
 
 		// 確保計畫 ID 存在並取得實體
 		// 如果不存在，則拋出異常或返回錯誤頁面
-		TravelPlan existingPlan = travelPlanService.getTravelPlanById(id)
+		TravelPlan existingPlan = travelPlanService.getTravelPlanEntityById(id)
 				.orElseThrow(() -> new IllegalArgumentException("TravelPlan not found"));
 
 		// 將 Entity 轉換為 DTO 填充表單 (如果需要編輯圖片，也要將當前 URL 傳遞給前端顯示)
-		TravelPlanCreationDTO dto = travelPlanService.convertToDto(existingPlan);
+		TravelPlanCreationDTO dto = travelPlanService.convertToCreationDto(existingPlan);
 
 		model.addAttribute("travelPlanCreationDto", dto); // 將 DTO 傳遞到前端表單
 

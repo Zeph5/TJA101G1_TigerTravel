@@ -2,6 +2,7 @@ CREATE DATABASE IF NOT EXISTS TigerTravelDB;
 
 USE TigerTravelDB;
 
+-- 確保 DROP TABLE 順序正確，以避免外鍵約束問題
 DROP TABLE IF EXISTS ticket_list;
 DROP TABLE IF EXISTS travel_plan_day;
 DROP TABLE IF EXISTS travel_image;
@@ -12,16 +13,16 @@ DROP TABLE IF EXISTS ticket;
 DROP TABLE IF EXISTS tour_order;
 DROP TABLE IF EXISTS manager;
 DROP TABLE IF EXISTS coupon;
-DROP TABLE IF EXISTS travel_itinerary;
 DROP TABLE IF EXISTS favorite_tour;
+DROP TABLE IF EXISTS travel_itinerary; -- travel_itinerary 必須在 travel_plan 之前被 DROP，因為它有外鍵引用 travel_plan
 DROP TABLE IF EXISTS favorite_scenery;
-DROP TABLE IF EXISTS travel_plan;
 DROP TABLE IF EXISTS tags;
 DROP TABLE IF EXISTS tagsdb;
 DROP TABLE IF EXISTS scenery_image;
 DROP TABLE IF EXISTS scenery_score;
--- DROP TABLE IF EXISTS scenery;
+DROP TABLE IF EXISTS scenery;
 DROP TABLE IF EXISTS member;
+DROP TABLE IF EXISTS travel_plan; -- travel_plan 應在所有引用它的表被 DROP 之後再 DROP
 
 CREATE TABLE member (
     member_id INT AUTO_INCREMENT NOT NULL,
@@ -88,11 +89,14 @@ CREATE TABLE tags(
     FOREIGN KEY (scenery_id) REFERENCES scenery(scenery_id)
 ) AUTO_INCREMENT = 1;
 
+-- 修正 travel_plan 表的定義，移除所有錯誤的 ALTER TABLE 語句，並加入 start_date 和 end_date
 CREATE TABLE travel_plan (
     travel_plan_id INTEGER NOT NULL AUTO_INCREMENT,
     travel_title VARCHAR(64) NOT NULL,
-    travel_plan_banner MEDIUMBLOB,
+    travel_plan_banner MEDIUMBLOB, -- 假設你還是需要儲存圖片本身，如果是 URL 請改為 VARCHAR(255)
     travel_plan_description VARCHAR(256),
+    start_date DATE NOT NULL, -- 新增的開始日期欄位
+    end_date DATE NOT NULL,   -- 新增的結束日期欄位
     published_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (travel_plan_id)
@@ -122,6 +126,7 @@ CREATE TABLE favorite_tour (
         ON UPDATE CASCADE
 );
 
+-- 修正 travel_itinerary 表的定義，移除 travel_start_date 和 travel_end_date
 CREATE TABLE travel_itinerary (
     travel_itinerary_id INTEGER NOT NULL AUTO_INCREMENT,
     travel_plan_id INTEGER NOT NULL,
@@ -129,8 +134,6 @@ CREATE TABLE travel_itinerary (
     total_price INTEGER NOT NULL,
     published_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    travel_start_date TIMESTAMP NOT NULL,
-    travel_end_date TIMESTAMP NOT NULL,
     PRIMARY KEY (travel_itinerary_id),
     FOREIGN KEY (travel_plan_id) REFERENCES travel_plan(travel_plan_id)
 );
