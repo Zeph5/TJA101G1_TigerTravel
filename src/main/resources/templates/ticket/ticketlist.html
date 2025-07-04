@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-	<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <title>票券一覽</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <style>
@@ -12,14 +12,61 @@
         .ticket-card {
             margin-bottom: 30px;
         }
+        /* 自訂分隔線樣式 */
+        .section-divider {
+            border-top: 3px dashed #888;
+            margin: 2rem 0 2rem 0;
+        }
     </style>
 </head>
 <body>
 <div class="container my-4">
     <h2 class="mb-4 text-center">票券一覽</h2>
+    <!-- 查詢表單 -->
+    <form class="form-inline mb-4 justify-content-center" method="get" th:action="@{/ticketlist}">
+        <input class="form-control mr-2" type="search" placeholder="請輸入票券名稱" aria-label="Search"
+               name="keyword" th:value="${keyword}">
+        <button class="btn btn-primary" type="submit">查詢</button>
+    </form>
     <div class="row">
         <div class="col-12">
-            <div class="row">
+
+            <!-- 查詢結果區塊 -->
+            <div th:if="${searchList != null}">
+                <h4 class="text-primary text-center">查詢結果</h4>
+                <div class="row">
+                    <div th:each="ticket : ${searchList}" class="col-md-6 col-lg-4 ticket-card">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-img-top text-center bg-light" style="height:140px;">
+                                <img th:if="${ticket.ticketImage != null}" th:src="'data:image/jpeg;base64,' + ${T(org.apache.tomcat.util.codec.binary.Base64).encodeBase64String(ticket.ticketImage)}"
+                                     class="img-fluid h-100" alt="票券圖片"/>
+                                <span th:if="${ticket.ticketImage == null}" class="text-muted align-middle">無圖片</span>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title" th:text="${ticket.ticketName}">票券名稱</h5>
+                                <p class="card-text" th:text="${ticket.ticketDescription}">票券描述</p>
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">價格：<span th:text="${ticket.ticketPrice}">0</span> 元</li>
+                                <li class="list-group-item">庫存：<span th:text="${ticket.ticketStock}"></span></li>
+                                <li class="list-group-item">狀態：
+                                    <span th:text="${ticket.ticketStatus == 1 ? '有庫存' : '無庫存'}"
+                                          th:classappend="${ticket.ticketStatus == 1 ? 'text-success' : 'text-danger'}"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- 若查無資料 -->
+                <div th:if="${searchList.size() == 0}" class="alert alert-danger text-center my-3" role="alert">
+                    查無此票
+                </div>
+                <hr class="section-divider">
+            </div>
+
+            <!-- 全部票券區塊（含分頁） -->
+            <h4 class="text-secondary text-center">全部票券</h4>
+            <div class="row" th:if="${ticketPage != null and ticketPage.content.size() > 0}">
                 <div th:each="ticket : ${ticketPage.content}" class="col-md-6 col-lg-4 ticket-card">
                     <div class="card h-100 shadow-sm">
                         <div class="card-img-top text-center bg-light" style="height:140px;">
@@ -39,24 +86,26 @@
                                       th:classappend="${ticket.ticketStatus == 1 ? 'text-success' : 'text-danger'}"></span>
                             </li>
                         </ul>
-                        <div class="card-footer text-center bg-white border-0">
-                            <small class="text-muted">建立時間：<span th:text="${#temporals.format(ticket.createTime, 'yyyy-MM-dd HH:mm')}"></span></small>
-                        </div>
                     </div>
                 </div>
             </div>
-            <!-- 分頁區塊 -->
-            <nav class="mt-4">
+            <!-- 全部票券分頁 -->
+            <nav class="mt-4" th:if="${ticketPage != null and ticketPage.totalPages > 1}">
                 <ul class="pagination justify-content-center">
                     <li class="page-item" th:classappend="${ticketPage.first} ? 'disabled'">
-                        <a class="page-link" th:href="@{/tickets(page=${currentPage - 1}, size=${pageSize})}">上一頁</a>
+                        <a class="page-link"
+                           th:href="@{/ticketlist(page=${currentPage - 1}, size=${pageSize})}">上一頁</a>
                     </li>
-                    <li class="page-item" th:each="i : ${#numbers.sequence(0, ticketPage.totalPages - 1)}"
+                    <li class="page-item"
+                        th:each="i : ${#numbers.sequence(0, ticketPage.totalPages - 1)}"
                         th:classappend="${i} == ${currentPage} ? 'active'">
-                        <a class="page-link" th:href="@{/tickets(page=${i}, size=${pageSize})}" th:text="${i + 1}">1</a>
+                        <a class="page-link"
+                           th:href="@{/ticketlist(page=${i}, size=${pageSize})}"
+                           th:text="${i + 1}">1</a>
                     </li>
                     <li class="page-item" th:classappend="${ticketPage.last} ? 'disabled'">
-                        <a class="page-link" th:href="@{/tickets(page=${currentPage + 1}, size=${pageSize})}">下一頁</a>
+                        <a class="page-link"
+                           th:href="@{/ticketlist(page=${currentPage + 1}, size=${pageSize})}">下一頁</a>
                     </li>
                 </ul>
             </nav>
