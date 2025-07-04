@@ -1,14 +1,21 @@
 package com.travel_plan.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class TravelPlan {
 	
 	@Id
@@ -29,10 +36,37 @@ public class TravelPlan {
 	private String travelPlanBannerUrl; // <-- 改為 travelPlanBannerUrl
 	
 	@Column(name = "published_date", nullable = false)
+	@CreatedDate // 假設您使用了 @CreatedDate 來自動填充這個欄位
 	private LocalDateTime publishedDate; // 這個已經是駝峰式，且與您上次改的 getter 匹配
 	
 	@Column(name = "last_modified_date", nullable = false)
+	@LastModifiedDate 
 	private LocalDateTime lastModifiedDate; // 這個也已經是駝峰式，且與您上次改的 getter 匹配
+	
+	@Column(name = "start_date", nullable = false)
+	private LocalDate startDate; // 旅行計畫開始日期
+	@Column(name = "end_date", nullable = false)
+	private LocalDate endDate; // 旅行計畫結束日期
+	
+	public LocalDate getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(LocalDate startDate) {
+		this.startDate = startDate;
+	}
+
+	public LocalDate getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(LocalDate endDate) {
+		this.endDate = endDate;
+	}
+
+	public TravelPlan() {
+		// 預設建構子
+	}
 	
 	public Integer getTravelPlanId() {
 		return travelPlanId;
@@ -72,11 +106,18 @@ public class TravelPlan {
 	public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
 		this.lastModifiedDate = lastModifiedDate;
 	}
+	
 	@Override
 	public String toString() {
-		return "TravelPlan [travelPlanId=" + travelPlanId + ", travelTitle=" + travelTitle + ", travelPlanDescription=" // <-- toString 也要改
-				+ travelPlanDescription + ", travelPlanBannerUrl=" + travelPlanBannerUrl + ", publishedDate=" // <-- toString 也要改
-				+ publishedDate + ", lastModifiedDate=" + lastModifiedDate + "]"; // <-- toString 也要改
+		return "TravelPlan [travelPlanId=" + travelPlanId + ", travelTitle=" + travelTitle + ", travelPlanDescription="
+				+ travelPlanDescription + ", travelPlanBannerUrl=" + travelPlanBannerUrl + ", publishedDate="
+				+ publishedDate + ", lastModifiedDate=" + lastModifiedDate + ", startDate=" + startDate + ", endDate="
+				+ endDate + "]";
+	}
+
+	public Object getBannerImageUrl() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

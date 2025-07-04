@@ -2,7 +2,7 @@ package com.travel_plan.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
+import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -13,18 +13,31 @@ public class TravelItineraryDTO {
 	
 	private Integer travelItineraryId; // 旅行行程ID
 	
+////	private List<TravelPlanDayDTO> itineraryItems;
+////	
+////	
+////	
+////	public List<TravelPlanDayDTO> getItineraryItems() {
+////		return itineraryItems;
+////	}
+//	public void setItineraryItems(List<TravelPlanDayDTO> itineraryItems) {
+//		this.itineraryItems = itineraryItems;
+//	}
 	@NotNull(message = "最大旅遊人數不能為空")
     @Min(value = 1, message = "最大旅遊人數必須大於0")
 	private Integer maxTourist; // 最大旅客數
 	@NotNull(message = "總價格不能為空")
     @Min(value = 0, message = "總價格必須大於或等於0")
 	private BigDecimal totalPrice; // 總價
-	@NotNull(message = "開始日期不能為空")
+	
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	private LocalDate startDate; // 開始日期
-	@NotNull(message = "結束日期不能為空")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-	private LocalDate endDate; // 結束日期
+	private LocalDate startDate; // 行程開始日期
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	private LocalDate endDate; // 行程結束日期
+	
+	
+	
+	
 	public Integer getTravelItineraryId() {
 		return travelItineraryId;
 	}
@@ -58,7 +71,7 @@ public class TravelItineraryDTO {
 	@Override
 	public String toString() {
 		return "TravelItineraryDTO [travelItineraryId=" + travelItineraryId + ", maxTourist=" + maxTourist
-				+ ", totalPrice=" + totalPrice + ", startDate=" + startDate + ", endDate=" + endDate + "]";
+				+ ", totalPrice=" + totalPrice + ", startDate=" + startDate + ", endDate=" + endDate + " ]";
 	}
 	
 	

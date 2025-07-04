@@ -12,34 +12,27 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
-
 @Entity
 public class TravelItinerary {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "travel_itinerary_id", nullable = false, unique = true)
 	private Integer travelItineraryId;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "travel_plan_id", nullable = false)
 	private TravelPlan travelPlan;
-	
+
 	@Column(name = "max_tourist", nullable = false)
 	private Integer maxTourist;
-	
+
 	@Column(name = "total_price", precision = 10, scale = 2)
 	private BigDecimal totalPrice;
-	
-	@Column(name = "start_date", nullable = false)	
-	private LocalDate startDate;
-	
-	@Column(name = "end_date", nullable = false)	
-	private LocalDate endDate;
-	
+
 	@Column(name = "published_date", nullable = false, updatable = false)
 	private LocalDateTime publishedDate;
-	
+
 	@Column(name = "last_modified_date", nullable = false)
 	private LocalDateTime lastModifiedDate;
 
@@ -75,22 +68,6 @@ public class TravelItinerary {
 		this.totalPrice = totalPrice;
 	}
 
-	public LocalDate getStartDate() {
-		return startDate;
-	}
-
-	public void setStartDate(LocalDate startDate) {
-		this.startDate = startDate;
-	}
-
-	public LocalDate getEndDate() {
-		return endDate;
-	}
-
-	public void setEndDate(LocalDate endDate) {
-		this.endDate = endDate;
-	}
-
 	public LocalDateTime getPublishedDate() {
 		return publishedDate;
 	}
@@ -110,10 +87,8 @@ public class TravelItinerary {
 	@Override
 	public String toString() {
 		return "TravelItinerary [travelItineraryId=" + travelItineraryId + ", travelPlan=" + travelPlan
-				+ ", maxTourist=" + maxTourist + ", totalPrice=" + totalPrice + ", startDate=" + startDate
-				+ ", endDate=" + endDate + ", publishedDate=" + publishedDate + ", lastModifiedDate=" + lastModifiedDate
-				+ "]";
+				+ ", maxTourist=" + maxTourist + ", totalPrice=" + totalPrice + ", publishedDate=" + publishedDate
+				+ ", lastModifiedDate=" + lastModifiedDate + "]";
 	}
-	
-	
+
 }
