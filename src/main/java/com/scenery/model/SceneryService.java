@@ -49,10 +49,32 @@ public class SceneryService {
 	    	return sceneryRepository.save(scenery);
 	    }
 	    
+	    // update scenery 2
+	    public SceneryVO updateScenery(SceneryVO updatedVO) {
+	        // Check if the record exists
+	        Optional<SceneryVO> existingOpt = sceneryRepository.findById(updatedVO.getSceneryId());
+
+	        if (existingOpt.isPresent()) {
+	            SceneryVO existingVO = existingOpt.get();
+
+	            // Update fields (only allowed ones)
+	            existingVO.setSceneryName(updatedVO.getSceneryName());
+	            existingVO.setSceneryIntro(updatedVO.getSceneryIntro());
+	            existingVO.setSceneryAddress(updatedVO.getSceneryAddress());
+	            existingVO.setSceneryLongitude(updatedVO.getSceneryLongitude());
+	            existingVO.setSceneryLatitude(updatedVO.getSceneryLatitude());
+
+	            return sceneryRepository.save(existingVO);
+	        } else {
+	            throw new RuntimeException("找不到景點 ID: " + updatedVO.getSceneryId());
+	        }
+	    }
+	    
 	    // delete scenery
 	    public void deleteById(Integer id) {
 	    	sceneryRepository.deleteById(id);
 	    }
+	    
 
 
 }
