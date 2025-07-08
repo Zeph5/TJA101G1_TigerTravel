@@ -1,60 +1,64 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Insert title here</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<title>List All Scenery</title>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-md navbar-dark bg-success fixed-top justify-content-center">
-		 <div align="center"> <h2>listallscenery.html</h2>
-		 <h3><a class="navbar-brand" th:href="@{/scenery/sceneryindex}">回sceneryindex</a></h3></div>
+    <div align="center">
+        <h2>listallscenery.html</h2>
+        <h3><a class="navbar-brand" th:href="@{/scenery/sceneryindex}">回sceneryindex</a></h3>
+    </div>
 </nav>
 
 <table id="example" class="display" style="width: 100%">
-  <thead >
-	<tr style="background-color:#CCCCFF">
-		<th>景點編號</th>
-		<th>景點名稱</th>
-		<th>景點介紹</th>
-		<th>景點總評分</th>
-		<th>景點總評分人數</th>
-		<th>景點地址</th>
-		<th>景點經度</th>
-		<th>景點緯度</th>
-		<th>創建時間</th>
-		<th>修改</th>
-		<th>刪除</th>
-	</tr>
+  <thead>
+    <tr style="background-color:#CCCCFF">
+      <th>景點編號</th>
+      <th>景點名稱</th>
+      <th>景點介紹</th>
+      <th>景點總評分</th>
+      <th>景點總評分人數</th>
+      <th>景點地址</th>
+      <th>景點經度</th>
+      <th>景點緯度</th>
+      <th>創建時間</th>
+      <th>修改</th>
+      <th>刪除</th>
+    </tr>
   </thead>
-	
+
   <tbody>
-		<th:block th:each="SceneryVO : ${sceneryListData}">
-			<tr>
-				<td th:text="${SceneryVO.sceneryId}"></td>
-				<td th:text="${SceneryVO.sceneryName}"></td>
-				<td th:text="${SceneryVO.sceneryIntro}"></td>
-				<td th:text="${SceneryVO.sceneryTotalScore}"></td>
-				<td th:text="${SceneryVO.sceneryTotalScoreCount}"></td>
-				<td th:text="${SceneryVO.sceneryAddress}"></td>
-				<td th:text="${SceneryVO.sceneryLongitude}"></td>
-				<td th:text="${SceneryVO.sceneryLatitude}"></td>
-				<td th:text="${SceneryVO.createTime}"></td>
-			<td>
-			  <form method="post" th:action="@{/scenery/updatescenery}" style="margin-bottom: 0px;">
-			     <input type="submit" value="修改">
-			     <input type="hidden" name="sceneryId" th:value="${sceneryVO.sceneryId}"></form>
-			
-			</td>
-			<td>
-			  <form method="post" th:action="@{/scenery/delete}" style="margin-bottom: 0px;">
-			     <input type="submit" value="刪除">
-			     <input type="hidden" name="sceneryId" th:value="${sceneryVO.sceneryId}"></form>
-			
-			</td>
-			</tr>
-		</th:block>
+    <th:block th:each="sceneryVO : ${sceneryListData}">
+      <tr>
+        <td th:text="${sceneryVO.sceneryId}"></td>
+        <td th:text="${sceneryVO.sceneryName}"></td>
+        <td th:text="${sceneryVO.sceneryIntro}"></td>
+        <td th:text="${sceneryVO.sceneryTotalScore}"></td>
+        <td th:text="${sceneryVO.sceneryTotalScoreCount}"></td>
+        <td th:text="${sceneryVO.sceneryAddress}"></td>
+        <td th:text="${sceneryVO.sceneryLongitude}"></td>
+        <td th:text="${sceneryVO.sceneryLatitude}"></td>
+        <td th:text="${sceneryVO.createTime}"></td>
+        <td>
+          <form method="post" th:action="@{/scenery/updatescenery}" style="margin-bottom: 0px;">
+            <input type="hidden" name="sceneryId" th:value="${sceneryVO.sceneryId}" />
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <input type="submit" value="修改" />
+          </form>
+        </td>
+        <td>
+          <form method="post" th:action="@{/scenery/delete}" style="margin-bottom: 0px;">
+            <input type="hidden" name="sceneryId" th:value="${sceneryVO.sceneryId}" />
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <input type="submit" value="刪除" />
+          </form>
+        </td>
+      </tr>
+    </th:block>
   </tbody>
 </table>
 
