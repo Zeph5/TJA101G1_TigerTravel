@@ -1,5 +1,6 @@
 package com.travel_plan.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.Min;
 
 public class TravelPlanCreationDTO {
     
@@ -31,7 +33,12 @@ public class TravelPlanCreationDTO {
     @Future(message = "結束日期必須是未來的日期")
     private LocalDate endDate; // 旅行計畫結束日期
     
-    
+    @NotNull(message = "最大旅遊人數不能為空")
+    @Min(value = 1, message = "最大旅遊人數必須大於0")
+	private Integer maxTourist; // 最大旅客數
+	@NotNull(message = "總價格不能為空")
+    @Min(value = 0, message = "總價格必須大於或等於0")
+	private BigDecimal totalPrice; // 總價
     
     private MultipartFile bannerImage; // 旅行計畫橫幅圖片
     
@@ -49,7 +56,25 @@ public class TravelPlanCreationDTO {
         this.endDate = endDate;
     }
     
-    // Getter 和 Setter 方法
+    
+    
+    public Integer getMaxTourist() {
+		return maxTourist;
+	}
+
+	public void setMaxTourist(Integer maxTourist) {
+		this.maxTourist = maxTourist;
+	}
+
+	public BigDecimal getTotalPrice() {
+		return totalPrice;
+	}
+
+	public void setTotalPrice(BigDecimal totalPrice) {
+		this.totalPrice = totalPrice;
+	}
+
+	// Getter 和 Setter 方法
     public Integer getTravelPlanId() {
         return travelPlanId;
     }

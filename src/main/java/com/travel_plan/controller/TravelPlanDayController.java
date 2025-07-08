@@ -1,118 +1,93 @@
-//package com.travel_plan.controller;
-////
-////import org.springframework.beans.factory.annotation.Autowired;
-////import org.springframework.stereotype.Controller;
-////import org.springframework.ui.Model;
-////import org.springframework.validation.BindingResult;
-////import org.springframework.web.bind.annotation.GetMapping;
-////import org.springframework.web.bind.annotation.ModelAttribute;
-////import org.springframework.web.bind.annotation.PathVariable;
-////import org.springframework.web.bind.annotation.PostMapping;
-////import org.springframework.web.bind.annotation.RequestMapping;
-////import org.springframework.web.bind.support.SessionStatus;
-////import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-////
-////import com.travel_plan.dto.TravelPlanDayDTO;
-////import com.travel_plan.model.TravelItinerary;
-////
-////import com.travel_plan.service.TravelItineraryService;
-////import com.travel_plan.service.TravelPlanDayService;
-////
-////
-////import jakarta.servlet.http.HttpSession;
-////import jakarta.validation.Valid;
-////
-//////顯示新增/編輯每日行程第三步的表單 (/admin/travelplans/{planId}/itinerary/{itineraryId}/days/new / {planId}/itinerary/{itineraryId}/days/{dayId}/edit)。
-//////
-//////處理新增/編輯每日行程第三步的表單提交 (/admin/travelplans/{planId}/itinerary/{itineraryId}/days)。
-//////
-//////處理每日行程的刪除等操作。
-////
-//
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.stereotype.Controller;
-//import org.springframework.ui.Model;
-//import org.springframework.web.bind.annotation.GetMapping;
-//import org.springframework.web.bind.annotation.PathVariable;
-//import org.springframework.web.bind.annotation.RequestMapping;
-//
-//import com.travel_plan.service.TravelItineraryService;
-//import com.travel_plan.service.TravelPlanDayService;
-//
-//import jakarta.servlet.http.HttpSession;
-//
-//@Controller
-//@RequestMapping("/admin/traveplans/{planId}/itinerary/{itineraryId}/days") // 繼承 planId 和 itineraryId 的路徑
-//
-//public class TravelPlanDayController {
-//	private final TravelPlanDayService travelPlanDayService;
-//	private final TravelItineraryService travelItineraryService;
-//
-//	@Autowired
-//	public TravelPlanDayController(TravelPlanDayService travelPlanDayService, 
-//								   TravelItineraryService travelItineraryService) {
-//		this.travelPlanDayService = travelPlanDayService;
-//		this.travelItineraryService = travelItineraryService;
-//	}
-//	@GetMapping("/new") // 顯示每日行程列表頁面
-//	public String showTravelPlanDayList(@PathVariable("planId") Integer planId,
-//			@PathVariable("itineraryId") Integer itineraryId
-//			, Model model
-//			, HttpSession session) {
-//		// 驗證 ID 是否一致 (略)
-//		if (!planId.equals(session.getAttribute("currentTravelPlanId")) ||
-//			!itineraryId.equals(session.getAttribute("currentTravelItineraryId"))) {
-//			return "redirect:/admin/travelplans/new"; // 重定向回第一步或錯誤頁面
-//		}
-//		
-//		model.addAttribute("planId", planId);
-//		model.addAttribute("itineraryId", itineraryId);
-//
-//	
-//}
-//}
-//
-//
-////        // 驗證 ID 是否一致 (略)
-////        model.addAttribute("travelPlanDayDto", new TravelPlanDayDTO()); // <-- 使用 DTO (單個)
-////        // 這裡可以準備一個 List<TravelPlanDayDto> 來編輯多個 daily plans
-////        // model.addAttribute("travelPlanDayDtos", new ArrayList<TravelPlanDayDto>()); // 如果是列表形式
-////
-////        model.addAttribute("planId", planId);
-////        model.addAttribute("itineraryId", itineraryId);
-////        return "admin/travelplans/form_step3_day_details";
-////    }
-////
-////    // URL: /admin/travelplans/{planId}/itinerary/{itineraryId}/days (POST to save step 3)
-////    @PostMapping
-////    public String saveTravelPlanDayStep3(@PathVariable("planId") Integer planId,
-////                                         @PathVariable("itineraryId") Integer itineraryId,
-////                                         @Valid @ModelAttribute("travelPlanDayDto") TravelPlanDayDTO dto, // <-- 使用 DTO
-////                                         BindingResult bindingResult,
-////                                         RedirectAttributes redirectAttributes,
-////                                         SessionStatus status, // 結束多步驟流程，清理 SessionAttributes
-////                                         HttpSession session
-////                                         ,Model model) { // 移除 HttpSession 裡的 attributes
-////        if (bindingResult.hasErrors()) {
-////            model.addAttribute("planId", planId);
-////            model.addAttribute("itineraryId", itineraryId);
-////            return "admin/travelplans/form_step3_day_details";
-////        }
-////
-////        // 確保 TravelItinerary 存在並取得實體
-////        TravelItinerary travelItinerary = travelItineraryService.getTravelItineraryById(itineraryId)
-////                                            .orElseThrow(() -> new IllegalArgumentException("TravelItinerary not found for ID: " + itineraryId));
-////
-////        // <-- 呼叫 Service 處理 DTO 到 Entity 的轉換和保存 -->
-////        travelPlanDayService.createTravelPlanDayFromDto(travelItinerary, dto); // 或 List<TravelPlanDayDto>
-////
-////        // 多步驟表單結束，清除 Session 狀態和 Session attributes
-////        status.setComplete(); // 清除 @SessionAttributes
-////        session.removeAttribute("currentTravelPlanId"); // 清除 HttpSession 裡手動加的
-////        session.removeAttribute("currentTravelItineraryId");
-////
-////        redirectAttributes.addFlashAttribute("successMessage", "每日行程儲存成功！旅行計畫已完成編輯。");
-////        return "redirect:/admin/travelplans"; // 導向總列表
-////    }
-////    // ... (其他與 TravelPlanDay 相關的方法)
-////}
+package com.travel_plan.controller;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.scenery.model.SceneryService;
+import com.scenery.model.SceneryVO;
+import com.travel_plan.dto.DailyItineraryFormDTO;
+import com.travel_plan.model.TravelItinerary;
+import com.travel_plan.model.TravelPlan;
+import com.travel_plan.service.TravelPlanService;
+
+import jakarta.servlet.http.HttpSession;
+
+@Controller
+@RequestMapping("/admin/travelplans")
+public class TravelPlanDayController {
+	private final TravelPlanService TravelPlanService;
+	private final SceneryService sceneryService;
+
+	@Autowired
+	public TravelPlanDayController(TravelPlanService travelPlanService, SceneryService sceneryService) {
+		this.TravelPlanService = travelPlanService;
+		this.sceneryService = sceneryService;
+	}
+
+	@GetMapping("/{planId}/itinerary/overview")
+	public String showItineraryOverview(@PathVariable Integer planId, Model model, HttpSession session,
+			RedirectAttributes redirectAttributes) {
+
+		try {
+			// 1. 根據 planId 取得旅行計畫的開始和結束日期
+			// 這需要 TravelPlanService 提供一個方法來獲取這些日期
+			TravelPlan travelPlan = TravelPlanService.getTravelPlanEntityById(planId)
+					.orElseThrow(() -> new IllegalArgumentException("Travel Plan not found for ID: " + planId));
+			// 2. 計算所有行程日期
+			// 從開始日期到結束日期，生成所有天數的日期列表 (LocalDate)
+			List<LocalDate> itineraryDates = TravelPlanService.generateDatesBetween(travelPlan.getStartDate(),
+					travelPlan.getEndDate());
+
+			// 3. 獲取或創建對應的 TravelItinerary (如果一個 TravelPlan 可以有多個 Itinerary，可能需要更多邏輯)
+			// 目前看來，一個 TravelPlan 對應一個 Itinerary，若無則創建。
+			TravelItinerary travelItinerary = TravelPlanService.getOrCreateTravelItineraryForPlan(planId);
+			Integer travelItineraryId = travelItinerary.getTravelItineraryId(); // 取得行程 ID
+			// 4. 預設載入第一個日期的行程數據 (作為初始顯示)
+			LocalDate firstDate = itineraryDates.get(0);
+			Integer travelDayNumber = 1; // 第一天
+			// 5. 準備 DailyItineraryFormDTO 來填充表單
+			// 這會從資料庫載入該日期的所有 TravelPlanDay 項目
+			DailyItineraryFormDTO dailyItineraryFormDTO = TravelPlanService.getDailyItineraryFormDTO(travelItineraryId,
+					firstDate, travelDayNumber);
+
+			// 6. 將數據添加到 Model 中，供 Thymeleaf 使用
+			model.addAttribute("travelPlanId", planId);
+			model.addAttribute("travelItineraryId", travelItineraryId);
+			model.addAttribute("itineraryDates", itineraryDates); // 所有日期列表
+			model.addAttribute("currentEditDate", firstDate); // 當前編輯的日期 (預設為第一天)
+			model.addAttribute("travelDayNumber", travelDayNumber); // 當前編輯的天數
+			model.addAttribute("dailyItineraryFormDTO", dailyItineraryFormDTO); // 當天行程的數據
+
+			// 7. 將當前行程 ID 存入 Session，供 Ajax 請求使用
+			session.setAttribute("currentTravelItineraryId", travelItineraryId);
+			session.setAttribute("currentTravelPlanId", planId);
+
+			return "admin/travelplans/form_step2_itinerary_details";
+		} catch (IllegalArgumentException e) {
+			redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+			return "redirect:/admin/travelplans";
+		} catch (Exception e) {
+			redirectAttributes.addFlashAttribute("errorMessage", "載入行程頁面時發生錯誤：" + e.getMessage());
+			// logger.error("Error loading itinerary overview", e);
+			return "redirect:/admin/travelplans";
+		} // 返回行程概覽頁面
+	}
+
+	@GetMapping("/api/sceneries/all")
+	@ResponseBody
+	public ResponseEntity<List<SceneryVO>> getAllSceneries() {
+		List<SceneryVO> sceneries = sceneryService.findAllScenery();
+		return ResponseEntity.ok(sceneries);
+	}
+
+}

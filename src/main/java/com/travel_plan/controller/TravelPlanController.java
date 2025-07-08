@@ -1,8 +1,11 @@
 package com.travel_plan.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -15,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.travel_plan.dto.DailyItineraryFormDTO;
 import com.travel_plan.dto.TravelPlanCreationDTO;
+import com.travel_plan.dto.TravelPlanDayDTO;
 import com.travel_plan.model.TravelPlan;
 import com.travel_plan.service.TravelPlanService;
 
@@ -109,5 +114,46 @@ public class TravelPlanController {
 
 		return "admin/travelplans/form_step1_plan_details";
 	}
-	// ... (其他只與 TravelPlan 相關的方法，如刪除)
-}
+	@GetMapping("/{planId}/itinerary/{itineraryId}/days/{date}")
+	public ResponseEntity<DailyItineraryFormDTO> getDailyItinerary(@PathVariable Integer planId,
+	                                                               @PathVariable Integer itineraryId,
+	                                                               @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+	      // 根據 planId, itineraryId 和 date 從資料庫獲取每日行程項目
+	       List<TravelPlanDayDTO> dailyItems = travelPlanService.getDailyItemsForDate(itineraryId, date);
+	       DailyItineraryFormDTO dto = new DailyItineraryFormDTO();
+	       dto.setDailyItems(dailyItems);
+	       dto.setTravelDayNumber(calculateTravelDayNumber(planId, date)); // 計算是第幾天
+	       return ResponseEntity.ok(dto);
+	  }
+	 private Integer calculateTravelDayNumber(Integer planId, LocalDate date) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@PostMapping("/{planId}/itinerary/{itineraryId}/days/save")
+	  public String saveDailyItinerary(@PathVariable Integer planId,
+	                                   @PathVariable Integer itineraryId,
+	                                   @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+	                                   @ModelAttribute("dailyItineraryFormDTO") DailyItineraryFormDTO dailyItineraryFormDTO,
+	                                   RedirectAttributes redirectAttributes) {
+	      try {
+	          // 儲存 dailyItineraryFormDTO.getDailyItems() 到資料庫
+	    	  travelPlanService.saveDailyItems(itineraryId, date, dailyItineraryFormDTO.getDailyItems());
+	          redirectAttributes.addFlashAttribute("successMessage", "當天行程儲存成功！");
+	      } catch (Exception e) {
+	          redirectAttributes.addFlashAttribute("errorMessage", "儲存當天行程時發生錯誤：" + e.getMessage());
+	      }
+	      // 儲存後重定向回當前編輯的日期頁面
+	      return "redirect:/admin/travelplans/" + planId + "/itinerary/" + itineraryId + "/days/" + date;
+	  }
+	@GetMapping("/{planId}/preview")
+	public String previewTravelPlan(@PathVariable("planId") Integer planId, Model model) {
+	    // 獲取完整的旅行計畫數據 (包含所有行程天數和景點)
+	    // 這需要 TravelPlanService 提供一個方法來獲取完整的 DTO
+	    TravelPlanCreationDTO fullTravelPlanDto = travelPlanService.getFullTravelPlanDetails(planId);
+	    model.addAttribute("travelPlan", fullTravelPlanDto);
+	    return "admin/travelplans/preview_full_plan"; // 一個新的 Thymeleaf 模板來顯示預覽
+	}
+		
+	}
+

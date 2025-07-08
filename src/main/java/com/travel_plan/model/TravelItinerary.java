@@ -4,8 +4,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,6 +18,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class TravelItinerary {
 
 	@Id
@@ -31,9 +37,11 @@ public class TravelItinerary {
 	private BigDecimal totalPrice;
 
 	@Column(name = "published_date", nullable = false, updatable = false)
+	@CreatedDate
 	private LocalDateTime publishedDate;
 
 	@Column(name = "last_modified_date", nullable = false)
+	@LastModifiedDate
 	private LocalDateTime lastModifiedDate;
 
 	public Integer getTravelItineraryId() {
