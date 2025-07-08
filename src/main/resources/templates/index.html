@@ -27,6 +27,12 @@
         <a th:href="@{/member/home}">
 		    <button type="button">會員中心</button>
 		</a>
+		
+		<!-- 在導航列或登入後的選單中加入 -->
+		<li sec:authorize="isAuthenticated()">
+		    <a th:href="@{/member/ticket/orders}" class="btn btn-outline-primary">🎫 我的票券訂單</a>
+		</li>
+		
 
     </div>
 
