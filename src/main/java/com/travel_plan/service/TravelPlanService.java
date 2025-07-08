@@ -22,10 +22,6 @@ public interface TravelPlanService {
 
 	TravelPlanCreationDTO convertToCreationDto(TravelPlan entity);
 
-
-	
-
-
 	Optional<TravelPlanCreationDTO> getTravelPlanById(Integer id);
 
 
@@ -36,9 +32,6 @@ public interface TravelPlanService {
 
 
 	TravelPlan createTravelPlanFromDto(@Valid TravelPlanCreationDTO dto, MultipartFile bannerImage);
-
-
-
 
 
 	Optional<TravelPlan> getTravelPlanEntityById(Integer planId);
@@ -62,12 +55,10 @@ public interface TravelPlanService {
 
 	void saveDailyItinerary(Integer itineraryId, LocalDate date, List<TravelPlanDayDTO> dailyItems);
 
-
-
-
-
 	void saveDailyItems(Integer itineraryId, LocalDate date, List<TravelPlanDayDTO> dailyItems);
 	
 	List<TravelPlanDayDTO> getDailyItemsForDate(Integer itineraryId, LocalDate date);
+
+	TravelPlan findById(Integer travelPlanId);
 	
 }

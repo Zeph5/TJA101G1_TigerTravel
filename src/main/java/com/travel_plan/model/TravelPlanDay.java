@@ -3,6 +3,7 @@
 	import java.time.LocalDate;
 	import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.scenery.model.SceneryVO;
@@ -40,6 +41,7 @@ import jakarta.persistence.GeneratedValue;
 		private Integer travelSequenceNumber;
 		
 		@Column(name = "create_time", nullable = false, updatable = false)
+		@CreationTimestamp
 		private LocalDateTime createtime;
 		
 		@Column(name = "travel_time", nullable = false)

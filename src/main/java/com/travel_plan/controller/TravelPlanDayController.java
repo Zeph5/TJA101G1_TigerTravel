@@ -1,26 +1,32 @@
 package com.travel_plan.controller;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.scenery.model.SceneryService;
 import com.scenery.model.SceneryVO;
+import com.travel_plan.dto.CombinedItineraryFormDTO;
 import com.travel_plan.dto.DailyItineraryFormDTO;
 import com.travel_plan.model.TravelItinerary;
 import com.travel_plan.model.TravelPlan;
 import com.travel_plan.service.TravelPlanService;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/admin/travelplans")
@@ -89,5 +95,30 @@ public class TravelPlanDayController {
 		List<SceneryVO> sceneries = sceneryService.findAllScenery();
 		return ResponseEntity.ok(sceneries);
 	}
+	@GetMapping("/admin/travelplans/{planId}/preview")
+	public String previewTravelPlan(@PathVariable("planId") Integer travelPlanId, Model model) {
+	  
+	    TravelPlan travelPlan = TravelPlanService.findById(travelPlanId); // 或者其他方式獲取
 
+	    
+	    if (travelPlan != null) {
+	        model.addAttribute("travelPlan", travelPlan); // 將 travelPlan 加入 Model
+
+	        // 計算天數
+	        if (travelPlan.getStartDate() != null && travelPlan.getEndDate() != null) {
+	            long daysBetween = ChronoUnit.DAYS.between(travelPlan.getStartDate(), travelPlan.getEndDate());
+	            model.addAttribute("totalTravelDays", daysBetween + 1); // 加 1 包含起始日
+	        } else {
+	            model.addAttribute("totalTravelDays", 0); // 或其他預設值
+	        }
+
+	   
+
+	    } else {
+	        // 處理 travelPlan 不存在的狀況，例如導向錯誤頁面或回列表頁
+	        return "redirect:/admin/travelplans";
+	    }
+
+	    return "admin/travelplans/preview_full_plan";
+	}
 }

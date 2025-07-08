@@ -436,5 +436,19 @@ public class TravelPlanServiceImpl implements TravelPlanService {
 
 	    return dailyItemDTOs;
 	}
-    
+
+    @Override
+    public TravelPlan findById(Integer travelPlanId) {
+        
+        Optional<TravelPlan> travelPlanOptional = travelPlanRepository.findById(travelPlanId);
+
+        
+        if (travelPlanOptional.isPresent()) {
+            
+            return travelPlanOptional.get();
+        } else {           
+            return null;          
+        }
+    }    
 }
+    
