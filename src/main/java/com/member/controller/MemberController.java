@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -29,6 +28,9 @@ import com.member.service.MailService;
 import com.member.service.MemberService;
 import com.scenery.model.SceneryService;
 import com.scenery.model.SceneryVO;
+import com.ticket.model.Ticket;
+import com.ticket.repository.TicketRepository;
+import com.ticket.service.TicketService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -44,6 +46,8 @@ public class MemberController {
 	private MailService mailService;
 	@Autowired
 	private SceneryService sceneryService;
+	@Autowired
+	private TicketRepository ticketRepository;
 	
 	public MemberController(MemberService memberService) {
 		this.memberService = memberService;
@@ -204,71 +208,6 @@ public class MemberController {
             return "member/verify/verify_fail";
         }
     }
-
-    //驗證使用者輸入的驗證碼
-//    @PostMapping("/member/verify")
-//    public String handleVerify(@RequestParam("code") String inputCode,
-//    						HttpSession session,
-//    						RedirectAttributes ra) {
-//    	String savedCode = (String)session.getAttribute("verificationCode");
-//    	memVO tempMember = (memVO) session.getAttribute("tempMember");
-//    	
-//    	if(savedCode != null && savedCode.equalsIgnoreCase(inputCode)) {
-//    		memberService.save(tempMember);
-//    		session.removeAttribute("verificationCode");
-//    		session.removeAttribute("tempMember");
-//    		return "redirect:/login?verifySuccess";
-//    	}else {
-//    		ra.addFlashAttribute("error" , "驗證碼錯誤，請重新輸入");
-//    		return "redirect:/member/verify";
-//    	}
-//    }
-    
-	
-//	@PostMapping("/member/register")
-//	public String register(@ModelAttribute memVO member,
-//						@RequestParam("avatar") MultipartFile avatarFile, Model model) {
-//		try {
-//			//產生驗證用 token 與設定驗證狀態
-//			String token = UUID.randomUUID().toString();
-//			member.setVerifyToken(token);
-//			member.setEmailVerified(false);
-//			
-//			//若有圖片檔案，就轉成byte[] 放進Entity
-//			if(avatarFile != null && !avatarFile.isEmpty()) {
-//				member.setAvatar(avatarFile.getBytes());
-//			}
-//			
-//			//儲存會員資料
-//			memberService.register(member);
-//			//寄送驗證信
-//			mailService.sendVerificationEmail(member.getMemberEmail(), token);
-//			
-//			model.addAttribute("message", "註冊成功！");
-//			return "redirect:/member/login"; //註冊成功導向登入頁
-//		}catch(IOException e) {
-//			e.printStackTrace();
-//			model.addAttribute("error", "圖片處理失敗");
-//			return "member/register";
-//		}
-//		
-//	}
-	
-    
-//====================登入登入登入登入登入登入================
-//	@PostMapping("/login")
-//	public String login(@RequestParam String memberAccount , @RequestParam String memberPassword, Model model, HttpSession session) {
-//		
-//		Optional<memVO> memberOpt = memberService.findByAccount(memberAccount);
-//		
-//		if(memberOpt.isPresent() && memberOpt.get().getMemberPassword().equals(memberPassword)) {
-//			session.setAttribute("loginMember", memberOpt.get());
-//			return "redirect:/member/" + memberOpt.get().getMemberId(); //登入後導向個人資訊頁面
-//		}else {
-//			model.addAttribute("error", "帳號或密碼錯誤");
-//			return "member/login";
-//		}
-//	}
 	
 	//導向errorpage動作
 	@Controller
@@ -283,29 +222,29 @@ public class MemberController {
 	}
 	
 	//導向首頁動作
-	@Controller
-	public class HomeController{
-		@GetMapping("/index")
-		public String homePage(){
-			return "index";
-		}
-	}
+//	@Controller
+//	public class HomeController{
+//		@GetMapping("/index")
+//		public String homePage(){
+//			return "index";
+//		}
+//	}
 	
-	@GetMapping("/index")
-	public String indexPage(@AuthenticationPrincipal MemberUserDetails loginUser, Model model) {
-	    memVO member = loginUser.getMember();
-	    model.addAttribute("member", member);
-
-	    if (member.getAvatar() != null) {
-	        String avatarBase64 = Base64.getEncoder().encodeToString(member.getAvatar());
-	        model.addAttribute("avatarBase64", avatarBase64);
-	    }
-	    
-	    List<SceneryVO> sceneries = sceneryService.findAllScenery(); //
-	    model.addAttribute("sceneries", sceneries);
-	    
-	    return "index";
-	}
+//	@GetMapping("/index")
+//	public String indexPage(@AuthenticationPrincipal MemberUserDetails loginUser, Model model) {
+//	    memVO member = loginUser.getMember();
+//	    model.addAttribute("member", member);
+//
+//	    if (member.getAvatar() != null) {
+//	        String avatarBase64 = Base64.getEncoder().encodeToString(member.getAvatar());
+//	        model.addAttribute("avatarBase64", avatarBase64);
+//	    }
+//	    
+//	    List<SceneryVO> sceneries = sceneryService.findAllScenery(); //
+//	    model.addAttribute("sceneries", sceneries);
+//	    
+//	    return "index";
+//	}
 
 	
 	//進入編輯畫面
@@ -358,5 +297,32 @@ public class MemberController {
 		memberService.findById(id).ifPresent(m ->model.addAttribute("member", m));
 		return "member/detail";
 	}
+	
+	@GetMapping("/member/home")
+	public String showMemberHome(Model model) {
+		List<SceneryVO> allScenery = sceneryService.findAllScenery();
+		
+		List<SceneryVO> topScenery = allScenery.stream().limit(6).toList();
+		
+		model.addAttribute("sceneryLisy", topScenery);
+		return "member/index";
+	}
+	
+	//撈scenery 和 ticket的資訊放在index
+//	@GetMapping({"/", "/index"})
+//	public String showIndex(Model model) {
+//	    List<SceneryVO> allScenery = sceneryService.findAllScenery(); // 或取熱門的前幾筆
+//	    List<SceneryVO> top6Scenery = allScenery.stream().limit(6).toList();
+//	    model.addAttribute("sceneries", top6Scenery);
+//	    
+//	    List<Ticket> ticketList = ticketRepository.findAll();
+//	    model.addAttribute("ticketList", ticketList);
+//	    
+//	    System.out.println("票券數量：" + ticketList.size());
+//	    System.out.println("景點數量：" + allScenery.size());
+//	    System.out.println("✅ 成功進入 showIndex()");
+//	    model.addAttribute("test", "Hello Index");
+//	    return "index"; // 對應 templates/index.html
+//	}
 	
 }
