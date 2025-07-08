@@ -13,13 +13,12 @@ import com.member.model.memVO;
 @Service
 public class MemberService {
 
-    @Autowired
+//    @Autowired
     private MemberRepository memberRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    
-    private MemberService memberService;
+    public MemberService(MemberRepository memberRepository) {
+    	this.memberRepository = memberRepository;
+    }
 
     //會員註冊(新增)動作
     public memVO register(memVO member) {
