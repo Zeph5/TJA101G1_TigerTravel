@@ -41,6 +41,7 @@ public class SecurityConfig {
         http
         	.csrf(csrf -> csrf.disable()) // 停用保護
         	.securityMatcher("/", "/index", "/login", "/register", 
+        			"ticketOrders","/member/receipt/**",
                     "/member/**", "/ticket/**", "/scenery/**", "/logout",
                     "/login?error", "/error", "/css/**", "/js/**", "/images/**", "/member/verify")
         	.authorizeHttpRequests(auth -> auth
@@ -49,6 +50,7 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/scenery/**").permitAll()  // ✅ 加這行來開放瀏覽
                         .requestMatchers("/ticket/**").authenticated()  // 範例：登入才看票券
+                        .requestMatchers("/member/receipt/**").authenticated()
                         .requestMatchers("/member/list").hasRole("MANAGER") // 確保 Manager 角色才能訪問這個路徑
                         .requestMatchers("/member/**").authenticated() // 其他所有 /member/** 路徑需登入
                 )

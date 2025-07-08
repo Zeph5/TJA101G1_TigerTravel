@@ -11,19 +11,18 @@
     <section class="mt-5">
         <h4>📍 收藏的景點</h4>
         <div class="row row-cols-1 row-cols-md-3 g-4">
-            <div class="col" th:each="fav : ${sceneryFavorites}">
-                <div class="card h-100 shadow-sm">
-                    <img th:src="@{/images/sample.png}" class="card-img-top" style="height: 200px; object-fit: cover;">
-                    <div class="card-body">
-                        <h5 class="card-title" th:text="${fav.scenery.sceneryName}"></h5>
-                        <p class="card-text" th:text="${fav.scenery.sceneryDescription}"></p>
-                        <form th:action="@{/member/favorite/scenery/remove}" method="post">
-                            <input type="hidden" name="sceneryId" th:value="${fav.scenery.sceneryId}" />
-                            <button type="submit" class="btn btn-danger btn-sm">移除收藏</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
+            <div class="row" th:each="fav : ${planFavorites}">
+			    <div class="col-12 mb-3">
+			        <div class="border rounded p-3 shadow-sm">
+			            <h5 th:text="${fav.travelPlan.planName}">行程名稱</h5>
+			            <p th:text="'出發日：' + ${#dates.format(fav.travelPlan.startDate, 'yyyy/MM/dd')}"></p>
+			            <form th:action="@{/member/favorite/plan/remove}" method="post">
+			                <input type="hidden" name="planId" th:value="${fav.travelPlan.planId}" />
+			                <button type="submit" class="btn btn-outline-danger btn-sm">移除收藏</button>
+			            </form>
+			        </div>
+			    </div>
+			</div>
         </div>
     </section>
 

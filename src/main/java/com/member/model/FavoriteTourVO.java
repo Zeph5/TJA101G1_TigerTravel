@@ -4,74 +4,66 @@ import java.sql.Timestamp;
 
 import com.scenery.model.SceneryVO;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "favorite_tour")
 public class FavoriteTourVO {
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer favoriteId;
-	
-	@ManyToOne
-	@JoinColumn(name = "member_id")
-	private memVO member;
-	
-	@ManyToOne
-	@JoinColumn(name = "scenery_id")
-	private SceneryVO scenery;
-	
-	private Timestamp createTime;
-	
-	public FavoriteTourVO() {
-	}
-	
-	public FavoriteTourVO(Integer favoriteId, memVO member, Integer sceneryId, Timestamp createTime) {
-		super();
-		this.favoriteId = favoriteId;
-		this.member = member;
-		this.scenery = scenery;
-		this.createTime = createTime;
-	}
 
-	public Integer getFavoriteId() {
-		return favoriteId;
-	}
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "favorite_tour_id") // ⬅️ 明確指定對應的資料庫欄位名稱
+    private Integer favoriteTourId;
 
-	public void setFavoriteId(Integer favoriteId) {
-		this.favoriteId = favoriteId;
-	}
+    @ManyToOne
+    @JoinColumn(name = "member_id")
+    private memVO member;
 
-	public memVO getMember() {
-		return member;
-	}
+    @ManyToOne
+    @JoinColumn(name = "scenery_id")
+    private SceneryVO scenery;
 
-	public void setMember(memVO member) {
-		this.member = member;
-	}
+    private Timestamp createTime;
 
-	public SceneryVO getScenery() {
-	    return scenery;
-	}
+    public FavoriteTourVO() {
+    }
 
-	public void setScenery(SceneryVO scenery) {
-	    this.scenery = scenery;
-	}
+    public FavoriteTourVO(Integer favoriteTourId, memVO member, SceneryVO scenery, Timestamp createTime) {
+        this.favoriteTourId = favoriteTourId;
+        this.member = member;
+        this.scenery = scenery;
+        this.createTime = createTime;
+    }
 
-	public Timestamp getCreateTime() {
-		return createTime;
-	}
+    public Integer getFavoriteTourId() {
+        return favoriteTourId;
+    }
 
-	public void setCreateTime(Timestamp createTime) {
-		this.createTime = createTime;
-	}
-	
+    public void setFavoriteTourId(Integer favoriteTourId) {
+        this.favoriteTourId = favoriteTourId;
+    }
 
+    public memVO getMember() {
+        return member;
+    }
+
+    public void setMember(memVO member) {
+        this.member = member;
+    }
+
+    public SceneryVO getScenery() {
+        return scenery;
+    }
+
+    public void setScenery(SceneryVO scenery) {
+        this.scenery = scenery;
+    }
+
+    public Timestamp getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Timestamp createTime) {
+        this.createTime = createTime;
+    }
 }
