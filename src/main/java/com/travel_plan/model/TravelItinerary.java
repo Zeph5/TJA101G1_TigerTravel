@@ -30,11 +30,7 @@ public class TravelItinerary {
 	@JoinColumn(name = "travel_plan_id", nullable = false)
 	private TravelPlan travelPlan;
 
-	@Column(name = "max_tourist", nullable = false)
-	private Integer maxTourist;
-
-	@Column(name = "total_price", precision = 10, scale = 2)
-	private BigDecimal totalPrice;
+	
 
 	@Column(name = "published_date", nullable = false, updatable = false)
 	@CreatedDate
@@ -43,21 +39,33 @@ public class TravelItinerary {
 	@Column(name = "last_modified_date", nullable = false)
 	@LastModifiedDate
 	private LocalDateTime lastModifiedDate;
+	
+	@Column(name = "max_tourist", nullable = false)
+	private Integer maxTourist; // 最大旅客數
+	@Column(name = "total_price", nullable = false)
+	private BigDecimal totalPrice; // 總價
+	
+	@Column(name = "start_date", nullable = false)
+	private LocalDate startDate; // 旅行計畫開始日期
+	@Column(name = "end_date", nullable = false)
+	private LocalDate endDate; // 旅行計畫結束日期
+	
+	
 
-	public Integer getTravelItineraryId() {
-		return travelItineraryId;
+	public LocalDate getStartDate() {
+		return startDate;
 	}
 
-	public void setTravelItineraryId(Integer travelItineraryId) {
-		this.travelItineraryId = travelItineraryId;
+	public void setStartDate(LocalDate startDate) {
+		this.startDate = startDate;
 	}
 
-	public TravelPlan getTravelPlan() {
-		return travelPlan;
+	public LocalDate getEndDate() {
+		return endDate;
 	}
 
-	public void setTravelPlan(TravelPlan travelPlan) {
-		this.travelPlan = travelPlan;
+	public void setEndDate(LocalDate endDate) {
+		this.endDate = endDate;
 	}
 
 	public Integer getMaxTourist() {
@@ -75,6 +83,25 @@ public class TravelItinerary {
 	public void setTotalPrice(BigDecimal totalPrice) {
 		this.totalPrice = totalPrice;
 	}
+
+	public Integer getTravelItineraryId() {
+		return travelItineraryId;
+	}
+
+	public void setTravelItineraryId(Integer travelItineraryId) {
+		this.travelItineraryId = travelItineraryId;
+	}
+
+	public TravelPlan getTravelPlan() {
+		return travelPlan;
+	}
+
+	public void setTravelPlan(TravelPlan travelPlan) {
+		this.travelPlan = travelPlan;
+	}
+
+	
+	
 
 	public LocalDateTime getPublishedDate() {
 		return publishedDate;
@@ -95,8 +122,11 @@ public class TravelItinerary {
 	@Override
 	public String toString() {
 		return "TravelItinerary [travelItineraryId=" + travelItineraryId + ", travelPlan=" + travelPlan
-				+ ", maxTourist=" + maxTourist + ", totalPrice=" + totalPrice + ", publishedDate=" + publishedDate
-				+ ", lastModifiedDate=" + lastModifiedDate + "]";
+				+ ", publishedDate=" + publishedDate + ", lastModifiedDate=" + lastModifiedDate + ", maxTourist="
+				+ maxTourist + ", totalPrice=" + totalPrice + ", startDate=" + startDate + ", endDate=" + endDate + "]";
 	}
+
+
+	
 
 }

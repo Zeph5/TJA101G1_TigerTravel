@@ -72,50 +72,11 @@
                    class="error-message"></p>
             </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="startDate" class="form-label">開始日期: <span class="required">*</span></label>
-                    <input type="date"
-                           id="startDate"
-                           th:field="*{startDate}"
-                           class="form-control"
-                           required />
-                    <p th:if="${#fields.hasErrors('startDate')}"
-                       th:errors="*{startDate}"
-                       class="error-message"></p>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="endDate" class="form-label">結束日期: <span class="required">*</span></label>
-                    <input type="date"
-                           id="endDate"
-                           th:field="*{endDate}"
-                           class="form-control"
-                           required />
-                    <p th:if="${#fields.hasErrors('endDate')}"
-                       th:errors="*{endDate}"
-                       class="error-message"></p>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="maxTourist" class="form-label">最多旅遊人數:</label>
-                    <input type="number" id="maxTourist" th:field="*{maxTourist}" class="form-control" placeholder="請輸入最多可報名人數" />
-                    <p th:if="${#fields.hasErrors('maxTourist')}" th:errors="*{maxTourist}" class="error-message"></p>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="totalPrice" class="form-label">總價格:</label>
-                    <input type="number" step="0.01" id="totalPrice" th:field="*{totalPrice}" class="form-control" placeholder="請輸入旅行團總價格" />
-                    <p th:if="${#fields.hasErrors('totalPrice')}" th:errors="*{totalPrice}" class="error-message"></p>
-                </div>
-            </div>
-
             <div class="mb-3">
                 <label for="bannerImage" class="form-label">橫幅圖片:</label>
                 <input type="file"
                        id="bannerImage"
-                       th:field="*{bannerImage}"
-                       class="form-control"
+                       name="bannerImage"  class="form-control"
                        accept="image/*" />
                 <div class="form-text">支援格式：JPG, PNG, GIF (最大 5MB)</div>
                 <p th:if="${#fields.hasErrors('bannerImage')}"
@@ -139,46 +100,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form');
-            const startDate = document.getElementById('startDate');
-            const endDate = document.getElementById('endDate');
-
-            // 設定最小日期為今天
-            const today = new Date().toISOString().split('T')[0];
-            startDate.min = today;
-            endDate.min = today;
-
-            // 驗證結束日期不能早於開始日期
-            function validateDates() {
-                if (startDate.value && endDate.value) {
-                    if (endDate.value < startDate.value) {
-                        endDate.setCustomValidity('結束日期不能早於開始日期');
-                    } else {
-                        endDate.setCustomValidity('');
-                    }
-                }
-            }
-
-            startDate.addEventListener('change', function() {
-                endDate.min = this.value;
-                validateDates();
-            });
-
-            endDate.addEventListener('change', validateDates);
-
-            // 表單提交驗證
-            form.addEventListener('submit', function(e) {
-                validateDates();
-                if (!this.checkValidity()) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                this.classList.add('was-validated');
-            });
-        });
+        // 由於日期欄位已移除，相關的日期驗證 JavaScript 也一併移除
+        // 這裡不再需要處理 startDate, endDate 的 min 屬性和交叉驗證
     </script>
 </body>
 </html>

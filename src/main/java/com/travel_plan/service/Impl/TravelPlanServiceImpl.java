@@ -1,14 +1,15 @@
 package com.travel_plan.service.Impl;
 
-import com.scenery.model.SceneryVO;
-import com.travel_plan.dto.DailyItineraryFormDTO;
 
+import com.travel_plan.dto.DailyItineraryFormDTO;
+import com.travel_plan.dto.TravelItineraryDTO;
 import com.travel_plan.dto.TravelPlanCreationDTO;
 import com.travel_plan.dto.TravelPlanDayDTO;
+import com.travel_plan.dto.TravelPlanPreviewDTO;
 import com.travel_plan.model.TravelItinerary;
 import com.travel_plan.model.TravelPlan;
 import com.travel_plan.model.TravelPlanDay; // 新增，用於實作
-import com.scenery.model.SceneryVO; // 新增，用於實作
+
 import com.travel_plan.repository.TravelItineraryRepository; // 新增
 import com.travel_plan.repository.TravelPlanDayRepository; // 新增
 import com.travel_plan.repository.TravelPlanRepository; // 新增
@@ -37,6 +38,7 @@ import java.util.Map; // 用於 Map
 import java.util.Objects; // 用於 Objects.equals
 import java.util.Optional;
 import java.util.Set; // 用於 Set
+import java.util.TreeMap;
 import java.util.stream.Collectors; // 用於 Stream API
 
 @Service
@@ -170,20 +172,23 @@ public class TravelPlanServiceImpl implements TravelPlanService {
     }
 
     @Override
-    @Transactional // 確保事務完整性
+    @Transactional
     public TravelPlan updateTravelPlan(Integer travelPlanId, @Valid TravelPlanCreationDTO dto, MultipartFile bannerImage) {
         return travelPlanRepository.findById(travelPlanId).map(existingPlan -> {
             // 更新基本資訊
             existingPlan.setTravelTitle(dto.getTravelTitle());
             existingPlan.setTravelPlanDescription(dto.getTravelPlanDescription());
-            existingPlan.setStartDate(dto.getStartDate());
-            existingPlan.setEndDate(dto.getEndDate());
-            existingPlan.setMaxTourist(dto.getMaxTourist());
-            existingPlan.setTotalPrice(dto.getTotalPrice());
-
            
+
+            // 處理圖片更新 (如果傳入新圖片)
+            if (bannerImage != null && !bannerImage.isEmpty()) {
+                String newImageUrl = saveBannerImage(bannerImage);
+                // 可以考慮刪除舊圖片檔案
+                existingPlan.setTravelPlanBannerUrl(newImageUrl);
+            }
+       
             return travelPlanRepository.save(existingPlan);
-        }).orElseThrow(() -> new IllegalArgumentException("Travel Plan not found with ID: " + travelPlanId));
+        }).orElseThrow(() -> new IllegalArgumentException("找不到要更新的旅行計畫，ID: " + travelPlanId));
     }
 
 
@@ -237,114 +242,50 @@ public class TravelPlanServiceImpl implements TravelPlanService {
     }
 
 
-    // 計算是第幾天
-    @Override
-    public Integer calculateTravelDayNumber(LocalDate planStartDate, LocalDate currentDate) {
-        if (planStartDate == null || currentDate == null || currentDate.isBefore(planStartDate)) {
-            return 0; // 或者拋出異常
-        }
-        // ChronoUnit.DAYS.between 返回的是天數差，需要加 1 才是第幾天
-        return (int) ChronoUnit.DAYS.between(planStartDate, currentDate) + 1;
-    }
+ 
 
-    // 儲存特定日期的行程項目
-    @Override
-    @Transactional // 確保事務完整性
-    public void saveDailyItinerary(Integer itineraryId, LocalDate date, List<TravelPlanDayDTO> dailyItems) {
-        // 1. 獲取資料庫中該日期現有的行程項目
-        List<TravelPlanDay> existingEntities = travelPlanDayRepository.findByTravelItinerary_TravelItineraryIdAndTravelTime(itineraryId, date);
-
-        // 將現有項目轉換為 Map，方便查找 (以 travelPlanDayId 為鍵)
-        Map<Integer, TravelPlanDay> existingMap = existingEntities.stream()
-                .collect(Collectors.toMap(TravelPlanDay::getTravelPlanDayId, item -> item));
-
-        // 用於追蹤需要刪除的 ID
-        Set<Integer> toDeleteIds = existingMap.keySet().stream().collect(Collectors.toSet());
-
-        // 獲取 TravelItinerary 實體，因為 TravelPlanDay 需要關聯它
-        TravelItinerary travelItinerary = travelItineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new IllegalArgumentException("Travel Itinerary not found with ID: " + itineraryId));
-
-        List<TravelPlanDay> itemsToSave = new ArrayList<>();
-
-        // 2. 處理傳入的 dailyItems (新增或更新)
-        for (int i = 0; i < dailyItems.size(); i++) {
-            TravelPlanDayDTO dto = dailyItems.get(i);
-            // 強制設定 travelTime 和 travelDayNumber (因為前端可能沒有提供或不準確)
-            dto.setTraveltime(date);
-            dto.setTravelDayNumber(calculateTravelDayNumber(travelItinerary.getTravelPlan().getStartDate(), date));
-            dto.setTravelSequenceNumber(i + 1); // 根據列表順序設定行程順序
-
-            TravelPlanDay entity;
-            if (dto.getTravelPlanDayId() != null && existingMap.containsKey(dto.getTravelPlanDayId())) {
-                // 更新現有項目
-                entity = existingMap.get(dto.getTravelPlanDayId());
-                // 從 toDeleteIds 中移除，表示這個項目不是要刪除的
-                toDeleteIds.remove(dto.getTravelPlanDayId());
-
-                // 更新屬性
-                entity.setTravelSequenceNumber(dto.getTravelSequenceNumber());
-                entity.setTravelTime(dto.getTraveltime());
-                entity.setTravelDayNumber(dto.getTravelDayNumber());
-
-                // 處理景點關聯
-                if (!Objects.equals(entity.getScenery() != null ? entity.getScenery().getSceneryId() : null, dto.getSceneryId())) {
-                    if (dto.getSceneryId() != null) {
-                        sceneryRepository.findById(dto.getSceneryId()).ifPresent(entity::setScenery);
-                    } else {
-                        entity.setScenery(null); // 清除景點關聯
-                    }
-                }
-            } else {
-                // 新增項目
-                entity = convertToTravelPlanDayEntity(dto);
-                entity.setTravelItinerary(travelItinerary); // 設置關聯的 TravelItinerary
-            }
-            itemsToSave.add(entity);
-        }
-
-        // 3. 執行儲存和刪除操作
-        if (!itemsToSave.isEmpty()) {
-            travelPlanDayRepository.saveAll(itemsToSave); // 批量保存（新增或更新）
-        }
-
-        if (!toDeleteIds.isEmpty()) {
-            travelPlanDayRepository.deleteAllById(toDeleteIds); // 批量刪除
-        }
-    }
-
+    
 
     @Override
-    public TravelPlanCreationDTO getFullTravelPlanDetails(Integer planId) {
-        // 這個方法應該載入一個完整的旅行計畫，包括其所有的行程天數和景點。
-        // 這通常會涉及多次查詢或使用 JPA 的 FetchType.EAGER。
-        // 為了避免 N+1 問題，可以考慮使用 JOIN FETCH 或 EntityGraph。
-
+    public TravelPlanPreviewDTO getFullTravelPlanDetails(Integer planId) { // <-- 這裡必須是 TravelPlanPreviewDTO
         TravelPlan travelPlan = travelPlanRepository.findById(planId)
                 .orElseThrow(() -> new IllegalArgumentException("Travel Plan not found with ID: " + planId));
 
-        TravelPlanCreationDTO dto = convertToCreationDto(travelPlan);
+        TravelPlanPreviewDTO dto = new TravelPlanPreviewDTO();
+        // 複製 TravelPlan 基本資訊
+        dto.setTravelPlanId(travelPlan.getTravelPlanId());
+        dto.setTravelTitle(travelPlan.getTravelTitle());
+        dto.setTravelPlanDescription(travelPlan.getTravelPlanDescription());
+        dto.setTravelPlanBannerUrl(travelPlan.getTravelPlanBannerUrl());
 
         // 載入相關的 TravelItinerary
         Optional<TravelItinerary> itineraryOptional = travelItineraryRepository.findByTravelPlan_TravelPlanId(planId);
 
         itineraryOptional.ifPresent(itinerary -> {
+            // 複製 TravelItinerary 資訊
+            dto.setTravelItineraryId(itinerary.getTravelItineraryId());
+            dto.setMaxTourist(itinerary.getMaxTourist());
+            dto.setTotalPrice(itinerary.getTotalPrice());
+            dto.setStartDate(itinerary.getStartDate());
+            dto.setEndDate(itinerary.getEndDate());
+
+            // 載入並整理所有 TravelPlanDay 實體
             List<TravelPlanDay> allDays = travelPlanDayRepository.findByTravelItinerary_TravelItineraryId(itinerary.getTravelItineraryId());
-            // 將所有 TravelPlanDay 實體轉換為 DTO 並按日期和順序排序
-            List<TravelPlanDayDTO> allDayDTOs = allDays.stream()
+
+            // 按日期分組並排序
+            Map<LocalDate, List<TravelPlanDayDTO>> groupedDailyItems = allDays.stream()
                     .map(this::convertToTravelPlanDayDTO)
-                    .sorted(Comparator.comparing(TravelPlanDayDTO::getTraveltime)
-                            .thenComparing(TravelPlanDayDTO::getTravelSequenceNumber))
-                    .collect(Collectors.toList());
-
-            // 將這些所有日期的行程 DTO 集合設定到 TravelPlanCreationDTO 中，
-            // 你的 TravelPlanCreationDTO 可能需要一個 List<TravelPlanDayDTO> 或 Map<LocalDate, List<TravelPlanDayDTO>>
-            // 來儲存這些詳細的每日行程。
-            // 這裡假設你的 TravelPlanCreationDTO 中有一個 setAllDailyItinerary(List<TravelPlanDayDTO> allDailyItinerary) 方法
-            // 如果沒有，需要修改 DTO 的結構
-            // dto.setAllDailyItinerary(allDayDTOs); // 假設有這個 setter
+                    .collect(Collectors.groupingBy(TravelPlanDayDTO::getTraveltime,
+                            TreeMap::new,
+                            Collectors.collectingAndThen(
+                                    Collectors.toList(),
+                                    list -> list.stream()
+                                            .sorted(Comparator.comparing(TravelPlanDayDTO::getTravelSequenceNumber))
+                                            .collect(Collectors.toList())
+                            )
+                    ));
+            dto.setDailyItineraries(groupedDailyItems);
         });
-
         return dto;
     }
 
@@ -373,14 +314,11 @@ public class TravelPlanServiceImpl implements TravelPlanService {
 	    // 遍歷前端傳來的新列表，判斷是新增還是更新
 	    for (int i = 0; i < dailyItems.size(); i++) {
 	        TravelPlanDayDTO dto = dailyItems.get(i);
-
-	        // 強制設定或重新確認一些重要的屬性，避免前端傳輸錯誤或不準確
-	        dto.setTraveltime(date); // 確保日期是當前正在編輯的日期
-	        // 計算是旅行的第幾天，需要用到 TravelPlan 的開始日期
-	        // 這裡假設 travelItinerary.getTravelPlan() 不會是 null
-	        dto.setTravelDayNumber(calculateTravelDayNumber(travelItinerary.getTravelPlan().getStartDate(), date));
+	        dto.setTraveltime(date);
+	        // 修正這裡的呼叫，使用正確的 calculateTravelDayNumber
+	        dto.setTravelDayNumber(calculateTravelDayNumber(travelItinerary.getTravelItineraryId(), date));
 	        dto.setTravelSequenceNumber(i + 1); // 根據列表的順序設定行程順序 (從 1 開始)
-
+	        
 	        TravelPlanDay entity;
 	        if (dto.getTravelPlanDayId() != null && existingMap.containsKey(dto.getTravelPlanDayId())) {
 	            // 這個項目已經存在於資料庫中，執行更新
@@ -437,18 +375,72 @@ public class TravelPlanServiceImpl implements TravelPlanService {
 	    return dailyItemDTOs;
 	}
 
-    @Override
-    public TravelPlan findById(Integer travelPlanId) {
-        
-        Optional<TravelPlan> travelPlanOptional = travelPlanRepository.findById(travelPlanId);
+  
 
-        
-        if (travelPlanOptional.isPresent()) {
-            
-            return travelPlanOptional.get();
-        } else {           
-            return null;          
+	@Override
+	public TravelItinerary saveTravelItineraryFromDto(@Valid TravelItineraryDTO dto) {
+		if (dto.getStartDate().isAfter(dto.getEndDate())) {
+            throw new IllegalArgumentException("結束日期不能早於開始日期。");
         }
-    }    
+
+        TravelItinerary travelItinerary;
+        if (dto.getTravelItineraryId() != null) {
+            // 編輯現有梯次
+            travelItinerary = travelItineraryRepository.findById(dto.getTravelItineraryId())
+                    .orElseThrow(() -> new IllegalArgumentException("找不到要更新的行程梯次，ID: " + dto.getTravelItineraryId()));
+        } else {
+            // 新增梯次
+            travelItinerary = new TravelItinerary();
+            // 2. 查找並關聯 TravelPlan 實體
+            TravelPlan travelPlan = travelPlanRepository.findById(dto.getTravelPlanId())
+                    .orElseThrow(() -> new IllegalArgumentException("找不到關聯的旅行計畫，ID: " + dto.getTravelPlanId()));
+            travelItinerary.setTravelPlan(travelPlan); // 設定關聯
+        }
+
+        // 3. 複製 DTO 屬性到 Entity
+        // 注意：BeanUtils.copyProperties 可能會覆蓋關聯的 TravelPlan，所以要小心使用或手動複製
+        // 這裡我手動設定了，避免覆蓋 TravelPlan 關聯
+        travelItinerary.setMaxTourist(dto.getMaxTourist());
+        travelItinerary.setTotalPrice(dto.getTotalPrice());
+        travelItinerary.setStartDate(dto.getStartDate());
+        travelItinerary.setEndDate(dto.getEndDate());
+        // 可以設定預設狀態或其他梯次相關屬性
+        // travelItinerary.setStatus("ACTIVE"); // 例如
+
+        // 4. 保存 TravelItinerary 實體
+        return travelItineraryRepository.save(travelItinerary);
+    }
+
+	@Override
+	public Integer calculateTravelDayNumber(Integer itineraryId, LocalDate currentDate) {
+	    // 從資料庫獲取 TravelItinerary 實體來取得開始日期
+	    TravelItinerary itinerary = travelItineraryRepository.findById(itineraryId)
+	            .orElseThrow(() -> new IllegalArgumentException("找不到行程梯次，ID: " + itineraryId));
+
+	    // 確保梯次有開始日期
+	    if (itinerary.getStartDate() == null) {
+	        throw new IllegalStateException("行程梯次 (ID: " + itineraryId + ") 沒有設定開始日期。");
+	    }
+
+	    // 驗證當前日期是否在行程日期範圍內
+	    if (currentDate.isBefore(itinerary.getStartDate())) {
+	        throw new IllegalArgumentException("當前日期 (" + currentDate + ") 早於行程開始日期 (" + itinerary.getStartDate() + ")。");
+	    }
+
+	    // 計算天數差，並加 1 得到當天是第幾天
+	    long daysBetween = ChronoUnit.DAYS.between(itinerary.getStartDate(), currentDate);
+	    return (int) daysBetween + 1;
+	}
+
+	@Override
+	public Optional<TravelItinerary> getTravelItineraryById(Integer travelItineraryId) {
+	    return travelItineraryRepository.findById(travelItineraryId);
+	}
+	@Override
+	public Optional<TravelItinerary> getTravelItineraryForPlan(Integer travelPlanId) {
+	    // 假設一個 TravelPlan 通常只有一個 TravelItinerary
+	    // 如果有多個，您可能需要定義策略（例如：獲取最新的、或指定某一個）
+	    return travelItineraryRepository.findByTravelPlan_TravelPlanId(travelPlanId);
+	}
 }
     

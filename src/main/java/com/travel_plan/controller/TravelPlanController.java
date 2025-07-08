@@ -1,6 +1,7 @@
 package com.travel_plan.controller;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +20,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.travel_plan.dto.DailyItineraryFormDTO;
+import com.travel_plan.dto.TravelItineraryDTO;
 import com.travel_plan.dto.TravelPlanCreationDTO;
 import com.travel_plan.dto.TravelPlanDayDTO;
+import com.travel_plan.dto.TravelPlanPreviewDTO;
+import com.travel_plan.model.TravelItinerary;
 import com.travel_plan.model.TravelPlan;
 import com.travel_plan.service.TravelPlanService;
 
@@ -90,7 +94,7 @@ public class TravelPlanController {
 		// 添加成功訊息，並在重定向後顯示
 		redirectAttributes.addFlashAttribute("successMessage", "計畫基本資訊儲存成功，請繼續編輯行程細節。");
 		// 重定向到下一步的行程細節編輯頁面
-		return "redirect:/admin/travelplans/" + savedPlan.getTravelPlanId() + "/itinerary/overview";
+		return "redirect:/admin/travelplans/" + savedPlan.getTravelPlanId() + "/itineraries/add";
 	}
 
 	// 編輯現有計畫的入口點 (可重用第一步表單)
@@ -122,13 +126,11 @@ public class TravelPlanController {
 	       List<TravelPlanDayDTO> dailyItems = travelPlanService.getDailyItemsForDate(itineraryId, date);
 	       DailyItineraryFormDTO dto = new DailyItineraryFormDTO();
 	       dto.setDailyItems(dailyItems);
-	       dto.setTravelDayNumber(calculateTravelDayNumber(planId, date)); // 計算是第幾天
+	       // 修正這裡，直接呼叫 Service 中的方法，傳入 itineraryId 和 date
+	       dto.setTravelDayNumber(travelPlanService.calculateTravelDayNumber(itineraryId, date)); // <-- 修正這裡
 	       return ResponseEntity.ok(dto);
 	  }
-	 private Integer calculateTravelDayNumber(Integer planId, LocalDate date) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
 
 	@PostMapping("/{planId}/itinerary/{itineraryId}/days/save")
 	  public String saveDailyItinerary(@PathVariable Integer planId,
@@ -150,10 +152,84 @@ public class TravelPlanController {
 	public String previewTravelPlan(@PathVariable("planId") Integer planId, Model model) {
 	    // 獲取完整的旅行計畫數據 (包含所有行程天數和景點)
 	    // 這需要 TravelPlanService 提供一個方法來獲取完整的 DTO
-	    TravelPlanCreationDTO fullTravelPlanDto = travelPlanService.getFullTravelPlanDetails(planId);
-	    model.addAttribute("travelPlan", fullTravelPlanDto);
+	    // 將這裡的類型從 TravelPlanCreationDTO 改為 TravelPlanPreviewDTO
+	    TravelPlanPreviewDTO travelPlanPreviewDTO = travelPlanService.getFullTravelPlanDetails(planId); // <-- 修正這裡的類型
+
+	    // 將 Model Attribute 的名稱改為 "travelPlanPreview"，與前端模板預期的名稱一致
+	    model.addAttribute("travelPlanPreview", travelPlanPreviewDTO); // <-- 修正這裡的名稱
+
+	    // 計算總天數，從 TravelPlanPreviewDTO 中獲取梯次日期
+	    if (travelPlanPreviewDTO.getStartDate() != null && travelPlanPreviewDTO.getEndDate() != null) {
+	        long totalDays = ChronoUnit.DAYS.between(travelPlanPreviewDTO.getStartDate(), travelPlanPreviewDTO.getEndDate()) + 1;
+	        model.addAttribute("totalTravelDays", totalDays); // 將總天數傳遞給 Model
+	    } else {
+	        model.addAttribute("totalTravelDays", 0);
+	    }
+
 	    return "admin/travelplans/preview_full_plan"; // 一個新的 Thymeleaf 模板來顯示預覽
 	}
-		
+	@GetMapping("/{planId}/itineraries/add")
+	public String showAddItineraryForm(@PathVariable Integer planId, Model model, HttpSession session) {
+	    // 從 session 取得 travelPlanId，如果直接從 PathVariable 拿到也行
+	    // Integer currentPlanId = (Integer) session.getAttribute("currentTravelPlanId");
+	    // if (currentPlanId == null || !currentPlanId.equals(planId)) {
+	    //     // 處理錯誤，或者重新導向到第一個表單
+	    //     return "redirect:/admin/travelplans/new";
+	    // }
+
+	    TravelItineraryDTO dto = new TravelItineraryDTO();
+	    dto.setTravelPlanId(planId); // 將 TravelPlan ID 關聯到梯次 DTO
+	    model.addAttribute("travelItineraryDTO", dto);
+
+	    // 為了讓使用者知道他們正在為哪個計畫新增梯次，可以傳遞計畫名稱
+	    travelPlanService.getTravelPlanEntityById(planId).ifPresent(plan -> {
+	        model.addAttribute("travelPlanTitle", plan.getTravelTitle());
+	    });
+
+	    return "admin/travelplans/form_step2_itinerary_details"; // 這個是您新設計的第二個表單模板
+	}
+	
+	@PostMapping("/itineraries/save")
+	public String saveItinerary(@Valid @ModelAttribute("travelItineraryDTO") TravelItineraryDTO dto,
+	                            BindingResult result,
+	                            RedirectAttributes redirectAttributes,
+	                            HttpSession session,
+	                            Model model) {
+	    if (result.hasErrors()) {
+	        model.addAttribute("travelItineraryDTO", dto);
+	        // 重新傳遞 travelPlanTitle，避免模板顯示錯誤
+	        travelPlanService.getTravelPlanEntityById(dto.getTravelPlanId()).ifPresent(plan -> {
+	            model.addAttribute("travelPlanTitle", plan.getTravelTitle());
+	        });
+	        model.addAttribute("errorMessage", "梯次資料驗證失敗，請檢查輸入。");
+	        return "admin/travelplans/form_step2_itinerary_details"; // 返回第二個表單頁面
+	    }
+
+	    try {
+	        TravelItinerary savedItinerary = travelPlanService.saveTravelItineraryFromDto(dto); // 假設 Service 有此方法
+	        redirectAttributes.addFlashAttribute("successMessage", "行程梯次資訊保存成功！現在請編輯每日行程細節。");
+
+	        // 保存梯次成功後，重導向到每日行程編輯頁面
+	        // 您可能需要根據實際的 itineraryId 和日期來決定重導向 URL
+	        // 這裡我假設預設跳轉到第一天的編輯頁面
+	        session.setAttribute("currentTravelItineraryId", savedItinerary.getTravelItineraryId());
+	        LocalDate firstDay = savedItinerary.getStartDate(); // 獲取梯次的第一天
+	        return "redirect:/admin/travelplans/" + savedItinerary.getTravelPlan().getTravelPlanId() +
+	               "/itinerary/" + savedItinerary.getTravelItineraryId() +
+	               "/days/" + firstDay.format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE);
+
+	    } catch (IllegalArgumentException e) {
+	        result.rejectValue(null, "error.itinerary", e.getMessage()); // 廣泛錯誤訊息
+	        model.addAttribute("errorMessage", e.getMessage());
+	        // 重新傳遞 travelPlanTitle
+	        travelPlanService.getTravelPlanEntityById(dto.getTravelPlanId()).ifPresent(plan -> {
+	            model.addAttribute("travelPlanTitle", plan.getTravelTitle());
+	        });
+	        return "admin/travelplans/form_step2_itinerary_details";
+	    } catch (Exception e) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "保存行程梯次失敗: " + e.getMessage());
+	        return "redirect:/admin/travelplans/list"; // 或其他適當的錯誤處理
+	    }
+	}	
 	}
 

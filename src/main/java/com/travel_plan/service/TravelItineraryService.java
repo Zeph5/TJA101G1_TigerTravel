@@ -29,8 +29,11 @@ public interface TravelItineraryService {
 	Optional<TravelItinerary> getTravelItineraryEntityById(Integer itineraryId);
 
 
-	TravelItinerary createTravelItineraryFromDto(@Valid Integer planId, TravelItineraryDTO dto);
+	
 	
 	Optional<TravelItineraryDTO> getTravelItineraryByTravelPlanId(Integer travelPlanId);//?
+
+
+	TravelItinerary saveTravelItineraryFromDto(@Valid TravelItineraryDTO travelItineraryDto);
 
 }

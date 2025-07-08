@@ -1,7 +1,6 @@
 package com.travel_plan.model;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -14,8 +13,7 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -46,51 +44,8 @@ public class TravelPlan {
 	@LastModifiedDate 
 	private LocalDateTime lastModifiedDate; // 這個也已經是駝峰式，且與您上次改的 getter 匹配
 	
-	@Column(name = "start_date", nullable = false)
-	private LocalDate startDate; // 旅行計畫開始日期
-	@Column(name = "end_date", nullable = false)
-	private LocalDate endDate; // 旅行計畫結束日期
-	
-	@Column(name = "max_tourist", nullable = false)
-	private Integer maxTourist; // 最大旅客數
-	@Column(name = "total_price", nullable = false)
-	private BigDecimal totalPrice; // 總價
 	
 	
-	
-	
-	public Integer getMaxTourist() {
-		return maxTourist;
-	}
-
-	public void setMaxTourist(Integer maxTourist) {
-		this.maxTourist = maxTourist;
-	}
-
-	public BigDecimal getTotalPrice() {
-		return totalPrice;
-	}
-
-	public void setTotalPrice(BigDecimal totalPrice) {
-		this.totalPrice = totalPrice;
-	}
-
-	public LocalDate getStartDate() {
-		return startDate;
-	}
-
-	public void setStartDate(LocalDate startDate) {
-		this.startDate = startDate;
-	}
-
-	public LocalDate getEndDate() {
-		return endDate;
-	}
-
-	public void setEndDate(LocalDate endDate) {
-		this.endDate = endDate;
-	}
-
 	public TravelPlan() {
 		// 預設建構子
 	}
@@ -134,12 +89,12 @@ public class TravelPlan {
 		this.lastModifiedDate = lastModifiedDate;
 	}
 	
+
 	@Override
 	public String toString() {
 		return "TravelPlan [travelPlanId=" + travelPlanId + ", travelTitle=" + travelTitle + ", travelPlanDescription="
 				+ travelPlanDescription + ", travelPlanBannerUrl=" + travelPlanBannerUrl + ", publishedDate="
-				+ publishedDate + ", lastModifiedDate=" + lastModifiedDate + ", startDate=" + startDate + ", endDate="
-				+ endDate + "]";
+				+ publishedDate + ", lastModifiedDate=" + lastModifiedDate + "]";
 	}
 
 	public Object getBannerImageUrl() {

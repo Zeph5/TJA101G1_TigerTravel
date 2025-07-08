@@ -1,213 +1,79 @@
 <!DOCTYPE html>
 <html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>旅行計畫完整預覽 - 管理後台</title>
-<link
-	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-	rel="stylesheet">
-<link
-	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-	rel="stylesheet">
-<style>
-body {
-	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	background-color: #f8f9fa;
-	color: #333;
-	line-height: 1.6;
-}
-
-.container {
-	max-width: 960px;
-	margin-top: 30px;
-	margin-bottom: 50px;
-	background-color: #fff;
-	padding: 30px;
-	border-radius: 8px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-h1, h2, h3, h4 {
-	color: #0056b3;
-	margin-bottom: 15px;
-}
-
-.header-section {
-	text-align: center;
-	margin-bottom: 40px;
-	padding-bottom: 20px;
-	border-bottom: 2px solid #e9ecef;
-}
-
-.plan-details p {
-	margin-bottom: 8px;
-}
-
-.itinerary-card {
-	border: 1px solid #dee2e6;
-	border-radius: 5px;
-	margin-bottom: 20px;
-	background-color: #fdfdfd;
-	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-
-.itinerary-card-header {
-	background-color: #e9ecef;
-	padding: 15px;
-	border-bottom: 1px solid #dee2e6;
-	border-top-left-radius: 5px;
-	border-top-right-radius: 5px;
-	font-weight: bold;
-	color: #495057;
-}
-
-.itinerary-card-body {
-	padding: 20px;
-}
-
-.day-section {
-	margin-top: 30px;
-	padding-top: 20px;
-	border-top: 1px dashed #ced4da;
-}
-
-.day-section:first-of-type {
-	margin-top: 0;
-	padding-top: 0;
-	border-top: none;
-}
-
-.day-section h4 {
-	color: #28a745;
-	margin-bottom: 15px;
-}
-
-.daily-item {
-	display: flex;
-	align-items: flex-start;
-	margin-bottom: 15px;
-}
-
-.item-sequence {
-	background-color: #007bff;
-	color: white;
-	border-radius: 50%;
-	width: 30px;
-	height: 30px;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	font-weight: bold;
-	flex-shrink: 0;
-	margin-right: 15px;
-}
-
-.item-content {
-	flex-grow: 1;
-}
-
-.item-content strong {
-	display: block;
-	margin-bottom: 5px;
-	color: #343a40;
-}
-
-.btn-group {
-	margin-top: 30px;
-	text-align: center;
-}
-</style>
+    <meta charset="UTF-8">
+    <title>旅行計畫預覽</title>
+    <link rel="stylesheet" th:href="@{/css/your-styles.css}">
+    <style>
+        /* 簡單的樣式，您可以根據需求修改 */
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 900px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        h1, h2, h3 { color: #333; }
+        .banner-image { max-width: 100%; height: auto; display: block; margin-bottom: 20px; border-radius: 4px; }
+        .itinerary-info { margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-left: 5px solid #007bff; }
+        .daily-itinerary { margin-bottom: 25px; padding: 15px; border: 1px solid #eee; border-radius: 6px; }
+        .daily-itinerary h3 { margin-top: 0; color: #0056b3; }
+        .daily-item { margin-bottom: 10px; padding-left: 15px; border-left: 2px solid #ccc; }
+        .daily-item strong { color: #555; }
+        .back-button { margin-top: 20px; display: inline-block; padding: 10px 15px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
 </head>
 <body>
-	<div class="container">
-		<div class="header-section">
-			<h1 th:text="${travelPlan.travelTitle ?: '無標題計畫'}">旅行計畫完整預覽</h1>
-			<p class="lead text-muted"
-				th:text="${travelPlan.travelPlanDescription ?: '無描述'}">這是一個精彩的旅行計畫。</p>
-			<p>
-				<strong>計畫期間:</strong> <span
-					th:text="${#temporals.format(travelPlan.startDate, 'yyyy年MM月dd日')}"></span>
-				- <span
-					th:text="${#temporals.format(travelPlan.endDate, 'yyyy年MM月dd日')}"></span>
-				(<span th:text="${totalTravelDays}"></span> 天)
-			</p>
-			<p>
-				<strong>計畫ID:</strong> <span th:text="${travelPlanId}"></span>
-			</p>
-		</div>
+    <div class="container">
+        <h1>旅行計畫預覽</h1>
 
-		<h2>行程方案列表</h2>
-		<div th:if="${itineraries != null and !itineraries.isEmpty()}">
-			<div th:each="itinerary, iterStat : ${itineraries}"
-				class="itinerary-card">
-				<div class="itinerary-card-header">
-					行程方案 <span th:text="${iterStat.index + 1}"></span> (ID: <span
-						th:text="${itinerary.travelItineraryId}"></span>)
-				</div>
-				<div class="itinerary-card-body">
-					<p>
-						<strong>最大旅客數:</strong> <span th:text="${itinerary.maxTourist}"></span>
-						人
-					</p>
-					<p>
-						<strong>總價:</strong> <span
-							th:text="${#numbers.formatCurrency(itinerary.totalPrice)}"></span>
-					</p>
-					<p>
-						<strong>發佈日期:</strong> <span
-							th:text="${#temporals.format(itinerary.publishedDate, 'yyyy-MM-dd HH:mm')}"></span>
-					</p>
-					<p>
-						<strong>最後修改:</strong> <span
-							th:text="${#temporals.format(itinerary.lastModifiedDate, 'yyyy-MM-dd HH:mm')}"></span>
-					</p>
-				</div>
-			</div>
-		</div>
-		<div th:unless="${itineraries != null and !itineraries.isEmpty()}"
-			class="alert alert-warning text-center">目前沒有行程方案可供預覽。</div>
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+            <p th:text="${errorMessage}"></p>
+        </div>
 
-		<h2 class="mt-5">每日行程細節</h2>
-		<div
-			th:if="${dailyPlanDaysMap != null and !dailyPlanDaysMap.isEmpty()}">
-			<div th:each="entry : ${dailyPlanDaysMap}" class="day-section">
-				<h4
-					th:with="dayDate=${entry.key}, dayNumber=${#temporals.diffDays(travelPlan.startDate, dayDate) + 1}">
-					第 <span th:text="${dayNumber}"></span> 天 - <span
-						th:text="${#temporals.format(dayDate, 'yyyy年MM月dd日 (E)')}"></span>
-				</h4>
-				<div th:if="${entry.value != null and !entry.value.isEmpty()}">
-					<div th:each="dailyItem : ${entry.value}" class="daily-item">
-						<div class="item-sequence"
-							th:text="${dailyItem.travelSequenceNumber}">1</div>
-						<div class="item-content">
-							<strong th:text="${dailyItem.sceneryName ?: '未知景點'}">景點名稱</strong>
-							<p class="text-muted">
-								景點ID: <span th:text="${dailyItem.sceneryId}"></span>
-							</p>
-						</div>
-					</div>
-				</div>
-				<div th:unless="${entry.value != null and !entry.value.isEmpty()}"
-					class="alert alert-info alert-sm">這天目前沒有行程項目。</div>
-			</div>
-		</div>
-		<div
-			th:unless="${dailyPlanDaysMap != null and !dailyPlanDaysMap.isEmpty()}"
-			class="alert alert-warning text-center">目前沒有每日行程細節可供預覽。</div>
+        <div th:if="${travelPlanPreview != null}">
+            <section>
+                <h2>計畫名稱：<span th:text="${travelPlanPreview.travelTitle}"></span></h2>
+                <p><strong>描述：</strong> <span th:text="${travelPlanPreview.travelPlanDescription}"></span></p>
+                <div th:if="${travelPlanPreview.travelPlanBannerUrl}">
+                    <img th:src="@{${travelPlanPreview.travelPlanBannerUrl}}" alt="旅行計畫橫幅" class="banner-image">
+                </div>
+            </section>
 
-		<div class="btn-group">
-			<a
-				th:href="@{/admin/travelplans/{planId}/itinerary/step2(planId=${travelPlanId})}"
-				class="btn btn-secondary me-2"> <i class="fas fa-edit"></i> 編輯行程
-			</a> <a th:href="@{/admin/travelplans}" class="btn btn-primary"> <i
-				class="fas fa-list"></i> 返回旅行計畫列表
-			</a>
-		</div>
-	</div>
+            <hr>
 
-	<script
-		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+            <section class="itinerary-info" th:if="${travelPlanPreview.travelItineraryId != null}">
+                <h2>梯次資訊</h2>
+                <p><strong>開始日期：</strong> <span th:text="${#temporals.format(travelPlanPreview.startDate, 'yyyy-MM-dd')}"></span></p>
+                <p><strong>結束日期：</strong> <span th:text="${#temporals.format(travelPlanPreview.endDate, 'yyyy-MM-dd')}"></span></p>
+                <p><strong>總天數：</strong> <span th:text="${totalTravelDays}"></span> 天</p>
+                <p><strong>最大旅客數：</strong> <span th:text="${travelPlanPreview.maxTourist}"></span> 人</p>
+                <p><strong>總價格：</strong> <span th:text="${#numbers.formatCurrency(travelPlanPreview.totalPrice)}"></span></p>
+            </section>
+            <section th:unless="${travelPlanPreview.travelItineraryId != null}">
+                <p>此旅行計畫尚未設定行程梯次資訊。</p>
+            </section>
+
+            <hr>
+
+            <section>
+                <h2>每日行程</h2>
+                <div th:if="${travelPlanPreview.dailyItineraries.isEmpty()}">
+                    <p>此旅行計畫尚未設定每日行程細節。</p>
+                </div>
+                <div th:each="entry : ${travelPlanPreview.dailyItineraries}" class="daily-itinerary">
+                    <h3 th:text="${#temporals.format(entry.key, 'yyyy-MM-dd')} + ' (第 ' + ${travelPlanPreview.calculateTravelDayNumber(travelPlanPreview.travelItineraryId, entry.key)} + ' 天)'">日期與天數</h3>
+                    <ul th:if="${!entry.value.isEmpty()}">
+                        <li th:each="item : ${entry.value}" class="daily-item">
+                            <strong th:text="${#temporals.format(item.travelTime, 'HH:mm')}">時間</strong> -
+                            <span th:text="${item.activityDescription}">活動描述</span>
+                            <span th:if="${item.sceneryName}"> (景點: <span th:text="${item.sceneryName}"></span>)</span>
+                        </li>
+                    </ul>
+                    <p th:if="${entry.value.isEmpty()}">這天沒有行程安排。</p>
+                </div>
+            </section>
+        </div>
+        <div th:unless="${travelPlanPreview != null}">
+            <p>找不到該旅行計畫的預覽資訊。</p>
+        </div>
+
+        <a th:href="@{/admin/travelplans}" class="back-button">返回旅行計畫列表</a>
+    </div>
 </body>
 </html>

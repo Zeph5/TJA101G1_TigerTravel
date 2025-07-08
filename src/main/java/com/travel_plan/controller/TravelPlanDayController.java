@@ -3,6 +3,7 @@ package com.travel_plan.controller;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import com.travel_plan.dto.DailyItineraryFormDTO;
 import com.travel_plan.model.TravelItinerary;
 import com.travel_plan.model.TravelPlan;
 import com.travel_plan.service.TravelPlanService;
+import com.travel_plan.dto.TravelPlanPreviewDTO;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -42,51 +44,56 @@ public class TravelPlanDayController {
 
 	@GetMapping("/{planId}/itinerary/overview")
 	public String showItineraryOverview(@PathVariable Integer planId, Model model, HttpSession session,
-			RedirectAttributes redirectAttributes) {
+	        RedirectAttributes redirectAttributes) {
 
-		try {
-			// 1. 根據 planId 取得旅行計畫的開始和結束日期
-			// 這需要 TravelPlanService 提供一個方法來獲取這些日期
-			TravelPlan travelPlan = TravelPlanService.getTravelPlanEntityById(planId)
-					.orElseThrow(() -> new IllegalArgumentException("Travel Plan not found for ID: " + planId));
-			// 2. 計算所有行程日期
-			// 從開始日期到結束日期，生成所有天數的日期列表 (LocalDate)
-			List<LocalDate> itineraryDates = TravelPlanService.generateDatesBetween(travelPlan.getStartDate(),
-					travelPlan.getEndDate());
+	    try {
+	        Integer sessionItineraryId = (Integer) session.getAttribute("currentTravelItineraryId");
+	        TravelItinerary travelItinerary;
 
-			// 3. 獲取或創建對應的 TravelItinerary (如果一個 TravelPlan 可以有多個 Itinerary，可能需要更多邏輯)
-			// 目前看來，一個 TravelPlan 對應一個 Itinerary，若無則創建。
-			TravelItinerary travelItinerary = TravelPlanService.getOrCreateTravelItineraryForPlan(planId);
-			Integer travelItineraryId = travelItinerary.getTravelItineraryId(); // 取得行程 ID
-			// 4. 預設載入第一個日期的行程數據 (作為初始顯示)
-			LocalDate firstDate = itineraryDates.get(0);
-			Integer travelDayNumber = 1; // 第一天
-			// 5. 準備 DailyItineraryFormDTO 來填充表單
-			// 這會從資料庫載入該日期的所有 TravelPlanDay 項目
-			DailyItineraryFormDTO dailyItineraryFormDTO = TravelPlanService.getDailyItineraryFormDTO(travelItineraryId,
-					firstDate, travelDayNumber);
+	        if (sessionItineraryId != null) {
+	            travelItinerary = TravelPlanService.getTravelItineraryById(sessionItineraryId)
+	                .orElseThrow(() -> new IllegalArgumentException("Travel Itinerary not found for ID: " + sessionItineraryId)); // 使用 sessionItineraryId
+	        } else {
+	            travelItinerary = TravelPlanService.getOrCreateTravelItineraryForPlan(planId);
+	            session.setAttribute("currentTravelItineraryId", travelItinerary.getTravelItineraryId()); // 更新 Session
+	        }
 
-			// 6. 將數據添加到 Model 中，供 Thymeleaf 使用
-			model.addAttribute("travelPlanId", planId);
-			model.addAttribute("travelItineraryId", travelItineraryId);
-			model.addAttribute("itineraryDates", itineraryDates); // 所有日期列表
-			model.addAttribute("currentEditDate", firstDate); // 當前編輯的日期 (預設為第一天)
-			model.addAttribute("travelDayNumber", travelDayNumber); // 當前編輯的天數
-			model.addAttribute("dailyItineraryFormDTO", dailyItineraryFormDTO); // 當天行程的數據
+	        // 在這裡將最終確定的 travelItineraryId 賦值給一個 effectively final 的變數
+	        final Integer currentItineraryId = travelItinerary.getTravelItineraryId(); // <-- 新增這行，確保它是 final 或 effectively final
 
-			// 7. 將當前行程 ID 存入 Session，供 Ajax 請求使用
-			session.setAttribute("currentTravelItineraryId", travelItineraryId);
-			session.setAttribute("currentTravelPlanId", planId);
+	        // 1. 根據 TravelItinerary 取得旅行計畫的開始和結束日期
+	        LocalDate itineraryStartDate = travelItinerary.getStartDate();
+	        LocalDate itineraryEndDate = travelItinerary.getEndDate();
 
-			return "admin/travelplans/form_step2_itinerary_details";
-		} catch (IllegalArgumentException e) {
-			redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-			return "redirect:/admin/travelplans";
-		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("errorMessage", "載入行程頁面時發生錯誤：" + e.getMessage());
-			// logger.error("Error loading itinerary overview", e);
-			return "redirect:/admin/travelplans";
-		} // 返回行程概覽頁面
+	        if (itineraryStartDate == null || itineraryEndDate == null) {
+	            redirectAttributes.addFlashAttribute("errorMessage", "請先完成行程梯次設定 (日期和人數)。");
+	            return "redirect:/admin/travelplans/" + planId + "/itineraries/add";
+	        }
+
+	        List<LocalDate> itineraryDates = TravelPlanService.generateDatesBetween(itineraryStartDate, itineraryEndDate);
+
+	        LocalDate firstDate = itineraryDates.isEmpty() ? itineraryStartDate : itineraryDates.get(0);
+	        
+	        // 使用 currentItineraryId 來計算天數
+	        Integer travelDayNumber = TravelPlanService.calculateTravelDayNumber(currentItineraryId, firstDate); // <-- 使用 currentItineraryId
+
+	        model.addAttribute("travelPlanId", planId);
+	        model.addAttribute("travelItineraryId", currentItineraryId); // <-- 傳遞 currentItineraryId
+	        model.addAttribute("itineraryDates", itineraryDates);
+	        model.addAttribute("currentEditDate", firstDate);
+	        model.addAttribute("travelDayNumber", travelDayNumber);
+	        model.addAttribute("dailyItineraryFormDTO", TravelPlanService.getDailyItineraryFormDTO(currentItineraryId, firstDate, travelDayNumber)); // <-- 使用 currentItineraryId
+
+	        session.setAttribute("currentTravelPlanId", planId);
+
+	        return "admin/travelplans/form_step2_itinerary_details";
+	    } catch (IllegalArgumentException e) {
+	        redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+	        return "redirect:/admin/travelplans";
+	    } catch (Exception e) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "載入行程頁面時發生錯誤：" + e.getMessage());
+	        return "redirect:/admin/travelplans";
+	    }
 	}
 
 	@GetMapping("/api/sceneries/all")
@@ -95,30 +102,32 @@ public class TravelPlanDayController {
 		List<SceneryVO> sceneries = sceneryService.findAllScenery();
 		return ResponseEntity.ok(sceneries);
 	}
-	@GetMapping("/admin/travelplans/{planId}/preview")
-	public String previewTravelPlan(@PathVariable("planId") Integer travelPlanId, Model model) {
-	  
-	    TravelPlan travelPlan = TravelPlanService.findById(travelPlanId); // 或者其他方式獲取
+	@GetMapping("/{planId}/preview")
+    public String previewTravelPlan(@PathVariable("planId") Integer travelPlanId, Model model, RedirectAttributes redirectAttributes) {
 
-	    
-	    if (travelPlan != null) {
-	        model.addAttribute("travelPlan", travelPlan); // 將 travelPlan 加入 Model
+        try {
+            // 呼叫 Service 層新的方法來獲取完整的預覽 DTO
+            TravelPlanPreviewDTO travelPlanPreviewDTO = TravelPlanService.getFullTravelPlanDetails(travelPlanId);
 
-	        // 計算天數
-	        if (travelPlan.getStartDate() != null && travelPlan.getEndDate() != null) {
-	            long daysBetween = ChronoUnit.DAYS.between(travelPlan.getStartDate(), travelPlan.getEndDate());
-	            model.addAttribute("totalTravelDays", daysBetween + 1); // 加 1 包含起始日
-	        } else {
-	            model.addAttribute("totalTravelDays", 0); // 或其他預設值
-	        }
+            model.addAttribute("travelPlanPreview", travelPlanPreviewDTO);
 
-	   
+            // 計算總天數，從 TravelPlanPreviewDTO 中獲取梯次日期
+            if (travelPlanPreviewDTO.getStartDate() != null && travelPlanPreviewDTO.getEndDate() != null) {
+                long totalDays = ChronoUnit.DAYS.between(travelPlanPreviewDTO.getStartDate(), travelPlanPreviewDTO.getEndDate()) + 1;
+                model.addAttribute("totalTravelDays", totalDays);
+            } else {
+                model.addAttribute("totalTravelDays", 0);
+            }
 
-	    } else {
-	        // 處理 travelPlan 不存在的狀況，例如導向錯誤頁面或回列表頁
-	        return "redirect:/admin/travelplans";
-	    }
+            return "admin/travelplans/preview_full_plan"; // 返回預覽頁面
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/admin/travelplans"; // 如果找不到計畫或梯次，重導回列表頁
+        } catch (Exception e) {
+            // 這裡應該記錄錯誤日誌 e.g., logger.error("Error loading travel plan preview", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "載入旅行計畫預覽時發生錯誤：" + e.getMessage());
+            return "redirect:/admin/travelplans";
+        }
+    }
 
-	    return "admin/travelplans/preview_full_plan";
-	}
 }

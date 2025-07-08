@@ -23,22 +23,9 @@ public class TravelPlanCreationDTO {
     @Size(min = 10, max = 500, message = "旅行計畫描述長度必須在10-500個字之間")
     private String travelPlanDescription; // 修正：駝峰命名
     
-    @NotNull(message = "旅行計畫開始日期不能為空")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @FutureOrPresent(message = "開始日期不能是過去的日期")
-    private LocalDate startDate; // 旅行計畫開始日期
+
     
-    @NotNull(message = "旅行計畫結束日期不能為空")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @Future(message = "結束日期必須是未來的日期")
-    private LocalDate endDate; // 旅行計畫結束日期
-    
-    @NotNull(message = "最大旅遊人數不能為空")
-    @Min(value = 1, message = "最大旅遊人數必須大於0")
-	private Integer maxTourist; // 最大旅客數
-	@NotNull(message = "總價格不能為空")
-    @Min(value = 0, message = "總價格必須大於或等於0")
-	private BigDecimal totalPrice; // 總價
+   
     
     private MultipartFile bannerImage; // 旅行計畫橫幅圖片
     
@@ -47,32 +34,17 @@ public class TravelPlanCreationDTO {
     }
     
     // 有參構造函數
-    public TravelPlanCreationDTO(Integer travelPlanId, String travelTitle, String travelPlanDescription,
-                                LocalDate startDate, LocalDate endDate) {
+    public TravelPlanCreationDTO(Integer travelPlanId, String travelTitle, String travelPlanDescription
+                                ) {
         this.travelPlanId = travelPlanId;
         this.travelTitle = travelTitle;
         this.travelPlanDescription = travelPlanDescription;
-        this.startDate = startDate;
-        this.endDate = endDate;
+        
     }
     
     
     
-    public Integer getMaxTourist() {
-		return maxTourist;
-	}
 
-	public void setMaxTourist(Integer maxTourist) {
-		this.maxTourist = maxTourist;
-	}
-
-	public BigDecimal getTotalPrice() {
-		return totalPrice;
-	}
-
-	public void setTotalPrice(BigDecimal totalPrice) {
-		this.totalPrice = totalPrice;
-	}
 
 	// Getter 和 Setter 方法
     public Integer getTravelPlanId() {
@@ -99,22 +71,7 @@ public class TravelPlanCreationDTO {
         this.travelPlanDescription = travelPlanDescription;
     }
     
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-    
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
-    
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-    
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
-    
+
     public MultipartFile getBannerImage() {
         return bannerImage;
     }
@@ -122,22 +79,13 @@ public class TravelPlanCreationDTO {
     public void setBannerImage(MultipartFile bannerImage) {
         this.bannerImage = bannerImage;
     }
+
+	@Override
+	public String toString() {
+		return "TravelPlanCreationDTO [travelPlanId=" + travelPlanId + ", travelTitle=" + travelTitle
+				+ ", travelPlanDescription=" + travelPlanDescription + ", bannerImage=" + bannerImage + "]";
+	}
+
     
-    // 自定義驗證方法
-    public boolean isDateRangeValid() {
-        if (startDate != null && endDate != null) {
-            return !endDate.isBefore(startDate);
-        }
-        return true;
-    }
-    
-    @Override
-    public String toString() {
-        return "TravelPlanCreationDTO [travelPlanId=" + travelPlanId + 
-               ", travelTitle=" + travelTitle + 
-               ", travelPlanDescription=" + travelPlanDescription + 
-               ", startDate=" + startDate + 
-               ", endDate=" + endDate + 
-               ", bannerImage=" + (bannerImage != null ? bannerImage.getOriginalFilename() : "null") + "]";
-    }
+
 }
