@@ -1,67 +1,65 @@
 package com.ticket.controller;
 
-import java.time.LocalDate;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import com.ticket.model.*;
+import com.ticket.repository.*;
+import com.ticket.service.TicketOrderService;
+import com.member.security.MemberUserDetails;
+import com.member.model.memVO;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
-import com.member.model.memVO;
-import com.member.security.MemberUserDetails;
-import com.ticket.model.TicketOrderReceiptVO;
-import com.ticket.model.TicketOrderVO;
-import com.ticket.service.TicketOrderReceiptService;
-import com.ticket.service.TicketOrderService;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Controller
-@RequestMapping("/member")
+@RequestMapping("/ticket")
 public class TicketOrderController {
 
-    private final TicketOrderService orderService;
-    private final TicketOrderReceiptService receiptService;
+    @Autowired
+    private TicketOrderService ticketOrderService;
 
-    public TicketOrderController(TicketOrderService orderService, TicketOrderReceiptService receiptService) {
-        this.orderService = orderService;
-        this.receiptService = receiptService;
+    @Autowired
+    private TicketRepository ticketRepository;
+
+    // step 1: 顯示下單頁
+    @PostMapping("/ticketorder")
+    public String showOrderPage(@RequestParam("ticketIds") List<Integer> ticketIds, Model model) {
+        List<Ticket> selectedTickets = ticketRepository.findAllById(ticketIds);
+        model.addAttribute("selectedTickets", selectedTickets);
+        return "ticket/ticketorder";
     }
 
-    @GetMapping("/ticket/orders")
-    public String showMyTicketOrders(@AuthenticationPrincipal MemberUserDetails loginUser, Model model) {
-        memVO member = loginUser.getMember();
-
-        List<TicketOrderVO> orders = orderService.getOrdersByMember(member);
-
-        // 🔽 宣告 receiptMap，存放每筆訂單的發票資料
-        Map<Integer, List<TicketOrderReceiptVO>> receiptMap = new HashMap<>();
-
-        for (TicketOrderVO order : orders) {
-            List<TicketOrderReceiptVO> receipts = receiptService.getReceiptsByOrder(order);
-            if (!receipts.isEmpty()) {
-                // 🔽 把每張票的圖片轉成 base64 串
-                for (TicketOrderReceiptVO receipt : receipts) {
-                    byte[] imageBytes = receipt.getTicket().getTicketImage();
-                    if (imageBytes != null && imageBytes.length > 0) {
-                        String base64Image = Base64.getEncoder().encodeToString(imageBytes);
-                        receipt.setTicketImageBase64(base64Image);
-                    }
-                }
-                receiptMap.put(order.getTicketOrderId(), receipts); // ✅ 這邊使用 receiptMap 就不會錯
-            }
+ // step 2: 下單處理
+    @PostMapping("/submit")
+    public String submitOrder(
+            @AuthenticationPrincipal MemberUserDetails loginUser,
+            @RequestParam("ticketIds") List<Integer> ticketIds,
+            @RequestParam("quantities") List<Integer> quantities,
+            @RequestParam("cardNumber") String cardNumber,
+            @RequestParam("expMonth") String expMonth,
+            @RequestParam("expYear") String expYear,
+            @RequestParam("cvv") String cvv,
+            Model model
+    ) {
+        if (!cardNumber.matches("\\d{16}") || !expMonth.matches("\\d{2}") || !expYear.matches("\\d{2}") || !cvv.matches("\\d{3}")) {
+            model.addAttribute("error", "信用卡資料格式不正確");
+            return "/ticket/ticketorder"; // <- 要 return 正確頁面
         }
-
-        model.addAttribute("now", LocalDate.now());
-        model.addAttribute("ticketOrders", orders);
-        model.addAttribute("receiptMap", receiptMap);
-
-        return "member/ticketOrders";
+        memVO member = loginUser.getMember();
+        Integer orderId = ticketOrderService.createOrder(member.getMemberId(), ticketIds, quantities);
+        return "redirect:/ticket/detail/" + orderId; // <- 路徑要和 detail method 對齊
     }
 
+  //step 3: 顯示訂單明細
+    @GetMapping("/detail/{orderId}")
+    public String orderDetail(@PathVariable Integer orderId, Model model) {
+        model.addAttribute("order", ticketOrderService.getOrderDetail(orderId));
+        return "ticket/ticketorderDetail"; // <-- 和 HTML 檔名對齊
+    }
 }
+
