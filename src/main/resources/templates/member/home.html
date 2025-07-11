@@ -4,40 +4,44 @@
 <head>
     <meta charset="UTF-8">
     <h2>會員中心</h2>
+
 	<ul>
 	    <li><a th:href="@{/member/edit}">✏️ 修改會員資料</a></li>
 	    <li><a th:href="@{/member/favorites}">❤️ 我的收藏</a></li>
 	    <li><a th:href="@{/member/ticket/orders}" class="btn btn-outline-primary">🎫 我的票券訂單</a></li>
 	</ul>
+	
+	<hr>
+	
+	<p><strong>會員帳號：</strong> <span th:text="${member.memberAccount}"></span></p>
+	<p><strong>會員姓名：</strong> <span th:text="${member.memberName}"></span></p>
+	
+	<!-- 密碼不顯示明文，僅顯示遮罩與變更連結 -->
+	<p>
+	    <strong>會員密碼：</strong> ********　
+	    <a th:href="@{/member/password/change}" class="text-decoration-none">更改密碼</a>
+	</p>
+	
+	<p><strong>電子信箱：</strong> <span th:text="${member.memberEmail}"></span></p>
+	<p><strong>電話：</strong> <span th:text="${member.memberPhone} ?: '未填寫'"></span></p>
+	<p><strong>地址：</strong> <span th:text="${member.memberAddress} ?: '未填寫'"></span></p>
+	
+	<p>
+	    <strong>會員狀態：</strong> 
+	    <span th:text="${member.memberStatus == 1 ? '啟用中' : '停權'}"></span>
+	</p>
+	
+	<!-- 會員頭像區塊 -->
+	<div th:if="${avatarBase64 != null}">
+	    <img th:src="'data:image/jpeg;base64,' + ${avatarBase64}"
+	         alt="會員頭像"
+	         style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover;">
+	</div>
+	
+	<!-- 登出按鈕 -->
+	<form th:action="@{/logout}" method="post" class="mt-3">
+	    <button type="submit" class="btn btn-danger">登出</button>
+	</form>
 
-</head>
-<body>
-    <h2>會員中心</h2>
-
-    <p><strong>會員帳號：</strong> <span th:text="${member.memberAccount}"></span></p>
-    <p><strong>會員姓名：</strong> <span th:text="${member.memberName}"></span></p>
-
-    <!-- 建議密碼不要顯示明碼 -->
-    <p><strong>會員密碼：</strong> ********</p>
-
-    <p><strong>電子信箱：</strong> <span th:text="${member.memberEmail}"></span></p>
-    <p><strong>電話：</strong> <span th:text="${member.memberPhone} ?: '未填寫'"></span></p>
-    <p><strong>地址：</strong> <span th:text="${member.memberAddress} ?: '未填寫'"></span></p>
-
-    <p><strong>會員狀態：</strong> 
-        <span th:text="${member.memberStatus == 1 ? '啟用中' : '停權'}"></span>
-    </p>
-
-    <!-- 頭像圖 -->
-    <div th:if="${avatarBase64 != null}">
-        <img th:src="'data:image/jpeg;base64,' + ${avatarBase64}"
-             alt="會員頭像"
-             style="width: 200px; height: 200px; border-radius: 50%;">
-    </div>
-
-   
-    <form th:action="@{/logout}" method="post">
-        <button type="submit">登出</button>
-    </form>
 </body>
 </html>

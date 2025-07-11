@@ -1,6 +1,7 @@
 package com.member.controller;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -8,6 +9,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
@@ -49,8 +51,11 @@ public class MemberController {
 	@Autowired
 	private TicketRepository ticketRepository;
 	
-	public MemberController(MemberService memberService) {
-		this.memberService = memberService;
+	private final PasswordEncoder passwordEncoder;
+	
+	public MemberController(MemberService memberService, PasswordEncoder passwordEncoder) {
+	    this.memberService = memberService;
+	    this.passwordEncoder = passwordEncoder;
 	}
 	
 	//會員中心
@@ -85,40 +90,6 @@ public class MemberController {
                                    HttpSession session,
                                    Model model) {
         try {
-//            if ("send".equals(action)) {
-//                // 產生驗證碼
-//                String code = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-//                session.setAttribute("verificationCode", code);
-//
-//                // 頭像處理（預覽 + 暫存）
-//                if (avatarFile != null && !avatarFile.isEmpty()) {
-//                    byte[] avatarBytes = avatarFile.getBytes();
-//                    member.setAvatar(avatarBytes);
-//
-//                    session.setAttribute("avatarBytes", avatarBytes);
-//                    session.setAttribute("avatarPreview", Base64.getEncoder().encodeToString(avatarBytes));
-//                } else {
-//                    byte[] oldAvatar = (byte[]) session.getAttribute("avatarBytes");
-//                    if (oldAvatar != null) {
-//                        member.setAvatar(oldAvatar);
-//                        session.setAttribute("avatarPreview", Base64.getEncoder().encodeToString(oldAvatar));
-//                    }
-//                }
-//
-//                // 暫存使用者資訊
-//                session.setAttribute("tempMember", member);
-//
-//                // ✅ 防止寄信錯誤導致 response commit
-//                try {
-//                    mailService.sendVerificationEmail(member.getMemberEmail(), code);
-//                    model.addAttribute("message", "驗證碼已寄出，請查收 Email！");
-//                } catch (Exception e) {
-//                    model.addAttribute("error", "寄送驗證碼失敗：" + e.getMessage());
-//                }
-//
-//                model.addAttribute("member", member);
-//                return "member/register";
-//            }
 
             // 確認註冊按鈕：驗證碼比對
             if ("register".equals(action)) {
@@ -153,7 +124,7 @@ public class MemberController {
                   
                     //寄出驗證信
                     String verifyUrl = "http://localhost:8080/member/verify?token=" + token;
-                    mailService.sendVerificationLink(member.getMemberEmail(), verifyUrl);
+                    mailService.sendVerificationEmail(member.getMemberEmail(), verifyUrl);
                     
                     session.invalidate(); // 註冊完成清除 session
 
@@ -204,11 +175,12 @@ public class MemberController {
             model.addAttribute("message", "驗證成功！請重新登入系統");
             return "member/verify/verify_success";
         } else {
+        	System.out.println("[DEBUG] No member found with this token.");
             model.addAttribute("error", "連結無效或已過期");
             return "member/verify/verify_fail";
         }
     }
-	
+
 	//導向errorpage動作
 	@Controller
 	public class LoginPageController {
@@ -308,21 +280,142 @@ public class MemberController {
 		return "member/index";
 	}
 	
-	//撈scenery 和 ticket的資訊放在index
-//	@GetMapping({"/", "/index"})
-//	public String showIndex(Model model) {
-//	    List<SceneryVO> allScenery = sceneryService.findAllScenery(); // 或取熱門的前幾筆
-//	    List<SceneryVO> top6Scenery = allScenery.stream().limit(6).toList();
-//	    model.addAttribute("sceneries", top6Scenery);
-//	    
-//	    List<Ticket> ticketList = ticketRepository.findAll();
-//	    model.addAttribute("ticketList", ticketList);
-//	    
-//	    System.out.println("票券數量：" + ticketList.size());
-//	    System.out.println("景點數量：" + allScenery.size());
-//	    System.out.println("✅ 成功進入 showIndex()");
-//	    model.addAttribute("test", "Hello Index");
-//	    return "index"; // 對應 templates/index.html
-//	}
-	
+	// Step 1: 顯示忘記密碼頁面
+    @GetMapping("/forgotPassword")
+    public String showForgotPasswordForm() {
+        return "member/password/forgotPassword"; // 對應到 forgot.html
+    }
+
+    // Step 2: 接收 email 並處理發信
+//    @PostMapping("/forgotPassword")
+//    public String processForgotPassword(@RequestParam("email") String email, Model model) {
+//        try {
+//            memberService.processForgotPassword(email); // ✅ 呼叫 service 處理一切邏輯
+//            model.addAttribute("msg", "重設密碼連結已寄送至您的信箱！");
+//        } catch (RuntimeException e) {
+//            model.addAttribute("error", e.getMessage());
+//        }
+//        return "member/password/forgotPassword";
+//    }
+
+    // Step 3: 顯示 reset 密碼頁面
+    @GetMapping("/reset-password")
+    public String showResetPasswordForm(@RequestParam("token") String token, Model model) {
+        System.out.println("[DEBUG] /reset-password GET with token: " + token);
+        Optional<memVO> member = memberService.findByResetToken(token);
+        if (member.isPresent()) {
+            model.addAttribute("token", token);
+            return "member/password/resetPassword";
+        } else {
+            model.addAttribute("error", "連結無效或已過期");
+            return "member/login";
+        }
+    }
+
+    
+    
+    // Step 4: 提交新密碼
+    @PostMapping("/resetPassword")
+    public String processResetPassword(@RequestParam("token") String token,
+	            @RequestParam("newPassword") String newPassword,
+	            Model model) {
+		System.out.println("[DEBUG] /reset-password POST with token: " + token);
+		Optional<memVO> member = memberService.findByResetToken(token);
+		if (member.isPresent()) {
+			memberService.resetPassword(member.get(), newPassword);
+			model.addAttribute("msg", "密碼已重設，請重新登入");
+			return "member/login";
+		} else {
+			model.addAttribute("error", "Token 無效或已過期");
+			return "member/password/reset_password";
+		}
+	}
+    
+    
+    //導向變更密碼的畫面(已登入)
+    @GetMapping("/password/change")
+    public String showChangePasswordForm() {
+        return "member/password/changePassword";
+    }
+    
+    //將更改密碼的資料送出(已登入)
+    @PostMapping("/password/change")
+    public String processChangePassword(@RequestParam("currentPassword") String currentPassword,
+                                        @RequestParam("newPassword") String newPassword,
+                                        @RequestParam("confirmPassword") String confirmPassword,
+                                        @AuthenticationPrincipal MemberUserDetails loginUser,
+                                        Model model) {
+
+        memVO member = loginUser.getMember();
+
+        // 1. 檢查新密碼與確認密碼是否一致
+        if (!newPassword.equals(confirmPassword)) {
+            model.addAttribute("error", "新密碼與確認密碼不一致！");
+            return "member/password/changePassword";
+        }
+
+        // 2. 檢查舊密碼是否正確（你需根據你的密碼加密邏輯來比對）
+        if (!passwordEncoder.matches(currentPassword, member.getMemberPassword())) {
+            model.addAttribute("error", "目前密碼錯誤！");
+            return "member/password/changePassword";
+        }
+
+        // 3. 修改密碼
+//        member.setMemberPassword(passwordEncoder.encode(newPassword)); //加密
+        member.setMemberPassword(newPassword); //明碼測試 記得上限要刪掉
+        memberService.save(member); // 假設你有 save 方法或 update 方法
+
+        model.addAttribute("msg", "密碼變更成功！請重新登入～");
+        
+        return "member/password/changePassword";
+    }
+    
+    @PostMapping("/forgot")
+    public String processForgotPassword(@RequestParam("email") String email, Model model) {
+        System.out.println("🔔 [DEBUG] 進入 forgot controller！");
+        System.out.println("🔎 [DEBUG] 使用者輸入的 email: " + email);
+
+        Optional<memVO> optional = memberRepository.findByMemberEmail(email);
+
+        if (optional.isPresent()) {
+            memVO member = optional.get();
+            System.out.println("✅ [DEBUG] 找到會員帳號: " + member.getMemberAccount());
+            memberService.generateResetToken(member);
+            model.addAttribute("msg", "重設密碼連結已寄出，請檢查您的信箱");
+        } else {
+            System.out.println("❌ [DEBUG] 查無此 email！");
+            model.addAttribute("error", "查無此 Email，請確認輸入是否正確");
+        }
+
+        return "member/password/forgotPassword";
+    }
+
+    @PostMapping("/reset")
+    public String processResetPassword(@RequestParam("token") String token,
+                                       @RequestParam("newPassword") String newPassword,
+                                       @RequestParam("confirmPassword") String confirmPassword,
+                                       Model model) {
+    	System.out.println("🎯 進入 processResetPassword()");
+
+        System.out.println("[DEBUG] 提交重設密碼 token = " + token);
+
+        if (!newPassword.equals(confirmPassword)) {
+            model.addAttribute("error", "兩次輸入的密碼不一致");
+            model.addAttribute("token", token); // 繼續保留 token 供表單使用
+            return "member/password/reset_password";
+        }
+
+        Optional<memVO> optional = memberService.findByResetToken(token);
+        if (optional.isPresent()) {
+            memVO member = optional.get();
+            memberService.resetPassword(member, newPassword);
+            model.addAttribute("msg", "密碼已成功重設，請重新登入");
+            return "member/login";
+        } else {
+            model.addAttribute("error", "連結無效或已過期");
+            return "member/password/reset_password";
+        }
+    }
+    
+
 }

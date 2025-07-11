@@ -16,5 +16,9 @@ public interface MemberRepository extends JpaRepository<memVO, Integer> {
 	Optional<memVO> findByMemberAccount(String memberAccount);
 	
 	Optional<memVO> findByVerifyToken(String verifyToken);
+	
+	Optional<memVO> findByResetToken(String resetToken);
 
+	Optional<memVO> findByMemberEmail(String email);
+	
 }
