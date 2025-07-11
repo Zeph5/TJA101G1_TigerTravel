@@ -5,17 +5,9 @@
     <title>票券一覽</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <style>
-        .ticket-card img {
-            max-height: 160px;
-            object-fit: cover;
-        }
-        .ticket-card {
-            margin-bottom: 30px;
-        }
-        .section-divider {
-            border-top: 3px dashed #888;
-            margin: 2rem 0 2rem 0;
-        }
+        .ticket-card img { max-height: 160px; object-fit: cover; }
+        .ticket-card { margin-bottom: 30px; }
+        .section-divider { border-top: 3px dashed #888; margin: 2rem 0; }
     </style>
 </head>
 <body>
@@ -27,46 +19,14 @@
                name="keyword" th:value="${keyword}">
         <button class="btn btn-primary" type="submit">查詢</button>
     </form>
-    <div class="row">
-        <div class="col-12">
 
-            <!-- 查詢結果區塊 -->
-            <div th:if="${searchList != null}">
-                <h4 class="text-primary text-center">查詢結果</h4>
-                <div class="row">
-                    <div th:each="ticket : ${searchList}" class="col-md-6 col-lg-4 ticket-card">
-                        <div class="card h-100 shadow-sm">
-                            <div class="card-img-top text-center bg-light" style="height:140px;">
-                                <img th:if="${ticket.ticketImage != null}" th:src="'/ticket/image/' + ${ticket.ticketId}"
-                                     class="img-fluid h-100" alt="票券圖片"/>
-                                <span th:if="${ticket.ticketImage == null}" class="text-muted align-middle">無圖片</span>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title" th:text="${ticket.ticketName}">票券名稱</h5>
-                                <p class="card-text" th:text="${ticket.ticketDescription}">票券描述</p>
-                            </div>
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item">價格：<span th:text="${ticket.ticketPrice}">0</span> 元</li>
-                                <li class="list-group-item">庫存：<span th:text="${ticket.ticketStock}"></span></li>
-                                <li class="list-group-item">狀態：
-                                    <span th:text="${ticket.ticketStatus == 1 ? '有庫存' : '無庫存'}"
-                                          th:classappend="${ticket.ticketStatus == 1 ? 'text-success' : 'text-danger'}"></span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <!-- 若查無資料 -->
-                <div th:if="${searchList.size() == 0}" class="alert alert-danger text-center my-3" role="alert">
-                    查無此票
-                </div>
-                <hr class="section-divider">
-            </div>
-
-            <!-- 全部票券區塊（含分頁） -->
-            <h4 class="text-secondary text-center">全部票券</h4>
-            <div class="row" th:if="${ticketPage != null and ticketPage.content.size() > 0}">
-                <div th:each="ticket : ${ticketPage.content}" class="col-md-6 col-lg-4 ticket-card">
+    <!-- ========== 多選購物車表單 ========== -->
+    <form id="cartForm" th:action="@{/ticket/ticketorder}" method="post">
+        <!-- 查詢結果區塊 -->
+        <div th:if="${searchList != null}">
+            <h4 class="text-primary text-center">查詢結果</h4>
+            <div class="row">
+                <div th:each="ticket : ${searchList}" class="col-md-6 col-lg-4 ticket-card">
                     <div class="card h-100 shadow-sm">
                         <div class="card-img-top text-center bg-light" style="height:140px;">
                             <img th:if="${ticket.ticketImage != null}" th:src="'/ticket/image/' + ${ticket.ticketId}"
@@ -85,31 +45,72 @@
                                       th:classappend="${ticket.ticketStatus == 1 ? 'text-success' : 'text-danger'}"></span>
                             </li>
                         </ul>
+                        <div class="form-check mt-2 mb-1 text-center">
+                            <input class="form-check-input" type="checkbox" name="ticketIds" th:value="${ticket.ticketId}" id="searchSelectTicket__${ticket.ticketId}" />
+                            <label class="form-check-label" th:for="'searchSelectTicket__' + ${ticket.ticketId}">選擇下單</label>
+                        </div>
                     </div>
                 </div>
             </div>
-            <!-- 全部票券分頁 -->
-            <nav class="mt-4" th:if="${ticketPage != null and ticketPage.totalPages > 1}">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item" th:classappend="${ticketPage.first} ? 'disabled'">
-                        <a class="page-link"
-                           th:href="@{/ticketlist(page=${currentPage - 1}, size=${pageSize})}">上一頁</a>
-                    </li>
-                    <li class="page-item"
-                        th:each="i : ${#numbers.sequence(0, ticketPage.totalPages - 1)}"
-                        th:classappend="${i} == ${currentPage} ? 'active'">
-                        <a class="page-link"
-                           th:href="@{/ticketlist(page=${i}, size=${pageSize})}"
-                           th:text="${i + 1}">1</a>
-                    </li>
-                    <li class="page-item" th:classappend="${ticketPage.last} ? 'disabled'">
-                        <a class="page-link"
-                           th:href="@{/ticketlist(page=${currentPage + 1}, size=${pageSize})}">下一頁</a>
-                    </li>
-                </ul>
-            </nav>
+            <div th:if="${searchList.size() == 0}" class="alert alert-danger text-center my-3" role="alert">
+                查無此票
+            </div>
+            <hr class="section-divider">
         </div>
-    </div>
+
+        <!-- 全部票券區塊（含分頁） -->
+        <h4 class="text-secondary text-center">全部票券</h4>
+        <div class="row" th:if="${ticketPage != null and ticketPage.content.size() > 0}">
+            <div th:each="ticket : ${ticketPage.content}" class="col-md-6 col-lg-4 ticket-card">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-img-top text-center bg-light" style="height:140px;">
+                        <img th:if="${ticket.ticketImage != null}" th:src="'/ticket/image/' + ${ticket.ticketId}"
+                             class="img-fluid h-100" alt="票券圖片"/>
+                        <span th:if="${ticket.ticketImage == null}" class="text-muted align-middle">無圖片</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${ticket.ticketName}">票券名稱</h5>
+                        <p class="card-text" th:text="${ticket.ticketDescription}">票券描述</p>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">價格：<span th:text="${ticket.ticketPrice}">0</span> 元</li>
+                        <li class="list-group-item">庫存：<span th:text="${ticket.ticketStock}"></span></li>
+                        <li class="list-group-item">狀態：
+                            <span th:text="${ticket.ticketStatus == 1 ? '有庫存' : '無庫存'}"
+                                  th:classappend="${ticket.ticketStatus == 1 ? 'text-success' : 'text-danger'}"></span>
+                        </li>
+                    </ul>
+                    <div class="form-check mt-2 mb-1 text-center">
+                        <input class="form-check-input" type="checkbox" name="ticketIds" th:value="${ticket.ticketId}" id="allSelectTicket__${ticket.ticketId}" />
+                        <label class="form-check-label" th:for="'allSelectTicket__' + ${ticket.ticketId}">選擇下單</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 全部票券分頁 -->
+        <nav class="mt-4" th:if="${ticketPage != null and ticketPage.totalPages > 1}">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${ticketPage.first} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/ticketlist(page=${currentPage - 1}, size=${pageSize})}">上一頁</a>
+                </li>
+                <li class="page-item"
+                    th:each="i : ${#numbers.sequence(0, ticketPage.totalPages - 1)}"
+                    th:classappend="${i} == ${currentPage} ? 'active'">
+                    <a class="page-link"
+                       th:href="@{/ticketlist(page=${i}, size=${pageSize})}"
+                       th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${ticketPage.last} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/ticketlist(page=${currentPage + 1}, size=${pageSize})}">下一頁</a>
+                </li>
+            </ul>
+        </nav>
+        <div class="text-center my-3">
+            <button type="submit" class="btn btn-success btn-lg px-5">放入購物車</button>
+        </div>
+    </form>
 </div>
 </body>
 </html>
