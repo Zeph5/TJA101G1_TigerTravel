@@ -59,7 +59,7 @@ public class TicketOrderController {
     @GetMapping("/detail/{orderId}")
     public String orderDetail(@PathVariable Integer orderId, Model model) {
         model.addAttribute("order", ticketOrderService.getOrderDetail(orderId));
-        return "ticket/ticketorderDetail"; // <-- 和 HTML 檔名對齊
+        return "redirect:/ticket/order/receipt/"; // <-- 和 HTML 檔名對齊
     }
 }
 
