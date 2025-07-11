@@ -37,37 +37,57 @@ public class SecurityConfig {
     @Bean
     @Order(2) // 設定這個 SecurityFilterChain 的優先順序，確保 Manager 的先匹配
     public SecurityFilterChain memberFilterChain(HttpSecurity http,
-    		AuthenticationProvider memberAuthenticationProvider) throws Exception { // 改名以避免與 Manager 的 filterChain 混淆
+            AuthenticationProvider memberAuthenticationProvider) throws Exception {
+
         http
-        	.csrf(csrf -> csrf.disable()) // 停用保護
-        	.securityMatcher("/", "/index", "/login", "/register", 
-        			"ticketOrders","/member/receipt/**",
-                    "/member/**", "/ticket/**", "/scenery/**", "/logout",
-                    "/login?error", "/error", "/css/**", "/js/**", "/images/**", "/member/verify")
-        	.authorizeHttpRequests(auth -> auth
-        				.requestMatchers("/login", "/index", "/member/register", "/login?error", "/error","/register",
-                        "/css/**", "/js/**", "/images/**", "/member/verify","/scenery/**") // 允許匿名訪問
-                        .permitAll()
-                        .requestMatchers("/scenery/**").permitAll()  // ✅ 加這行來開放瀏覽
-                        .requestMatchers("/ticket/**").authenticated()  // 範例：登入才看票券
-                        .requestMatchers("/member/receipt/**").authenticated()
-                        .requestMatchers("/member/list").hasRole("MANAGER") // 確保 Manager 角色才能訪問這個路徑
-                        .requestMatchers("/member/**").authenticated() // 其他所有 /member/** 路徑需登入
-                )
-                // 登入動作
-                .formLogin(form -> form
-                        .loginPage("/login") // 頁面路徑
-                        .loginProcessingUrl("/member/login") // 會員表單提交的 URL
-                        .defaultSuccessUrl("/index", true) // 成功登入導向 home
-                        .failureHandler(failureHandler) // 使用自訂的失敗處理器
-                        .permitAll()
-                )
-                // 登出動作
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/index") // 登出後導向
-                        .permitAll() // 讓所有人(含未登入者)都能登出
-                );
+            .csrf(csrf -> csrf.disable()) // 停用 CSRF 防護（依實際情況調整）
+            .securityMatcher("/", "/index", "/login", "/register", 
+                "ticketOrders", "/member/receipt/**", "/member/password/**", // ✅ 密碼相關頁面
+                "/member/**", "/ticket/**", "/scenery/**", "/logout",
+                "/login?error", "/error", "/css/**", "/js/**", "/images/**", "/member/verify")
+            .authorizeHttpRequests(auth -> auth
+                // ✅ 允許匿名訪問的路徑
+                .requestMatchers(
+                    "/login", "/index", "/member/register", "/register",
+                    "/login?error", "/error",
+                    "/css/**", "/js/**", "/images/**",
+                    "/member/verify", "/scenery/**"
+                ).permitAll()
+
+                .requestMatchers(
+                	    "/member/forgotPassword",
+                	    "/member/resetPassword",
+                	    "/member/reset_Password_fail"
+                	).permitAll()
+                
+                // ✅ 密碼重設相關頁面開放匿名訪問
+                .requestMatchers(
+                		"/member/reset", "/member/resetPassword","/member/reset-password",
+                	"/member/forgot", "/member/forgotPassword", "/member/reset_Password",
+                    "/member/password/forgotPassword",
+                    "/member/reset", "/member/password/resetPassword", "/member/password/reset_Password_fail"
+                ).permitAll()
+
+                // ✅ 管理員專用路徑
+                .requestMatchers("/member/list").hasRole("MANAGER")
+
+                // ✅ 需登入的路徑
+                .requestMatchers("/ticket/**").authenticated()
+                .requestMatchers("/member/receipt/**").authenticated()
+                .requestMatchers("/member/**").authenticated()
+            )
+            .formLogin(form -> form
+                .loginPage("/login")                      // 自訂登入頁面
+                .loginProcessingUrl("/member/login")      // 登入表單送出處理路徑
+                .defaultSuccessUrl("/index", true)        // 成功後導向首頁
+                .failureHandler(failureHandler)           // 自訂登入失敗處理
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/index")
+                .permitAll()
+            );
 
         http.authenticationProvider(memberAuthenticationProvider);
         return http.build();
