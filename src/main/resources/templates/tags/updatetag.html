@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Edit Tag</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h2>Edit Tag</h2>
+
+    <form th:action="@{/tags/update}" th:object="${tagsForm}" method="post">
+        <input type="hidden" th:field="*{tagsId}" />
+
+        <!-- Tag selection -->
+        <div class="mb-3">
+            <label for="tagsdbId">Tag Name:</label>
+            <select class="form-select" th:field="*{tagsdbId}" required>
+                <option value="" disabled>Select a tag</option>
+                <option th:each="tagdb : ${tagsdbList}"
+                        th:value="${tagdb.tagsdbId}"
+                        th:text="${tagdb.tagsName}"
+                        th:selected="${tagdb.tagsdbId} == ${tagsForm.tagsdbId}"></option>
+            </select>
+        </div>
+
+        <!-- Scenery selection -->
+        <div class="mb-3">
+            <label for="sceneryId">Scenery Name:</label>
+            <select class="form-select" th:field="*{sceneryId}" required>
+                <option value="" disabled>Select a scenery</option>
+                <option th:each="scene : ${sceneryList}"
+                        th:value="${scene.sceneryId}"
+                        th:text="${scene.sceneryName}"
+                        th:selected="${scene.sceneryId} == ${tagsForm.sceneryId}"></option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update Tag</button>
+        <a th:href="@{/tags/list}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+</body>
+</html>

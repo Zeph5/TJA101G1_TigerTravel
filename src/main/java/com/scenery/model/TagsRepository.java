@@ -15,4 +15,7 @@ public interface TagsRepository extends JpaRepository<TagsVO, Integer>{
 
     List<TagsVO> findByScenery(SceneryVO scenery);
     List<TagsVO> findByTagsdb(TagsdbVO tagsdb);
+    
+    List<TagsVO> findByTagsdb_TagsName(String tagsName);
+    List<TagsVO> findByScenery_SceneryName(String sceneryName);
 }
