@@ -75,6 +75,7 @@ public class SceneryController {
         model.addAttribute("sceneryListData", list);
         return "scenery/listallscenery";
     }
+   
 
     // Existing POST handler for filtered search
     @PostMapping("listallscenery")

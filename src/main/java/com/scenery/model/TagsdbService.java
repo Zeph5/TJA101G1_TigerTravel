@@ -10,43 +10,36 @@ import org.springframework.stereotype.Service;
 @Service("TagsdbService")
 public class TagsdbService {
 
-	 @Autowired
-	    private TagsdbRepository tagsdbRepository;
+    @Autowired
+    private TagsdbRepository tagsdbRepository;
 
-	    // add Tag to tagsdb
-	    public TagsdbVO add(TagsdbVO tagsdb) {
-	    	if(tagsdbRepository.findByTagsName(tagsdb.getTagsName()).isPresent()) {
-	    		throw new RuntimeException("標籤已存在");
-	    	}
-	        return tagsdbRepository.save(tagsdb);
-	    }
-	    
-	    // find all 
-	    public List<TagsdbVO> findAllTags() {
-	        return tagsdbRepository.findAll();
-	    }
-		public List<TagsdbVO> findAllTags(Map<String, String[]> map) {
-			return tagsdbRepository.findAll();
-		}
+    public List<TagsdbVO> findAll() {
+        return tagsdbRepository.findAll();
+    }
 
-	    // find by id
-	    public Optional<TagsdbVO> findByTagsdbId(Integer id){
-	    	return tagsdbRepository.findById(id);
-	    }
+    public Optional<TagsdbVO> findById(Integer id) {
+        return tagsdbRepository.findById(id);
+    }
 
-	    // find by name
-	    public Optional<TagsdbVO> findByTagsName(String tagsName) {
-	        return tagsdbRepository.findByTagsName(tagsName);
-	    }
+    public List<TagsdbVO> findByTagsNameContaining(String name) {
+        return tagsdbRepository.findByTagsNameContainingIgnoreCase(name);
+    }
 
-	    
-	    // update tag
-	    public TagsdbVO save(TagsdbVO tagsdb) {
-	    	return tagsdbRepository.save(tagsdb);
-	    }
-	    
-	    // delete tag
-	    public void deleteById(Integer id) {
-	    	tagsdbRepository.deleteById(id);
-	    }
+    public TagsdbVO save(TagsdbVO vo) {
+        // Check for duplicate on add or update
+        Optional<TagsdbVO> existing = tagsdbRepository.findByTagsName(vo.getTagsName());
+
+        if (existing.isPresent()) {
+            // If adding new (no ID yet) or updating different ID → throw exception
+            if (vo.getTagsdbId() == null || !existing.get().getTagsdbId().equals(vo.getTagsdbId())) {
+                throw new IllegalArgumentException("Tag name '" + vo.getTagsName() + "' already exists.");
+            }
+        }
+
+        return tagsdbRepository.save(vo);
+    }
+
+    public void deleteById(Integer id) {
+        tagsdbRepository.deleteById(id);
+    }
 }
