@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title th:text="${scenery.sceneryName}">Scenery Details</title>
+<style>
+/* Base and font */
+body {
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	background: linear-gradient(135deg, #d9f0ff, #e3f7e3);
+	color: #2c3e50;
+	margin: 0;
+	padding: 0;
+	line-height: 1.6;
+}
+
+/* Container for page content */
+.details {
+	max-width: 850px;
+	margin: 30px auto 50px;
+	padding: 30px 40px;
+	background: #fff;
+	box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+	border-radius: 16px;
+	border: 1px solid #b8d8d8;
+}
+
+/* Banner image styling */
+.banner-img {
+	width: 100%;
+	max-height: 450px;
+	object-fit: cover;
+	border-radius: 16px;
+	box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+	margin-bottom: 25px;
+	transition: transform 0.3s ease;
+}
+
+.banner-img:hover {
+	transform: scale(1.03);
+}
+
+/* Header row: title and rating + edit button container */
+.header-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 22px;
+}
+
+.header-row h2 {
+	font-weight: 700;
+	font-size: 2.3rem;
+	color: #1a5276;
+	margin: 0;
+}
+
+/* Wrap rating and edit button */
+.header-row > div {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+/* Stars container */
+.stars {
+	font-size: 1.5rem;
+	vertical-align: middle;
+	color: #ddd; /* default empty stars */
+	display: inline-flex;
+	gap: 3px;
+}
+
+.stars .full {
+	color: #f1c40f; /* bright gold */
+	text-shadow: 0 0 2px #d4af37;
+}
+
+.stars .half {
+	position: relative;
+	color: #ddd;
+}
+
+.stars .half::before {
+	content: '★';
+	position: absolute;
+	left: 0;
+	width: 50%;
+	overflow: hidden;
+	color: #f1c40f;
+	text-shadow: 0 0 2px #d4af37;
+}
+
+/* Rating text next to stars */
+.rating-number {
+	font-weight: 600;
+	color: #34495e;
+	font-size: 1.3rem;
+	margin-left: 8px;
+	user-select: none;
+}
+
+/* Edit button styling */
+.edit-btn {
+	background-color: #3498db;
+	color: white;
+	border: none;
+	border-radius: 6px;
+	padding: 6px 14px;
+	font-size: 1rem;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+	user-select: none;
+}
+
+.edit-btn:hover {
+	background-color: #2980b9;
+}
+
+/* Info items */
+.info-item {
+	margin-bottom: 18px;
+}
+
+.info-item strong {
+	color: #2471a3;
+	font-weight: 600;
+}
+
+.info-item span {
+	color: #34495e;
+	font-size: 1.1rem;
+}
+
+/* Paragraph intro */
+.info-item p {
+	font-size: 1.1rem;
+	color: #3d566e;
+	line-height: 1.5;
+	white-space: pre-wrap;
+	margin-top: 8px;
+}
+
+/* Horizontal line */
+hr {
+	border: none;
+	border-top: 1px solid #a9cce3;
+	margin: 30px 0;
+}
+
+/* Responsive adjustments */
+@media ( max-width : 600px) {
+	.details {
+		padding: 20px 25px;
+		margin: 20px 15px 40px;
+	}
+	.header-row {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+	.header-row h2 {
+		font-size: 1.8rem;
+	}
+	.stars {
+		font-size: 1.3rem;
+	}
+	.rating-number {
+		font-size: 1.1rem;
+		margin-left: 5px;
+	}
+}
+
+/* Gallery thumbnails */
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.gallery img {
+  width: 120px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: transform 0.2s ease;
+}
+
+.gallery img:hover {
+  transform: scale(1.05);
+}
+
+/* Modal styles */
+#modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.8);
+  display: none; /* hidden by default */
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+#modalOverlay img {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+  user-select: none;
+}
+
+#modalOverlay .close-btn {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  color: white;
+  font-size: 2.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+}
+</style>
+</head>
+<body>
+
+<div>
+	<img th:src="@{/scenery/banner/{id}(id=${scenery.sceneryId})}" alt="Banner" class="banner-img" />
+</div>
+
+<div class="details">
+	<div class="header-row">
+		<h2 th:text="${scenery.sceneryName}">Scenery Name</h2>
+		<div>
+			<strong>Rating:</strong> 
+			<span class="stars"> 
+				<span th:each="i : ${#numbers.sequence(1,5)}" th:class="'empty'">
+					<span th:if="${scenery.rating >= i}" th:class="'full'">&#9733;</span>
+					<span th:if="${scenery.rating < i and scenery.rating >= i - 0.5}" th:class="'half'">&#9733;</span> 
+					<span th:if="${scenery.rating < i - 0.5}" style="color: #ddd;">&#9733;</span>
+				</span>
+			</span> 
+			<span class="rating-number" th:text="${#numbers.formatDecimal(scenery.rating, 1, 1, 'POINT')}"></span>
+
+			<button class="edit-btn" th:onclick="'location.href=\'/scenery/updatescenery/' + ${scenery.sceneryId} + '\';'">Edit</button>
+		</div>
+	</div>
+
+	<div class="info-item">
+		<strong>Address:</strong> <span th:text="${scenery.sceneryAddress}">Address</span>
+	</div>
+
+	<div class="info-item">
+		<strong>Coordinates:</strong> <span th:text="'Longitude: ' + ${scenery.sceneryLongitude} + ', Latitude: ' + ${scenery.sceneryLatitude}">Coordinates</span>
+	</div>
+
+	<hr />
+
+	<h3>Gallery</h3>
+
+	<div th:if="${scenery.sceneryImages != null and !scenery.sceneryImages.isEmpty()}">
+		<div class="gallery">
+			<img 
+				th:each="img : ${scenery.sceneryImages}"
+				th:src="@{/scenery/image/{id}(id=${img.sceneryImageId})}"
+				alt="Scenery Image"
+				th:attr="data-full=@{/scenery/image/{id}(id=${img.sceneryImageId})}"
+				onclick="openModal(this)" />
+		</div>
+	</div>
+	<div th:if="${scenery.sceneryImages == null or scenery.sceneryImages.isEmpty()}">
+		<p>No images available for this scenery.</p>
+	</div>
+
+	<hr />
+
+	<div class="info-item">
+		<strong>Introduction:</strong>
+		<p th:utext="${#strings.replace(scenery.sceneryIntro, '\n', '<br/>')}">Intro</p>
+	</div>
+</div>
+
+<!-- Modal overlay -->
+<div id="modalOverlay" onclick="closeModal(event)">
+	<span class="close-btn" onclick="closeModal(event)">&times;</span>
+	<img id="modalImage" src="" alt="Full Size Image" />
+</div>
+
+<script>
+function openModal(imgElement) {
+	const modal = document.getElementById('modalOverlay');
+	const modalImg = document.getElementById('modalImage');
+	modalImg.src = imgElement.getAttribute('data-full');
+	modal.style.display = 'flex';
+}
+
+function closeModal(event) {
+	// Close if clicked on overlay background or close button only
+	if(event.target.id === 'modalOverlay' || event.target.classList.contains('close-btn')) {
+		document.getElementById('modalOverlay').style.display = 'none';
+	}
+}
+
+// Optional: Close modal on ESC key press
+document.addEventListener('keydown', function(event) {
+	if(event.key === "Escape") {
+		document.getElementById('modalOverlay').style.display = 'none';
+	}
+});
+</script>
+
+</body>
+</html>

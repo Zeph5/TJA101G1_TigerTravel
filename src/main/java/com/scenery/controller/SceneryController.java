@@ -1,129 +1,221 @@
 package com.scenery.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import com.scenery.model.SceneryVO;
+import com.scenery.model.DTO.SceneryDTO;
+import com.scenery.model.SceneryImageRepository;
+import com.scenery.model.SceneryImageVO;
 import com.scenery.model.SceneryService;
 
 @Controller
 @RequestMapping("/scenery")
 public class SceneryController {
 
-    @Autowired
-    SceneryService sceSvc;
+	@Autowired
+	private SceneryService sceneryService;
 
-    @GetMapping("addscenery")
-    public String addScenery(ModelMap model) {
-        SceneryVO sceVO = new SceneryVO();
-        model.addAttribute("SceneryVO", sceVO);
-        return "scenery/addscenery";
-    }
+	@Autowired
+	private SceneryImageRepository sceneryImageRepository;
 
-    @PostMapping("updatescenery")
-    public String updatescenery(@RequestParam("sceneryId") String sceneryId, ModelMap model) {
-        Optional<SceneryVO> sceneryVO = sceSvc.findBySceneryId(Integer.valueOf(sceneryId));
-        model.addAttribute("SceneryVO", sceneryVO.orElse(null));  // unwrap Optional safely
-        return "scenery/listonescenery"; 
-    }
-    
-    @PostMapping("/update")
-    public String updateScenery(@ModelAttribute("SceneryVO") SceneryVO sceneryVO, Model model) {
-        // Save the updated data
-        sceSvc.updateScenery(sceneryVO);
+	@GetMapping("/listallscenery")
+	public String listAllScenery(@RequestParam(value = "sceneryName", required = false) String sceneryName,
+			@RequestParam(value = "sceneryAddress", required = false) String sceneryAddress,
+			@RequestParam(value = "sceneryStatusFilter", required = false, defaultValue = "-1") Integer sceneryStatusFilter,
+			@RequestParam(value = "page", defaultValue = "0") int page, Model model) {
 
-        // Reload the updated data and redirect to detail page
-        model.addAttribute("SceneryVO", sceneryVO);
-        return "scenery/listonescenery"; // ⬅️ Forward to show updated result
-    }
+		if (sceneryStatusFilter != null && sceneryStatusFilter == -1) {
+			sceneryStatusFilter = null;
+		}
 
-    @ModelAttribute("sceneryListData")
-    protected List<SceneryVO> referenceListData() {
-        return sceSvc.findAllScenery();
-    }
+		int pageSize = 10;
+		Pageable pageable = PageRequest.of(page, pageSize);
 
-    public BindingResult removeFieldError(SceneryVO sceVO, BindingResult result, String removedFieldname) {
-        List<FieldError> errorsListToKeep = result.getFieldErrors().stream()
-            .filter(fieldname -> !fieldname.getField().equals(removedFieldname))
-            .collect(Collectors.toList());
-        result = new BeanPropertyBindingResult(sceVO, "SceneryVO");
-        for (FieldError fieldError : errorsListToKeep) {
-            result.addError(fieldError);
-        }
-        return result;
-    }
-    
-    // New GET handler to show all scenery (no filters)
-    @GetMapping("listallscenery")
-    public String listAllSceneryGet(Model model) {
-        List<SceneryVO> list = sceSvc.findAllScenery();
-        model.addAttribute("sceneryListData", list);
-        return "scenery/listallscenery";
-    }
-   
+		Page<SceneryVO> sceneryPage = sceneryService.advancedSearch(sceneryName, sceneryAddress, sceneryStatusFilter,
+				pageable);
 
-    // Existing POST handler for filtered search
-    @PostMapping("listallscenery")
-    public String listAllSceneryPost(HttpServletRequest req, Model model) {
-        Map<String, String[]> map = req.getParameterMap();
-        List<SceneryVO> list = sceSvc.findAllScenery(map);
-        model.addAttribute("sceneryListData", list); 
-        return "scenery/listallscenery";
-    }
-    
-    @PostMapping("listonescenery")
-    public String postOneScenery(@RequestParam("sceneryId") Integer sceneryId, Model model) {
-        Optional<SceneryVO> sceneryVO = sceSvc.findBySceneryId(sceneryId);
-        if (sceneryVO.isPresent()) {
-            model.addAttribute("SceneryVO", sceneryVO.get());
-            return "scenery/listonescenery";
-        } else {
-            model.addAttribute("errorMessage", "查無資料，景點編號: " + sceneryId);
-            return "scenery/sceneryindex";  // or redirect to a 404 page
-        }
-    }
-    
-    @PostMapping("/showupdatescenery")
-    public String showUpdateSceneryForm(@RequestParam("sceneryId") Integer sceneryId, Model model) {
-        Optional<SceneryVO> sceneryVO = sceSvc.findBySceneryId(sceneryId);
-        if (sceneryVO.isPresent()) {
-            model.addAttribute("SceneryVO", sceneryVO.get());
-            return "scenery/updatescenery"; // ✅ This view must exist
-        } else {
-            model.addAttribute("errorMessage", "查無資料，景點編號: " + sceneryId);
-            return "scenery/sceneryindex";
-        }
-    }
-    
-    @PostMapping("/addscenery")
-    public String insertScenery(@ModelAttribute("SceneryVO") SceneryVO sceneryVO, BindingResult result, Model model) {
-        if (result.hasErrors()) {
-            return "scenery/addscenery";
-        }
+		model.addAttribute("sceneryPage", sceneryPage);
+		model.addAttribute("sceneryName", sceneryName);
+		model.addAttribute("sceneryAddress", sceneryAddress);
+		model.addAttribute("sceneryStatusFilter", sceneryStatusFilter != null ? sceneryStatusFilter : -1);
+		model.addAttribute("currentPage", page);
+		model.addAttribute("totalPages", sceneryPage.getTotalPages());
 
-        sceSvc.add(sceneryVO); // persist to DB
-        model.addAttribute("SceneryVO", sceneryVO);
-        return "scenery/addsuccess"; // ✅ show success page
-    }
+		return "scenery/listallscenery";
+	}
 
-    
-    @GetMapping("sceneryindex")
-    public String showSceneryIndex() {
-        return "scenery/sceneryindex";
-    }
+	@GetMapping("/banner/{sceneryId}")
+	public ResponseEntity<byte[]> getSceneryBanner(@PathVariable Integer sceneryId) {
+		SceneryVO scenery = sceneryService.getById(sceneryId);
+		if (scenery == null || scenery.getSceneryBanner() == null) {
+			return ResponseEntity.notFound().build();
+		}
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.IMAGE_JPEG);
+		return new ResponseEntity<>(scenery.getSceneryBanner(), headers, HttpStatus.OK);
+	}
+
+	@GetMapping("/index")
+	public String sceneryIndex(Model model) {
+		return "scenery/sceneryindex";
+	}
+
+	@GetMapping("/addscenery")
+	public String showAddForm(Model model) {
+		model.addAttribute("sceneryDTO", new SceneryDTO());
+		return "scenery/addscenery";
+	}
+
+	@PostMapping("/addscenery")
+	public String addScenery(@ModelAttribute SceneryDTO dto, Model model) throws IOException {
+		SceneryVO vo = new SceneryVO();
+		vo.setSceneryName(dto.getSceneryName());
+		vo.setSceneryIntro(dto.getSceneryIntro());
+		vo.setSceneryAddress(dto.getSceneryAddress());
+		vo.setSceneryLongitude(dto.getSceneryLongitude());
+		vo.setSceneryLatitude(dto.getSceneryLatitude());
+
+		MultipartFile file = dto.getSceneryBannerFile();
+		if (file != null && !file.isEmpty()) {
+			vo.setSceneryBanner(file.getBytes());
+		}
+
+		sceneryService.addScenery(vo);
+		return "scenery/addsuccess";
+	}
+	
+	
+
+	@GetMapping("/updatescenery/{id}")
+	public String showUpdateScenery(@PathVariable Integer id, Model model) {
+	    SceneryVO scenery = sceneryService.getById(id);
+	    if (scenery == null) {
+	        return "redirect:/scenery/listallscenery";
+	    }
+	    Set<SceneryImageVO> images = sceneryService.getImagesBySceneryId(id).stream().collect(Collectors.toSet());
+	    scenery.setSceneryImages(images);
+
+	    SceneryDTO dto = sceneryService.convertToDTO(scenery);
+	    model.addAttribute("sceneryDTO", dto);
+	    return "scenery/updatescenery";
+	}
+
+	@PostMapping("/updatescenery")
+	public String updateScenery(@ModelAttribute SceneryDTO dto) throws IOException {
+		SceneryVO existing = sceneryService.getById(dto.getSceneryId());
+		if (existing == null) {
+			return "redirect:/scenery/listallscenery";
+		}
+
+		existing.setSceneryName(dto.getSceneryName());
+		existing.setSceneryIntro(dto.getSceneryIntro());
+		existing.setSceneryAddress(dto.getSceneryAddress());
+		existing.setSceneryLongitude(dto.getSceneryLongitude());
+		existing.setSceneryLatitude(dto.getSceneryLatitude());
+
+		MultipartFile bannerFile = dto.getSceneryBannerFile();
+		if (bannerFile != null && !bannerFile.isEmpty()) {
+			existing.setSceneryBanner(bannerFile.getBytes());
+		}
+
+		sceneryService.updateScenery(existing);
+
+		// Save multiple gallery images if any uploaded
+		if (dto.getSceneryImages() != null && !dto.getSceneryImages().isEmpty()) {
+			for (MultipartFile imageFile : dto.getSceneryImages()) {
+				if (!imageFile.isEmpty()) {
+					sceneryService.addSceneryImage(existing.getSceneryId(), imageFile);
+				}
+			}
+		}
+
+		return "redirect:/scenery/" + existing.getSceneryId();
+	}
+
+	@GetMapping("/{id}")
+	public String showSelectedScenery(@PathVariable("id") Integer id, Model model) {
+		SceneryVO scenery = sceneryService.getById(id);
+		if (scenery == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenery not found");
+		}
+
+		List<SceneryImageVO> images = sceneryService.getImagesBySceneryId(id);
+		model.addAttribute("scenery", scenery);
+		model.addAttribute("sceneryImages", images);
+
+		return "scenery/selectedscenery";
+	}
+
+	@PostMapping("/updatestatus")
+	public String updateSceneryStatus(@RequestParam("sceneryId") Integer sceneryId,
+			@RequestParam("sceneryStatus") Integer sceStatus) {
+		sceneryService.updateSceneryStatus(sceneryId, sceStatus);
+		return "redirect:/scenery/listallscenery";
+	}
+
+	@PostMapping("/{sceneryId}/addimage")
+	public String addSceneryImage(@PathVariable Integer sceneryId, @RequestParam("imageFile") MultipartFile imageFile)
+			throws IOException {
+		if (imageFile == null || imageFile.isEmpty()) {
+			return "redirect:/scenery/" + sceneryId + "?error=NoFile";
+		}
+		sceneryService.addSceneryImage(sceneryId, imageFile);
+		return "redirect:/scenery/" + sceneryId;
+	}
+
+	@GetMapping("/image/{id}")
+	public ResponseEntity<byte[]> getSceneryImage(@PathVariable("id") Integer id) {
+		SceneryImageVO img = sceneryImageRepository.findById(id).orElse(null);
+		if (img == null || img.getSceneryImage() == null) {
+			return ResponseEntity.notFound().build();
+		}
+
+		Byte[] imageBytes = img.getSceneryImage();
+		byte[] bytes = new byte[imageBytes.length];
+		for (int i = 0; i < imageBytes.length; i++) {
+			bytes[i] = imageBytes[i];
+		}
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.IMAGE_JPEG);
+		return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+	}
+	
+	@GetMapping("/deleteimage/{imageId}")
+	public String deleteSceneryImage(@PathVariable Integer imageId) {
+	    // Find the image by id
+	    Optional<SceneryImageVO> imageOpt = sceneryImageRepository.findById(imageId);
+	    if (imageOpt.isPresent()) {
+	        SceneryImageVO image = imageOpt.get();
+	        Integer sceneryId = image.getScenery().getSceneryId(); // Get the associated scenery id
+	        
+	        // Delete the image
+	        sceneryImageRepository.delete(image);
+	        
+	        // Redirect back to the update scenery page
+	        return "redirect:/scenery/updatescenery/" + sceneryId;
+	    } else {
+	        // Image not found - redirect somewhere safe or show error
+	        return "redirect:/scenery/listallscenery";
+	    }
+	}
 }

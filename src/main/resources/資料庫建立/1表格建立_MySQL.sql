@@ -2,14 +2,12 @@ CREATE DATABASE IF NOT EXISTS TigerTravelDB;
 
 USE TigerTravelDB;
 
-
 DROP TABLE IF EXISTS ticket_list;
 DROP TABLE IF EXISTS travel_plan_day;
 DROP TABLE IF EXISTS travel_image;
 DROP TABLE IF EXISTS tourist_id;
 DROP TABLE IF EXISTS ticket_order_receipt;
 DROP TABLE IF EXISTS ticket_order;
-DROP TABLE IF EXISTS ticket;
 DROP TABLE IF EXISTS tour_order;
 DROP TABLE IF EXISTS manager;
 DROP TABLE IF EXISTS coupon;
@@ -21,8 +19,10 @@ DROP TABLE IF EXISTS tagsdb;
 DROP TABLE IF EXISTS scenery_image;
 DROP TABLE IF EXISTS scenery_score;
 DROP TABLE IF EXISTS scenery;
-DROP TABLE IF EXISTS member;
 DROP TABLE IF EXISTS travel_plan; 
+DROP TABLE IF EXISTS ticket;
+DROP TABLE IF EXISTS member;
+
 
 CREATE TABLE member (
     member_id INT AUTO_INCREMENT NOT NULL,
@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS scenery (
     sce_address VARCHAR(500) COMMENT '景點地址',
     sce_longitude DECIMAL(9,6) COMMENT '景點經度',
     sce_latitude DECIMAL(9,6) COMMENT '景點緯度',
+    sce_banner LONGBLOB COMMENT '景點背景',
     create_time TIMESTAMP COMMENT '創建時間',
     PRIMARY KEY (scenery_id)
 ) AUTO_INCREMENT = 1;
@@ -208,6 +209,8 @@ CREATE TABLE ticket_order_receipt (
     ticket_order_id INT NOT NULL COMMENT '對應的訂單編號',
     ticket_id INT NOT NULL COMMENT '商品ID',
     ticket_count INT NOT NULL COMMENT '購買數量',
+   	ticket_price INT NOT NULL COMMENT '票券單價',
+   	ticket_price_total INT NOT NULL COMMENT '票券總價',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
     FOREIGN KEY (ticket_order_id) REFERENCES ticket_order(ticket_order_id),
     FOREIGN KEY (ticket_id) REFERENCES ticket(ticket_id)

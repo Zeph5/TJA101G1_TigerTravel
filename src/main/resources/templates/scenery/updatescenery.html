@@ -2,87 +2,226 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 <title>Update Scenery</title>
 <style>
-  .error { color: red; }
-  label { display: inline-block; width: 100px; }
-  input[type="text"] { width: 300px; }
-  div.form-group { margin-bottom: 10px; }
+body {
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	background: linear-gradient(135deg, #d9f0ff, #e3f7e3);
+	color: #2c3e50;
+	margin: 0;
+	padding: 0;
+}
+
+.container {
+	max-width: 850px;
+	margin: 30px auto;
+	padding: 30px 40px;
+	background: #fff;
+	box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+	border-radius: 16px;
+	border: 1px solid #b8d8d8;
+}
+
+.banner-upload, .gallery-upload {
+	border: 2px dashed #7f8c8d;
+	padding: 20px;
+	text-align: center;
+	cursor: pointer;
+	border-radius: 12px;
+	margin-bottom: 20px;
+	background-color: #f8f9f9;
+	position: relative;
+}
+
+.banner-preview, .gallery-preview img {
+	max-width: 100%;
+	max-height: 300px;
+	object-fit: cover;
+	border-radius: 12px;
+	margin-bottom: 15px;
+}
+
+.gallery-preview {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.gallery-preview .image-container {
+	position: relative;
+	display: inline-block;
+}
+
+.gallery-preview img {
+	width: 120px;
+	height: 100px;
+	object-fit: cover;
+	border-radius: 6px;
+	display: block;
+}
+
+.delete-btn {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	background: rgba(255, 0, 0, 0.85);
+	color: white;
+	border: none;
+	border-radius: 50%;
+	width: 24px;
+	height: 24px;
+	font-weight: bold;
+	font-size: 16px;
+	line-height: 24px; /* Same as height for vertical centering */
+	text-align: center;
+	cursor: pointer;
+	user-select: none;
+	opacity: 0.85;
+	transition: opacity 0.3s ease;
+}
+
+.delete-btn:hover {
+	opacity: 1;
+	background: rgba(255, 0, 0, 1);
+}
+
+input[type="text"], textarea {
+	width: 100%;
+	padding: 8px 12px;
+	margin-bottom: 15px;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	font-size: 1rem;
+}
+
+button {
+	background-color: #3498db;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 8px;
+	font-size: 1.1rem;
+	cursor: pointer;
+}
+
+button:hover {
+	background-color: #2980b9;
+}
 </style>
 </head>
 <body>
+	<div class="container" th:if="${sceneryDTO != null}">
+		<h2>Update Scenery</h2>
+		<form th:action="@{/scenery/updatescenery}" method="post"
+			enctype="multipart/form-data" th:object="${sceneryDTO}">
+			<input type="hidden" th:field="*{sceneryId}" />
 
-<nav class="navbar navbar-expand-md navbar-dark bg-success fixed-top justify-content-center">
-    <div align="center">
-        <h2>updatescenery.html</h2>
-        <h3><a class="navbar-brand" th:href="@{/scenery/sceneryindex}">回查詢頁</a></h3>
-    </div>
-</nav>
+			<div class="banner-upload"
+				onclick="document.getElementById('bannerInput').click()"
+				ondragover="event.preventDefault()" ondrop="handleBannerDrop(event)">
+				<p>Click or drag to upload banner</p>
+				<img th:if="*{sceneryId != null}"
+					th:src="@{/scenery/banner/{id}(id=*{sceneryId})}"
+					class="banner-preview" alt="Current Banner" /> <input type="file"
+					id="bannerInput" th:field="*{sceneryBannerFile}"
+					style="display: none;" accept="image/*" />
+			</div>
 
-<div align="center" style="margin-top:80px;">
-    <h3><b>所有欄位皆為必填欄位</b></h3>
-    
-    <form th:action="@{/scenery/update}" method="post" th:object="${SceneryVO}" enctype="multipart/form-data">
+			<label>Scenery Name</label> <input type="text"
+				th:field="*{sceneryName}" required /> <label>Address</label> <input
+				type="text" th:field="*{sceneryAddress}" /> <label>Longitude</label>
+			<input type="text" th:field="*{sceneryLongitude}" /> <label>Latitude</label>
+			<input type="text" th:field="*{sceneryLatitude}" /> <label>Introduction</label>
+			<textarea th:field="*{sceneryIntro}" rows="5"></textarea>
 
-        <!-- CSRF token -->
-        <input type="hidden" th:if="${_csrf != null}"
-               th:name="${_csrf.parameterName}"
-               th:value="${_csrf.token}" />
+			<label>Current Scenery Images</label>
+			<div class="gallery-preview">
+				<div class="image-container" th:each="img : *{existingImages}">
+					<img th:src="@{/scenery/image/{id}(id=${img.sceneryImageId})}"
+						alt="Scenery Image" />
+					<button type="button" class="delete-btn"
+						th:attr="data-imageid=${img.sceneryImageId}"
+						onclick="confirmDelete(this)">×</button>
+				</div>
+			</div>
 
-        <div class="form-group">
-            <label for="sceneryId">景點編號:</label>
-            <input type="text" id="sceneryId" th:field="*{sceneryId}" readonly style="border:0; font-weight:bold;" />
-        </div>
+			<label>Add More Images</label>
+			<div class="gallery-upload"
+				onclick="document.getElementById('galleryInput').click()"
+				ondragover="event.preventDefault()"
+				ondrop="handleGalleryDrop(event)">
+				<p>Click or drag & drop to add images</p>
+				<input type="file" id="galleryInput" th:field="*{sceneryImages}"
+					multiple style="display: none;" accept="image/*" />
+			</div>
 
-        <div class="form-group">
-            <label for="sceneryName">景點名稱:</label>
-            <input type="text" id="sceneryName" th:field="*{sceneryName}" onclick="hideContent('sceneryName.errors');" />
-            <br/>
-            <span th:if="${#fields.hasErrors('sceneryName')}" th:errors="*{sceneryName}" class="error" id="sceneryName.errors"></span>
-        </div>
+			<button type="submit">Update Scenery</button>
+		</form>
+	</div>
 
-        <div class="form-group">
-            <label for="sceneryIntro">景點介紹:</label>
-            <input type="text" id="sceneryIntro" th:field="*{sceneryIntro}" onclick="hideContent('sceneryIntro.errors');" />
-            <br/>
-            <span th:if="${#fields.hasErrors('sceneryIntro')}" th:errors="*{sceneryIntro}" class="error" id="sceneryIntro.errors"></span>
-        </div>
+	<div th:if="${sceneryDTO == null}"
+		style="text-align: center; margin-top: 40px;">
+		<p>Sorry, scenery data not found or not loaded properly.</p>
+	</div>
 
-        <div class="form-group">
-            <label for="sceneryAddress">景點地址:</label>
-            <input type="text" id="sceneryAddress" th:field="*{sceneryAddress}" onclick="hideContent('sceneryAddress.errors');" />
-            <br/>
-            <span th:if="${#fields.hasErrors('sceneryAddress')}" th:errors="*{sceneryAddress}" class="error" id="sceneryAddress.errors"></span>
-        </div>
+	<script>
+function confirmDelete(button) {
+	const imageId = button.getAttribute('data-imageid');
+	if (confirm("Are you sure you want to delete this image?")) {
+		window.location.href = '/scenery/deleteimage/' + imageId;
+	}
+}
 
-        <div class="form-group">
-            <label for="sceneryLongitude">景點經度:</label>
-            <input type="text" id="sceneryLongitude" th:field="*{sceneryLongitude}" onclick="hideContent('sceneryLongitude.errors');" />
-            <br/>
-            <span th:if="${#fields.hasErrors('sceneryLongitude')}" th:errors="*{sceneryLongitude}" class="error" id="sceneryLongitude.errors"></span>
-        </div>
+	// Banner preview update on file select
+	document.getElementById('bannerInput').addEventListener('change', function(event) {
+		const file = event.target.files[0];
+		if (file) {
+			let preview = document.getElementById('bannerPreview');
+			if (!preview) {
+				preview = document.createElement('img');
+				preview.id = 'bannerPreview';
+				preview.className = 'banner-preview';
+				document.querySelector('.banner-upload').appendChild(preview);
+			}
+			preview.src = URL.createObjectURL(file);
+		}
+	});
 
-        <div class="form-group">
-            <label for="sceneryLatitude">景點緯度:</label>
-            <input type="text" id="sceneryLatitude" th:field="*{sceneryLatitude}" onclick="hideContent('sceneryLatitude.errors');" />
-            <br/>
-            <span th:if="${#fields.hasErrors('sceneryLatitude')}" th:errors="*{sceneryLatitude}" class="error" id="sceneryLatitude.errors"></span>
-        </div>
+	// Gallery preview update on multiple file select
+	document.getElementById('galleryInput').addEventListener('change', function(event) {
+	const files = event.target.files;
+	const previewContainer = document.querySelector('.gallery-preview');
+	Array.from(files).forEach(file => {
+		const imgContainer = document.createElement('div');
+		imgContainer.className = 'image-container';
 
-        <div>
-            <button type="submit" id="submit">送出更新</button>
-        </div>
-    </form>
-</div>
+		const img = document.createElement('img');
+		img.src = URL.createObjectURL(file);
+		imgContainer.appendChild(img);
 
-<script>
-  // Example stub for hideContent function; customize as needed
-  function hideContent(id) {
-    var el = document.getElementById(id);
-    if(el) el.style.display = 'none';
-  }
+		previewContainer.appendChild(imgContainer);
+	});
+});
+
+
+	// Drag & drop handlers
+	function handleBannerDrop(event) {
+		event.preventDefault();
+		const files = event.dataTransfer.files;
+		if (files.length > 0) {
+			document.getElementById('bannerInput').files = files;
+			document.getElementById('bannerInput').dispatchEvent(new Event('change'));
+		}
+	}
+
+	function handleGalleryDrop(event) {
+		event.preventDefault();
+		const files = event.dataTransfer.files;
+		if (files.length > 0) {
+			document.getElementById('galleryInput').files = files;
+			document.getElementById('galleryInput').dispatchEvent(new Event('change'));
+		}
+	}
 </script>
-
 </body>
 </html>

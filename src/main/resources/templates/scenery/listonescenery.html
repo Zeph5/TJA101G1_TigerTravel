@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-<title>Scenery Details</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Scenery Details</title>
 </head>
 <body>
 
@@ -14,24 +14,30 @@
     </div>
 </nav>
 
-<div align="center" th:fragment="listonescenery-div" style="margin-top: 80px;">
-    <h3><span>查詢結果 :</span></h3>
-    <span>景點編號:</span><span th:text="${SceneryVO.sceneryId}"></span><br />
-    <span>景點名稱:</span><span th:text="${SceneryVO.sceneryName}"></span><br />
-    <span>景點介紹:</span><span th:text="${SceneryVO.sceneryIntro}"></span><br />
-    <span>景點總評分:</span><span th:text="${SceneryVO.sceneryTotalScore}"></span><br />
-    <span>景點總評分人數:</span><span th:text="${SceneryVO.sceneryTotalScoreCount}"></span><br />
-    <span>景點地址:</span><span th:text="${SceneryVO.sceneryAddress}"></span><br />
-    <span>景點經度:</span><span th:text="${SceneryVO.sceneryLongitude}"></span><br />
-    <span>景點緯度:</span><span th:text="${SceneryVO.sceneryLatitude}"></span><br />
-    <span>創建時間:</span><span th:text="${SceneryVO.createTime}"></span><br />
+<div align="center" style="margin-top: 80px;">
+    <h3>查詢結果 :</h3>
+    <span>景點編號:</span> <span th:text="${sceneryVO.sceneryId}"></span><br />
+    <span>景點名稱:</span> <span th:text="${sceneryVO.sceneryName}"></span><br />
+    <span>景點介紹:</span> <span th:text="${sceneryVO.sceneryIntro}"></span><br />
+    <span>景點總評分:</span> <span th:text="${sceneryVO.sceneryTotalScore}"></span><br />
+    <span>景點總評分人數:</span> <span th:text="${sceneryVO.sceneryTotalScoreCount}"></span><br />
+    <span>景點地址:</span> <span th:text="${sceneryVO.sceneryAddress}"></span><br />
+    <span>景點經度:</span> <span th:text="${sceneryVO.sceneryLongitude}"></span><br />
+    <span>景點緯度:</span> <span th:text="${sceneryVO.sceneryLatitude}"></span><br />
+    <span>創建時間:</span> <span th:text="${sceneryVO.createTime}"></span><br />
+
+    <!-- Optional: Show banner image -->
+    <div th:if="${sceneryVO.sceneryBanner != null}" style="margin-top: 10px;">
+        <span>景點圖片:</span><br />
+        <img th:src="@{/scenery/banner/{id}(id=${sceneryVO.sceneryId})}" style="max-height: 200px;" />
+    </div>
 
     <form th:action="@{/scenery/showupdatescenery}" method="post">
         <input type="hidden" th:if="${_csrf != null}"
                th:name="${_csrf.parameterName}"
                th:value="${_csrf.token}" />
-        <input type="hidden" name="sceneryId" th:value="${SceneryVO.sceneryId}" />
-        <button type="submit">Update</button>
+        <input type="hidden" name="sceneryId" th:value="${sceneryVO.sceneryId}" />
+        <button type="submit">修改</button>
     </form>
 </div>
 
