@@ -3,6 +3,7 @@ package com.member.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -35,63 +36,85 @@ public class SecurityConfig {
 
     // Bean: 用於會員的 SecurityFilterChain (優先順序較低，排在後面處理)
     @Bean
-    @Order(2) // 設定這個 SecurityFilterChain 的優先順序，確保 Manager 的先匹配
+    @Order(2)
     public SecurityFilterChain memberFilterChain(HttpSecurity http,
             AuthenticationProvider memberAuthenticationProvider) throws Exception {
 
         http
-            .csrf(csrf -> csrf.disable()) // 停用 CSRF 防護（依實際情況調整）
-            .securityMatcher("/", "/index", "/login", "/register", 
-                "ticketOrders", "/member/receipt/**", "/member/password/**", // ✅ 密碼相關頁面
-                "/member/**", "/ticket/**", "/scenery/**", "/logout",
-                "/login?error", "/error", "/css/**", "/js/**", "/images/**", "/member/verify")
+            // ❗ 關閉 CSRF（如果沒有表單驗證需求）
+            .csrf(csrf -> csrf.disable())
+
+            // ✅ 路徑授權設定
             .authorizeHttpRequests(auth -> auth
-                // ✅ 允許匿名訪問的路徑
-                .requestMatchers(
-                    "/login", "/index", "/member/register", "/register",
-                    "/login?error", "/error",
-                    "/css/**", "/js/**", "/images/**",
-                    "/member/verify", "/scenery/**"
-                ).permitAll()
 
-                .requestMatchers(
-                	    "/member/forgotPassword",
-                	    "/member/resetPassword",
-                	    "/member/reset_Password_fail"
-                	).permitAll()
+                // ✅ 放行靜態資源與基本頁面
+                .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/", "/index", "/login", "/register", "/login?error", "/error").permitAll()
+
+                .requestMatchers("/ticketlist").permitAll()
                 
-                // ✅ 密碼重設相關頁面開放匿名訪問
+                .requestMatchers(HttpMethod.POST, "/member/resetPassword").permitAll()
+
+                
+                // ✅ 密碼重設成功/失敗畫面 (SweetAlert)
                 .requestMatchers(
-                		"/member/reset", "/member/resetPassword","/member/reset-password",
-                	"/member/forgot", "/member/forgotPassword", "/member/reset_Password",
-                    "/member/password/forgotPassword",
-                    "/member/reset", "/member/password/resetPassword", "/member/password/reset_Password_fail"
+                    "/member/reset-password-success",
+                    "/member/reset-password-fail"
                 ).permitAll()
 
-                // ✅ 管理員專用路徑
+                // ✅ 忘記密碼 + 重設密碼流程（全開放）
+                .requestMatchers(
+                    "/member/register", "/member/verify",
+                    "/member/forgot", "/member/forgotPassword",
+                    "/member/reset", "/member/resetPassword",
+                    "/member/reset-password", // 顯示 resetPassword 畫面
+                    "/member/password/forgotPassword",
+                    "/member/password/resetPassword",
+                    "/member/password/reset-password-success",
+                    "/member/password/reset-password-fail"
+                ).permitAll()
+
+                // ✅ 管理員專屬功能
                 .requestMatchers("/member/list").hasRole("MANAGER")
 
-                // ✅ 需登入的路徑
-                .requestMatchers("/ticket/**").authenticated()
-                .requestMatchers("/member/receipt/**").authenticated()
-                .requestMatchers("/member/**").authenticated()
+                // ✅ 一般會員需登入功能
+                .requestMatchers(
+                    "/member/edit", "/member/home", "/member/favorites",
+                    "/member/receipt/**",
+                    "/member/ticketOrders", "/member/ticket/orders",
+                    "/member/order/**", "/member/ticketOrderDetail",
+                    "/member/detail/**"
+                ).authenticated()
+
+                // ✅ 票券功能需登入
+                .requestMatchers("/ticket/**", "/ticketOrders").authenticated()
+
+                // ❗ 最後的兜底規則：你可以選擇預設放行或拒絕其他未設定的 /member 路徑
+                // .requestMatchers("/member/**").denyAll()
             )
+
+            // ✅ 登入流程設定
             .formLogin(form -> form
-                .loginPage("/login")                      // 自訂登入頁面
-                .loginProcessingUrl("/member/login")      // 登入表單送出處理路徑
-                .defaultSuccessUrl("/index", true)        // 成功後導向首頁
-                .failureHandler(failureHandler)           // 自訂登入失敗處理
+                .loginPage("/login")
+                .loginProcessingUrl("/member/login")
+                .defaultSuccessUrl("/index", true)
+                .failureHandler(failureHandler)
                 .permitAll()
             )
+
+            // ✅ 登出設定
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/index")
                 .permitAll()
             );
 
+        // ✅ 加入自定義認證機制（Member）
         http.authenticationProvider(memberAuthenticationProvider);
+
         return http.build();
     }
+
 
     // Bean: 用於管理員的 SecurityFilterChain (優先順序較高，先匹配 /manager/** 路徑)
     @Bean

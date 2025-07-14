@@ -3,6 +3,7 @@ package com.member.service;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,7 @@ public class MailService {
 	
 	@Autowired
 	private JavaMailSender mailSender;
-
+    
 	public void sendEmail(String to , String subject, String content) {
 		SimpleMailMessage message = new SimpleMailMessage();
 		message.setTo(to);
@@ -23,19 +24,19 @@ public class MailService {
 		mailSender.send(message);
 	}
 	
-	public void sendVerificationEmail(String to,String code) {
-		String subject = "【TigerTravel】註冊驗證碼通知";
-		String text = "親愛的用戶您好，\n\n您的驗證碼為：" + code + "\n" +
-						"請於 5 分鐘內輸入驗證碼完成註冊。\n\n" +
-						"若您未進行註冊，請忽略此信件。";
-		
-		SimpleMailMessage message = new SimpleMailMessage();
-		message.setTo(to);
-		message.setSubject(subject);
-		message.setText(text);
-		mailSender.send(message);
-		
-	}
+//	public void sendVerificationEmail(String to,String code) {
+//		String subject = "【TigerTravel】註冊驗證碼通知";
+//		String text = "親愛的用戶您好，\n\n您的驗證碼為：" + code + "\n" +
+//						"請於 5 分鐘內輸入驗證碼完成註冊。\n\n" +
+//						"若您未進行註冊，請忽略此信件。";
+//		
+//		SimpleMailMessage message = new SimpleMailMessage();
+//		message.setTo(to);
+//		message.setSubject(subject);
+//		message.setText(text);
+//		mailSender.send(message);
+//		
+//	}
 	
 	public void sendVerificationEmail(memVO member, String url) {
 	    String subject = "請驗證您的信箱";
@@ -80,5 +81,14 @@ public class MailService {
 	    message.setText(text);
 	    mailSender.send(message);
 	}
+	
+	public void sendSimpleMail(String to, String subject, String content) {
+	    SimpleMailMessage message = new SimpleMailMessage();
+	    message.setTo(to);
+	    message.setSubject(subject);
+	    message.setText(content);
+	    mailSender.send(message);
+	}
+
 	
 }

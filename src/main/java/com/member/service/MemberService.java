@@ -4,15 +4,24 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.member.model.FavoriteSceneryRepository;
+import com.member.model.FavoriteSceneryVO;
+import com.member.model.FavoriteTravelPlan;
+import com.member.model.FavoriteTravelPlanRepository;
 import com.member.model.MemberRepository;
 import com.member.model.memVO;
+import com.scenery.model.SceneryVO;
+import com.travel_plan.model.TravelPlan;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -27,15 +36,23 @@ public class MemberService {
     @PersistenceContext
     private EntityManager entityManager;
     
-    @Autowired
-    private MailService mailService;
+    private final MailService mailService;
     
     private final PasswordEncoder passwordEncoder;
+    
+    private final RedisTemplate<String, String> redisTemplate;
 
-    public MemberService(MemberRepository memberRepository, MailService mailService) {
+    private FavoriteSceneryRepository favoriteSceneryRepo;
+
+    public MemberService(MemberRepository memberRepository, 
+    					MailService mailService,
+    					RedisTemplate<String, String> redisTemplate,
+    					FavoriteSceneryRepository favoriteSceneryRepo) {
         this.memberRepository = memberRepository;
         this.mailService = mailService;
         this.passwordEncoder = new BCryptPasswordEncoder();
+        this.redisTemplate = redisTemplate;
+        this.favoriteSceneryRepo = favoriteSceneryRepo;
     }
 
     //會員註冊(新增)動作
@@ -87,26 +104,31 @@ public class MemberService {
     
     //註冊後產生驗證信連結
     public void sendVerificationalEmail (memVO member) {
-    	String token  = UUID.randomUUID().toString();
-    	member.setVerifyToken(token);
-    	memberRepository.save(member);
-    	
-    	String verifyUrl = "http://localhost:8080/member/verify?token=" + token;
-    	mailService.sendVerificationEmail(member.getMemberEmail(), verifyUrl);
+    	String token = UUID.randomUUID().toString();
+        // ✅ 把驗證碼存進 Redis，而不是存到資料表
+        saveVerifyTokenToRedis(member.getMemberAccount(), token);
+
+        // ✅ 把 account 一起放進網址參數，讓 controller 能比對
+        String verifyUrl = "http://localhost:8080/member/verify?account=" 
+                           + member.getMemberAccount() + "&token=" + token;
+        
+        System.out.println("[DEBUG] Redis 寫入：verify:" + member.getMemberAccount() + " → " + token);
+
+        mailService.sendVerificationEmail(member, verifyUrl);
     }
     
     //點擊信箱連結驗證
-    public boolean verifyEmail(String token) {
-    	Optional<memVO> optional = memberRepository.findByVerifyToken(token);
-    	if(optional.isPresent()) {
-    		memVO member = optional.get();
-    		member.setEmailVerified(true);
-    		member.setVerifyToken(null);
-    		memberRepository.save(member);
-    		return true;
-    	}
-    	return false;
-    }
+//    public boolean verifyEmail(String token) {
+//    	Optional<memVO> optional = memberRepository.findByVerifyToken(token);
+//    	if(optional.isPresent()) {
+//    		memVO member = optional.get();
+//    		member.setEmailVerified(true);
+//    		member.setVerifyToken(null);
+//    		memberRepository.save(member);
+//    		return true;
+//    	}
+//    	return false;
+//    }
     
     //忘記密碼 - 流程
     public void generateResetToken(memVO member) {
@@ -174,7 +196,26 @@ public class MemberService {
         member.setResetTokenCreatedTime(null);
         memberRepository.save(member);
     }
-
+    
+    //==========Redis========================
+    // 👉 這個方法也放在 MemberService 裡
+    public void saveVerifyTokenToRedis(String account, String token) {
+        String key = "verify:" + account;
+        redisTemplate.opsForValue().set(key, token, 10, TimeUnit.MINUTES);
+    }
+    
+    public boolean checkVerifyTokenFromRedis(String account, String inputToken) {
+    	String key = "verify:" + account;
+    	String tokenInRedis = redisTemplate.opsForValue().get(key);
+    	
+    	if(tokenInRedis != null && tokenInRedis.equals(inputToken)) {
+    		//成功驗證後，刪除Redis 裡的驗證碼
+    		redisTemplate.delete(key);
+    		return true;
+    	}else {
+    		return false;
+    	}
+    }
     
 }
 
