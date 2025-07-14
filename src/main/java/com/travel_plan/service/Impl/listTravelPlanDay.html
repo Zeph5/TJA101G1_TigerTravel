@@ -14,27 +14,23 @@
 <body>
 <div class="container">
 
-  <h2>每日行程列表</h2>
+  <h2>每日行程列表與編輯</h2>
 
   <p>旅程期間：<strong th:text="${startDate}">2025-07-01</strong> ~ <strong th:text="${endDate}">2025-07-07</strong></p>
 
   <!-- 日期選擇 -->
   <form method="get" th:action="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days(planId=${travelPlanId}, itineraryId=${travelItineraryId})}">
     <div class="date-select">
-      <label for="dateSelect">選擇日期編輯行程：</label> <select id="dateSelect" name="date" class="form-select"
-					onchange="this.form.submit()">
-					<option th:each="date : ${itineraryDates}" th:value="${date}"
-						th:text="${date}" th:selected="${date == currentEditDate}">
-					</option>
-				</select>
-			</div>
+      <label for="dateSelect">選擇日期編輯行程：</label>
+      <select id="dateSelect" name="date" class="form-select" onchange="this.form.submit()">
+        <option th:each="date : ${itineraryDates}" 
+                th:value="${date}" 
+                th:text="${date}" 
+                th:selected="${date == currentEditDate}">
+        </option>
+      </select>
+    </div>
   </form>
-  <div class="mb-3">
-  <a th:href="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/new(planId=${travelPlanId}, itineraryId=${travelItineraryId})}"
-     class="btn btn-success">
-    ➕ 新增每日行程
-  </a>
-</div>
 
   <!-- 顯示每日行程清單 -->
   <table class="table table-bordered table-hover">
@@ -69,7 +65,9 @@
 
   <hr/>
 
+ 
 
+ 
 
 <script>
   // Bootstrap 表單驗證

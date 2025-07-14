@@ -66,5 +66,6 @@ public class ManagerController {
 		return "manager/home"; // 返回管理員首頁
 		
 	}
+	
 }
 

@@ -55,6 +55,7 @@ public class TravelItineraryServiceImpl implements TravelItineraryService {
 	
 	@Override
 	public Optional<TravelItinerary> getTravelItineraryEntityById(Integer itineraryId) {
+		
 		return travelItineraryRepository.findById(itineraryId);
 	}
 

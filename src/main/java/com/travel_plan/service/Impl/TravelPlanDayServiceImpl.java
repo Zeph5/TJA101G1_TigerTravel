@@ -48,10 +48,7 @@ public class TravelPlanDayServiceImpl implements TravelPlanDayService {
 		// 返回儲存後的 TravelPlanDay 實體
 	}
 
-	@Override
-	public List<TravelPlanDay> getDaysByItineraryId(Integer itineraryId) {
-		return travelPlanDayRepository.findByTravelItinerary_TravelItineraryId(itineraryId);
-	}
+
 
 	@Override
 	public Optional<TravelPlanDayDTO> getTravelPlanDayDTOById(Integer id) {
@@ -156,24 +153,42 @@ public class TravelPlanDayServiceImpl implements TravelPlanDayService {
 	}
 
 	@Override
-	public void updateTravelPlanDay(TravelPlanDayDTO travelPlanDayDTO, Integer itineraryId) {
-		TravelPlanDay entity;
-	    if (travelPlanDayDTO.getTravelPlanDayId() != null) {
-	        entity = travelPlanDayRepository.findById(travelPlanDayDTO.getTravelPlanDayId())
-	                 .orElse(new TravelPlanDay());
+	@Transactional
+	public void updateTravelPlanDay(TravelPlanDayDTO dto, Integer itineraryId) {
+	    TravelPlanDay entity = travelPlanDayRepository.findById(dto.getTravelPlanDayId())
+	        .orElseThrow(() -> new IllegalArgumentException("找不到對應的 TravelPlanDay，ID: " + dto.getTravelPlanDayId()));
+
+	    entity.setTravelSequenceNumber(dto.getTravelSequenceNumber());
+	    entity.setTraveltime(dto.getTraveltime());
+
+	    // 加入防 null 的邏輯
+	    if (dto.getTravelDayNumber() == null) {
+	        int calculatedDayNumber = calculateTravelDayNumber(itineraryId, dto.getTraveltime());
+	        System.out.println("TravelDayNumber 為 null，自動計算為: " + calculatedDayNumber);
+	        entity.setTravelDayNumber(calculatedDayNumber);
 	    } else {
-	        entity = new TravelPlanDay();
+	        entity.setTravelDayNumber(dto.getTravelDayNumber());
 	    }
-	    BeanUtils.copyProperties(travelPlanDayDTO, entity, "scenery");
-	    if (travelPlanDayDTO.getSceneryId() != null) {
-	        sceneryRepository.findById(travelPlanDayDTO.getSceneryId()).ifPresent(entity::setScenery);
+
+	    // 景點處理
+	    if (dto.getSceneryId() != null) {
+	        sceneryRepository.findById(dto.getSceneryId()).ifPresent(entity::setScenery);
+	    } else {
+	        entity.setScenery(null);
 	    }
+
 	    TravelItinerary itinerary = travelItineraryRepository.findById(itineraryId)
-	            .orElseThrow(() -> new IllegalArgumentException("找不到行程梯次"));
+	        .orElseThrow(() -> new IllegalArgumentException("找不到行程梯次"));
 	    entity.setTravelItinerary(itinerary);
 	    entity.setTravelPlan(itinerary.getTravelPlan());
+
 	    travelPlanDayRepository.save(entity);
-		
 	}
+
+	@Override
+	public List<TravelPlanDay> getDaysByItineraryIdAndDate(Integer itineraryId, LocalDate currentEditDate) {
+		return travelPlanDayRepository.findByTravelItinerary_TravelItineraryIdAndTraveltime(itineraryId, currentEditDate);
+	}
+
 
 }

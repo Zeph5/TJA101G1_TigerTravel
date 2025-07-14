@@ -14,7 +14,7 @@ public interface TravelPlanDayService {
 
 	void createTravelPlanDayFromDto(TravelItinerary travelItinerary, @Valid TravelPlanDayDTO dto);
 
-	List<TravelPlanDay> getDaysByItineraryId(Integer itineraryId);
+	
 
 	Optional<TravelPlanDayDTO> getTravelPlanDayDTOById(Integer id);
 
@@ -22,6 +22,8 @@ public interface TravelPlanDayService {
 
 	Integer calculateTravelDayNumber(Integer itineraryId, LocalDate currentDate);
 
-	void updateTravelPlanDay(TravelPlanDayDTO travelPlanDayDTO, Integer itineraryId);	
+	void updateTravelPlanDay(TravelPlanDayDTO travelPlanDayDTO, Integer itineraryId);
+
+	List<TravelPlanDay> getDaysByItineraryIdAndDate(Integer itineraryId, LocalDate currentEditDate);	
 
 }
