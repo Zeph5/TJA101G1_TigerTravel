@@ -4,21 +4,19 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import com.travel_plan.model.TravelPlanDay;
 
+@Repository
 public interface TravelPlanDayRepository extends JpaRepository<TravelPlanDay, Integer> {
-	
-	// 這裡可以添加自定義查詢方法，例如根據行程 ID 和日期查找行程天數
-	
 
+    // 查詢指定行程梯次與日期的每日行程
+    List<TravelPlanDay> findByTravelItinerary_TravelItineraryIdAndTraveltime(Integer travelItineraryId, LocalDate date);
 
-	List<TravelPlanDay> findByTravelItinerary_TravelItineraryIdAndTravelTime(Integer travelItineraryId, LocalDate date);
+    // 根據行程梯次ID查詢所有每日行程
+    List<TravelPlanDay> findByTravelItinerary_TravelItineraryId(Integer travelItineraryId);
 
-
-
-	List<TravelPlanDay> findByTravelItinerary_TravelItineraryId(Integer travelItineraryId);
-	
-	// 其他自定義查詢方法可以根據需要添加
-
+    // 刪除指定行程梯次的所有每日行程
+    void deleteByTravelItinerary_TravelItineraryId(Integer travelItineraryId);
 }

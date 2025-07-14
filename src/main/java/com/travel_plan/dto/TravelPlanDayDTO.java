@@ -91,8 +91,8 @@ public class TravelPlanDayDTO {
 	public LocalDate getTraveltime() {
 		return traveltime;
 	}
-
-	public void setTraveltime(LocalDate traveltime) {
+	
+		public void setTraveltime(LocalDate traveltime) {
 		this.traveltime = traveltime;
 	}
 

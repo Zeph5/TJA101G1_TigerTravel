@@ -93,11 +93,11 @@ public class TravelPlanController {
 		session.removeAttribute("currentTravelItineraryId"); // 清除可能存在的行程 ID，因為新增計畫時不需要行程 ID
 		// 添加成功訊息，並在重定向後顯示
 		redirectAttributes.addFlashAttribute("successMessage", "計畫基本資訊儲存成功，請繼續編輯行程細節。");
-		// 重定向到下一步的行程細節編輯頁面
-		return "redirect:/admin/travelplans/" + savedPlan.getTravelPlanId() + "/itineraries/add";
+		return "redirect:/admin/travelplans";
 	}
 
 	// 編輯現有計畫的入口點 (可重用第一步表單)
+	// 當使用者點擊「編輯」按鈕時，會跳轉到這個方法。
 	@GetMapping("/{id}/edit")
 	public String editTravelPlan(@PathVariable("id") Integer id, Model model, HttpSession session) {
 
@@ -118,36 +118,10 @@ public class TravelPlanController {
 
 		return "admin/travelplans/form_step1_plan_details";
 	}
-	@GetMapping("/{planId}/itinerary/{itineraryId}/days/{date}")
-	public ResponseEntity<DailyItineraryFormDTO> getDailyItinerary(@PathVariable Integer planId,
-	                                                               @PathVariable Integer itineraryId,
-	                                                               @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-	      // 根據 planId, itineraryId 和 date 從資料庫獲取每日行程項目
-	       List<TravelPlanDayDTO> dailyItems = travelPlanService.getDailyItemsForDate(itineraryId, date);
-	       DailyItineraryFormDTO dto = new DailyItineraryFormDTO();
-	       dto.setDailyItems(dailyItems);
-	       // 修正這裡，直接呼叫 Service 中的方法，傳入 itineraryId 和 date
-	       dto.setTravelDayNumber(travelPlanService.calculateTravelDayNumber(itineraryId, date)); // <-- 修正這裡
-	       return ResponseEntity.ok(dto);
-	  }
+	
 	
 
-	@PostMapping("/{planId}/itinerary/{itineraryId}/days/save")
-	  public String saveDailyItinerary(@PathVariable Integer planId,
-	                                   @PathVariable Integer itineraryId,
-	                                   @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-	                                   @ModelAttribute("dailyItineraryFormDTO") DailyItineraryFormDTO dailyItineraryFormDTO,
-	                                   RedirectAttributes redirectAttributes) {
-	      try {
-	          // 儲存 dailyItineraryFormDTO.getDailyItems() 到資料庫
-	    	  travelPlanService.saveDailyItems(itineraryId, date, dailyItineraryFormDTO.getDailyItems());
-	          redirectAttributes.addFlashAttribute("successMessage", "當天行程儲存成功！");
-	      } catch (Exception e) {
-	          redirectAttributes.addFlashAttribute("errorMessage", "儲存當天行程時發生錯誤：" + e.getMessage());
-	      }
-	      // 儲存後重定向回當前編輯的日期頁面
-	      return "redirect:/admin/travelplans/" + planId + "/itinerary/" + itineraryId + "/days/" + date;
-	  }
+	
 	@GetMapping("/{planId}/preview")
 	public String previewTravelPlan(@PathVariable("planId") Integer planId, Model model) {
 	    // 獲取完整的旅行計畫數據 (包含所有行程天數和景點)
@@ -168,68 +142,9 @@ public class TravelPlanController {
 
 	    return "admin/travelplans/preview_full_plan"; // 一個新的 Thymeleaf 模板來顯示預覽
 	}
-	@GetMapping("/{planId}/itineraries/add")
-	public String showAddItineraryForm(@PathVariable Integer planId, Model model, HttpSession session) {
-	    // 從 session 取得 travelPlanId，如果直接從 PathVariable 拿到也行
-	    // Integer currentPlanId = (Integer) session.getAttribute("currentTravelPlanId");
-	    // if (currentPlanId == null || !currentPlanId.equals(planId)) {
-	    //     // 處理錯誤，或者重新導向到第一個表單
-	    //     return "redirect:/admin/travelplans/new";
-	    // }
-
-	    TravelItineraryDTO dto = new TravelItineraryDTO();
-	    dto.setTravelPlanId(planId); // 將 TravelPlan ID 關聯到梯次 DTO
-	    model.addAttribute("travelItineraryDTO", dto);
-
-	    // 為了讓使用者知道他們正在為哪個計畫新增梯次，可以傳遞計畫名稱
-	    travelPlanService.getTravelPlanEntityById(planId).ifPresent(plan -> {
-	        model.addAttribute("travelPlanTitle", plan.getTravelTitle());
-	    });
-
-	    return "admin/travelplans/form_step2_itinerary_details"; // 這個是您新設計的第二個表單模板
-	}
 	
-	@PostMapping("/itineraries/save")
-	public String saveItinerary(@Valid @ModelAttribute("travelItineraryDTO") TravelItineraryDTO dto,
-	                            BindingResult result,
-	                            RedirectAttributes redirectAttributes,
-	                            HttpSession session,
-	                            Model model) {
-	    if (result.hasErrors()) {
-	        model.addAttribute("travelItineraryDTO", dto);
-	        // 重新傳遞 travelPlanTitle，避免模板顯示錯誤
-	        travelPlanService.getTravelPlanEntityById(dto.getTravelPlanId()).ifPresent(plan -> {
-	            model.addAttribute("travelPlanTitle", plan.getTravelTitle());
-	        });
-	        model.addAttribute("errorMessage", "梯次資料驗證失敗，請檢查輸入。");
-	        return "admin/travelplans/form_step2_itinerary_details"; // 返回第二個表單頁面
-	    }
-
-	    try {
-	        TravelItinerary savedItinerary = travelPlanService.saveTravelItineraryFromDto(dto); // 假設 Service 有此方法
-	        redirectAttributes.addFlashAttribute("successMessage", "行程梯次資訊保存成功！現在請編輯每日行程細節。");
-
-	        // 保存梯次成功後，重導向到每日行程編輯頁面
-	        // 您可能需要根據實際的 itineraryId 和日期來決定重導向 URL
-	        // 這裡我假設預設跳轉到第一天的編輯頁面
-	        session.setAttribute("currentTravelItineraryId", savedItinerary.getTravelItineraryId());
-	        LocalDate firstDay = savedItinerary.getStartDate(); // 獲取梯次的第一天
-	        return "redirect:/admin/travelplans/" + savedItinerary.getTravelPlan().getTravelPlanId() +
-	               "/itinerary/" + savedItinerary.getTravelItineraryId() +
-	               "/days/" + firstDay.format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE);
-
-	    } catch (IllegalArgumentException e) {
-	        result.rejectValue(null, "error.itinerary", e.getMessage()); // 廣泛錯誤訊息
-	        model.addAttribute("errorMessage", e.getMessage());
-	        // 重新傳遞 travelPlanTitle
-	        travelPlanService.getTravelPlanEntityById(dto.getTravelPlanId()).ifPresent(plan -> {
-	            model.addAttribute("travelPlanTitle", plan.getTravelTitle());
-	        });
-	        return "admin/travelplans/form_step2_itinerary_details";
-	    } catch (Exception e) {
-	        redirectAttributes.addFlashAttribute("errorMessage", "保存行程梯次失敗: " + e.getMessage());
-	        return "redirect:/admin/travelplans/list"; // 或其他適當的錯誤處理
-	    }
-	}	
+	
+	
+		
 	}
 

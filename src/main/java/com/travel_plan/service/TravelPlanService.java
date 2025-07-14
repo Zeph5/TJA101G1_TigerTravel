@@ -51,24 +51,23 @@ public interface TravelPlanService {
 
 	public TravelPlanPreviewDTO getFullTravelPlanDetails(Integer planId);
 
-
-	
-
-
-	
-
-	void saveDailyItems(Integer itineraryId, LocalDate date, List<TravelPlanDayDTO> dailyItems);
 	
 	List<TravelPlanDayDTO> getDailyItemsForDate(Integer itineraryId, LocalDate date);
-
 	
 
 	TravelItinerary saveTravelItineraryFromDto(@Valid TravelItineraryDTO dto);
-
-	Integer calculateTravelDayNumber(Integer itineraryId, LocalDate currentDate);
+	
 
 	Optional<TravelItinerary> getTravelItineraryById(Integer travelItineraryId);
 
 	Optional<TravelItinerary> getTravelItineraryForPlan(Integer travelPlanId);
+
+	List<LocalDate> generateItineraryDates(LocalDate startDate, LocalDate endDate);
+
+	TravelPlanPreviewDTO getTravelPlanPreview(Integer itineraryId);
+
+	int calculateTotalDays(LocalDate startDate, LocalDate endDate);
+
+	TravelPlanPreviewDTO getTravelPlanPreview(Integer planId, Integer itineraryId);
 	
 }

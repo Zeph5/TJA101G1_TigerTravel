@@ -12,6 +12,7 @@ import com.scenery.model.SceneryVO;
 import jakarta.persistence.Column;
 	import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 	import jakarta.persistence.GenerationType;
 	import jakarta.persistence.Id;
@@ -26,12 +27,17 @@ import jakarta.persistence.GeneratedValue;
 		@GeneratedValue(strategy = GenerationType.IDENTITY)
 		@Column(name = "travel_plan_day_id", nullable = false, unique = true)
 		private Integer travelPlanDayId;
-		@ManyToOne
-		@JoinColumn(name = "travel_itinerary_id", nullable = false) 
-		private TravelItinerary travelItinerary; 
+		@ManyToOne(fetch = FetchType.EAGER) 
+		@JoinColumn(name = "travel_itinerary_id", referencedColumnName = "travel_itinerary_id", nullable = false)
+		private TravelItinerary travelItinerary;
 		
-		@ManyToOne
-		@JoinColumn(name = "scenery_id", nullable = false)
+		@ManyToOne(fetch = FetchType.LAZY) // 或 EAGER
+		@JoinColumn(name = "travel_plan_id", nullable = false)
+		private TravelPlan travelPlan; // 確保有這個屬性
+		
+		
+		@ManyToOne(fetch = FetchType.EAGER) 
+		@JoinColumn(name = "scenery_id", referencedColumnName = "scenery_id", nullable = false) // 確保 nullable=false
 		private SceneryVO scenery;
 		
 		
@@ -46,10 +52,16 @@ import jakarta.persistence.GeneratedValue;
 		private LocalDateTime createtime;
 		
 		@Column(name = "travel_time", nullable = false)
-		private LocalDate travelTime;  //旅行日期?
+		private LocalDate traveltime;  //旅行日期?
 		
 		
 		
+		public TravelPlan getTravelPlan() {
+			return travelPlan;
+		}
+		public void setTravelPlan(TravelPlan travelPlan) {
+			this.travelPlan = travelPlan;
+		}
 		public SceneryVO getScenery() {
 			return scenery;
 		}
@@ -87,19 +99,19 @@ import jakarta.persistence.GeneratedValue;
 		public void setCreatetime(LocalDateTime createtime) {
 			this.createtime = createtime;
 		}
-		public LocalDate getTravelTime() {
-			return travelTime;
+		public LocalDate getTraveltime() {
+			return traveltime;
 		}
-		public void setTravelTime(LocalDate travelTime) {
-			this.travelTime = travelTime;
+		public void setTraveltime(LocalDate traveltime) {
+			this.traveltime = traveltime;
 		}
 		@Override
 		public String toString() {
 			return "TravelPlanDay [travelPlanDayId=" + travelPlanDayId + ", travelItinerary=" + travelItinerary
 					+ ", scenery=" + scenery + ", travelDayNumber=" + travelDayNumber + ", travelSequenceNumber="
-					+ travelSequenceNumber + ", createtime=" + createtime + ", travelTime=" + travelTime + "]";
+					+ travelSequenceNumber + ", createtime=" + createtime + ", traveltime=" + traveltime + "]";
 		}
-	
+		
 		
 		
 	}

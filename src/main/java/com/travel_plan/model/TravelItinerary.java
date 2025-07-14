@@ -1,4 +1,4 @@
-package com.travel_plan.model;
+	package com.travel_plan.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,8 +27,8 @@ public class TravelItinerary {
 	@Column(name = "travel_itinerary_id", nullable = false, unique = true)
 	private Integer travelItineraryId;
 
-	@ManyToOne
-	@JoinColumn(name = "travel_plan_id", nullable = false)
+	@ManyToOne(fetch = FetchType.EAGER) 
+	@JoinColumn(name = "travel_plan_id", referencedColumnName = "travel_plan_id", nullable = false)
 	private TravelPlan travelPlan;
 
 	

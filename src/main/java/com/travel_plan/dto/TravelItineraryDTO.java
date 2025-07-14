@@ -13,21 +13,12 @@ import jakarta.validation.constraints.NotNull;
 
 public class TravelItineraryDTO {
 	
+	private List<TravelPlanDayDTO> dailyItineraries;
+	
 	@NotNull(message = "旅行行程ID不能為空")
 	private Integer travelPlanId; // 旅行計畫ID
 
 	private Integer travelItineraryId; // 旅行行程ID
-
-	private List<TravelPlanDayDTO> itineraryItems;
-
-	public List<TravelPlanDayDTO> getItineraryItems() {
-		return itineraryItems;
-	}
-
-	public void setItineraryItems(List<TravelPlanDayDTO> itineraryItems) {
-		this.itineraryItems = itineraryItems;
-	}
-	
 
 
 	public Integer getTravelPlanId() {
@@ -58,6 +49,15 @@ public class TravelItineraryDTO {
     private LocalDate endDate; // 旅行計畫結束日期
 	
     
+    
+	public List<TravelPlanDayDTO> getDailyItineraries() {
+		return dailyItineraries;
+	}
+
+	public void setDailyItineraries(List<TravelPlanDayDTO> dailyItineraries) {
+		this.dailyItineraries = dailyItineraries;
+	}
+
 	public Integer getMaxTourist() {
 		return maxTourist;
 	}
