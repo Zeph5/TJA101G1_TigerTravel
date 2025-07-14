@@ -1,80 +1,96 @@
 package com.scenery.model;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import com.scenery.model.SceneryRepository;
-import com.scenery.model.SceneryVO;
+import com.scenery.model.DTO.SceneryDTO;
 
 @Service("SceneryService")
 public class SceneryService {
 
-	
-	  @Autowired
-	    private SceneryRepository sceneryRepository;
+    @Autowired
+    private SceneryRepository sceneryRepository;
 
-	    // add scenery
-	    public SceneryVO add(SceneryVO scenery) {
-	    	if(sceneryRepository.findBySceneryName(scenery.getSceneryName()).isPresent()) {
-	    		throw new RuntimeException("景點已存在");
-	    	}
-	        return sceneryRepository.save(scenery);
-	    }
-	    
-	    // find all 
-	    public List<SceneryVO> findAllScenery() {
-	        return sceneryRepository.findAll();
-	    }
-		public List<SceneryVO> findAllScenery(Map<String, String[]> map) {
-			return sceneryRepository.findAll();
-		}
+    @Autowired
+    private SceneryImageRepository sceneryImageRepository;
 
-	    // find by id
-	    public Optional<SceneryVO> findBySceneryId(Integer id){
-	    	return sceneryRepository.findById(id);
-	    }
+    public List<SceneryVO> getAllSceneries() {
+        return sceneryRepository.findAll();
+    }
 
-	    // find by name
-	    public Optional<SceneryVO> findBySceneryName(String sceneryName) {
-	        return sceneryRepository.findBySceneryName(sceneryName);
-	    }
+    public SceneryVO getById(Integer id) {
+        return sceneryRepository.findById(id).orElse(null);
+    }
 
-	    
-	    // update scenery
-	    public SceneryVO save(SceneryVO scenery) {
-	    	return sceneryRepository.save(scenery);
-	    }
-	    
-	    // update scenery 2
-	    public SceneryVO updateScenery(SceneryVO updatedVO) {
-	        // Check if the record exists
-	        Optional<SceneryVO> existingOpt = sceneryRepository.findById(updatedVO.getSceneryId());
+    public Page<SceneryVO> advancedSearch(String sceneryName, String sceneryAddress, Integer sceneryStatusFilter, Pageable pageable) {
+        if ((sceneryName == null || sceneryName.trim().isEmpty()) &&
+            (sceneryAddress == null || sceneryAddress.trim().isEmpty()) &&
+            sceneryStatusFilter == null) {
+            return sceneryRepository.findAll(pageable);
+        } else {
+            return sceneryRepository.advancedSearch(sceneryName, sceneryAddress, sceneryStatusFilter, pageable);
+        }
+    }
 
-	        if (existingOpt.isPresent()) {
-	            SceneryVO existingVO = existingOpt.get();
+    public void addScenery(SceneryVO vo) {
+        sceneryRepository.save(vo);
+    }
 
-	            // Update fields (only allowed ones)
-	            existingVO.setSceneryName(updatedVO.getSceneryName());
-	            existingVO.setSceneryIntro(updatedVO.getSceneryIntro());
-	            existingVO.setSceneryAddress(updatedVO.getSceneryAddress());
-	            existingVO.setSceneryLongitude(updatedVO.getSceneryLongitude());
-	            existingVO.setSceneryLatitude(updatedVO.getSceneryLatitude());
+    public void updateScenery(SceneryVO vo) {
+        sceneryRepository.save(vo);
+    }
 
-	            return sceneryRepository.save(existingVO);
-	        } else {
-	            throw new RuntimeException("找不到景點 ID: " + updatedVO.getSceneryId());
-	        }
-	    }
-	    
-	    // delete scenery
-	    public void deleteById(Integer id) {
-	    	sceneryRepository.deleteById(id);
-	    }
-	    
+    public void updateSceneryStatus(Integer sceneryId, Integer status) {
+        SceneryVO scenery = sceneryRepository.findById(sceneryId).orElseThrow(() -> new RuntimeException("Scenery not found"));
+        scenery.setSceneryStatus(status);
+        sceneryRepository.save(scenery);
+    }
+
+    public void addSceneryImage(Integer sceneryId, MultipartFile file) throws IOException {
+        SceneryVO scenery = getById(sceneryId);
+        if (scenery == null) {
+            throw new RuntimeException("Scenery not found for ID: " + sceneryId);
+        }
+
+        if (file == null || file.isEmpty()) {
+            throw new RuntimeException("File is empty or missing");
+        }
+
+        SceneryImageVO imageVO = new SceneryImageVO();
+        imageVO.setScenery(scenery);
+
+        byte[] bytes = file.getBytes();
+        Byte[] bytesObj = new Byte[bytes.length];
+        for (int i = 0; i < bytes.length; i++) {
+            bytesObj[i] = bytes[i];
+        }
+        imageVO.setSceneryImage(bytesObj);
+
+        sceneryImageRepository.save(imageVO);
+    }
 
 
+    public List<SceneryImageVO> getImagesBySceneryId(Integer sceneryId) {
+        return sceneryImageRepository.findByScenery_SceneryId(sceneryId);
+    }
+    
+    public SceneryDTO convertToDTO(SceneryVO vo) {
+        SceneryDTO dto = new SceneryDTO();
+        dto.setSceneryId(vo.getSceneryId());
+        dto.setSceneryName(vo.getSceneryName());
+        dto.setSceneryIntro(vo.getSceneryIntro());
+        dto.setSceneryAddress(vo.getSceneryAddress());
+        dto.setSceneryLongitude(vo.getSceneryLongitude());
+        dto.setSceneryLatitude(vo.getSceneryLatitude());
+
+        dto.setExistingImages(new ArrayList<>(vo.getSceneryImages()));  // convert Set to List if needed
+        return dto;
+    }
 }
