@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>付款完成 - 訂單明細</title>
+    <link rel="stylesheet" href="/css/style.css"><!-- 如有樣式檔可引用，沒有可忽略 -->
+</head>
+<body>
+    <h1>付款完成</h1>
+    <h2>訂單明細</h2>
+    <table border="1" cellpadding="8" cellspacing="0">
+        <tr>
+            <th>品項名稱</th>
+            <th>數量</th>
+        </tr>
+        <!-- 假設 orderItems 是一個 List，每個 item 有 name, quantity -->
+        <tr th:each="item : ${orderItems}">
+            <td th:text="${item.name}">品項名稱</td>
+            <td th:text="${item.quantity}">1</td>
+        </tr>
+    </table>
+    <br>
+    <div>
+        <strong>總金額：</strong>
+        <span th:text="${totalAmount}">0</span> 元
+    </div>
+    <div>
+        <strong>會員帳號：</strong>
+        <span th:text="${memberName}">會員名稱</span>
+    </div>
+    <div>
+        <strong>下單時間：</strong>
+        <span th:text="${orderTime}">2025-07-10 12:00</span>
+    </div>
+    <br>
+    <a href="/ticketlist">返回票券清單</a>
+</body>
+</html>

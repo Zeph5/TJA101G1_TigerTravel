@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+	 xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>編輯會員資料</title>
@@ -9,7 +10,7 @@
 <h2>會員資料編輯</h2>
 
 <form th:action="@{/member/edit}" th:object="${member}" method="post" enctype="multipart/form-data">
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <!-- <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /> -->
     
     <label>姓名：</label>
     <input type="text" th:field="*{memberName}" required /><br><br>

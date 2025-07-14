@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>確認下單</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container my-5">
+    <h2 class="mb-4 text-center">確認下單</h2>
+    <form th:action="@{/ticket/submit}" method="post">
+        <div th:each="ticket : ${selectedTickets}" class="card mb-3">
+            <div class="card-body">
+                <h5 th:text="${ticket.ticketName}">票券名稱</h5>
+                <div>價格：<span th:text="${ticket.ticketPrice}">0</span> 元</div>
+                <div>庫存：<span th:text="${ticket.ticketStock}">0</span></div>
+                <div>
+                    <label>購買數量：</label>
+                    <input type="number" class="form-control w-25 d-inline" name="quantities" min="1" max="99" value="1"/>
+                    <input type="hidden" name="ticketIds" th:value="${ticket.ticketId}"/>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <h4 class="mt-4">付款資訊（信用卡）</h4>
+        <div class="form-group">
+            <label>信用卡卡號：</label>
+            <input type="text" class="form-control" name="cardNumber" maxlength="16" required pattern="\d{16}">
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label>到期月：</label>
+                <input type="text" class="form-control" name="expMonth" maxlength="2" required pattern="\d{2}">
+            </div>
+            <div class="form-group col-md-6">
+                <label>到期年：</label>
+                <input type="text" class="form-control" name="expYear" maxlength="2" required pattern="\d{2}">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>安全碼(CVV)：</label>
+            <input type="text" class="form-control" name="cvv" maxlength="3" required pattern="\d{3}">
+        </div>
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary btn-lg">完成下單</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

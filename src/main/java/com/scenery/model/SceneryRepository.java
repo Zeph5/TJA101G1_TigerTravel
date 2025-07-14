@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface SceneryRepository extends JpaRepository<SceneryVO, Integer> {
 	
 	Optional<SceneryVO> findBySceneryName(String sceneryName);
+
 }

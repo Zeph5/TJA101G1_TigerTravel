@@ -28,5 +28,9 @@ public class TicketService {
     public Optional<Ticket> findById(Integer id) {
         return ticketRepository.findById(id);
     }
+    /** 新增或更新票券 */
+    public Ticket save(Ticket ticket) {
+        return ticketRepository.save(ticket);
+    }
     
 }

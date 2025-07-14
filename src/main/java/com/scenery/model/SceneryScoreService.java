@@ -10,37 +10,26 @@ import org.springframework.stereotype.Service;
 @Service("SceneryScoreService")
 public class SceneryScoreService {
 
-	 @Autowired
-	    private SceneryScoreRepository sceneryScoreRepository;
+	@Autowired
+	    private SceneryScoreRepository scoreRepo;
 
-	    // add score
-	    public SceneryScoreVO add(SceneryScoreVO scescore) {
-	    	if(sceneryScoreRepository.findByScoreId(scescore.getScoreId()).isPresent()) {
-	    		throw new RuntimeException("景點已存在");
-	    	}
-	        return sceneryScoreRepository.save(scescore);
+	    public List<SceneryScoreVO> findAll() {
+	        return scoreRepo.findAll();
 	    }
 	    
-	    // find all 
-	    public List<SceneryScoreVO> findAllSceneryScore() {
-	        return sceneryScoreRepository.findAll();
-	    }
-		public List<SceneryScoreVO> findAllSceneryScore(Map<String, String[]> map) {
-			return sceneryScoreRepository.findAll();
-		}
-
-	    // find by id
-	    public Optional<SceneryScoreVO> findByScoreId(Integer id){
-	    	return sceneryScoreRepository.findById(id);
-	    }
-
-	    // update score
-	    public SceneryScoreVO save(SceneryScoreVO scescore) {
-	    	return sceneryScoreRepository.save(scescore);
+	    public List<SceneryScoreVO> searchScores(String memberAccount, String sceneryName) {
+	        if ((memberAccount == null || memberAccount.isEmpty()) && (sceneryName == null || sceneryName.isEmpty())) {
+	            return scoreRepo.findAll();
+	        } else if (memberAccount != null && !memberAccount.isEmpty() && (sceneryName == null || sceneryName.isEmpty())) {
+	            return scoreRepo.findByMember_MemberAccountContainingIgnoreCase(memberAccount);
+	        } else if ((memberAccount == null || memberAccount.isEmpty()) && sceneryName != null && !sceneryName.isEmpty()) {
+	            return scoreRepo.findByScenery_SceneryNameContainingIgnoreCase(sceneryName);
+	        } else {
+	            return scoreRepo.findByMember_MemberAccountContainingIgnoreCaseAndScenery_SceneryNameContainingIgnoreCase(memberAccount, sceneryName);
+	        }
 	    }
 	    
-	    // delete score
-	    public void deleteById(Integer id) {
-	    	sceneryScoreRepository.deleteById(id);
+	    public void deleteById(Integer scoreId) {
+	        scoreRepo.deleteById(scoreId);
 	    }
 }

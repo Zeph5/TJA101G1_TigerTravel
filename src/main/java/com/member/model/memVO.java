@@ -2,6 +2,8 @@ package com.member.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
 import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.*;
@@ -12,6 +14,7 @@ public class memVO implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column (name = "member_id")
 	private Integer memberId;
 
 	@Column(name = "mem_account", nullable = false, unique = true) // 不允許為null,必須為唯一
@@ -38,7 +41,6 @@ public class memVO implements Serializable {
 	@Lob
 	@Basic(fetch = FetchType.EAGER)
 	// 這樣在Hibernate查詢會員時，就會自動讀出圖片資
-//	@Transient
 	private byte[] avatar;
 
 	@Column(updatable = false)
@@ -47,7 +49,27 @@ public class memVO implements Serializable {
 
 	//=====驗證功能=======
 	private Boolean emailVerified = false; // 是否以驗證信箱
-	private String verifyToken; // 驗證用的唯一 token
+	private String verifyToken; // 註冊信箱驗證使用
+	
+	//===更改密碼功能=====
+	private String resetToken; //忘記密碼 token
+	private LocalDateTime resetTokenCreatedTime; 
+
+	public String getResetToken() {
+		return resetToken;
+	}
+
+	public void setResetToken(String resetToken) {
+		this.resetToken = resetToken;
+	}
+
+	public LocalDateTime getResetTokenCreatedTime() {
+		return resetTokenCreatedTime;
+	}
+
+	public void setResetTokenCreatedTime(LocalDateTime resetTokenCreatedTime) {
+		this.resetTokenCreatedTime = resetTokenCreatedTime;
+	}
 
 	public Boolean getEmailVerified() {
 		return emailVerified;

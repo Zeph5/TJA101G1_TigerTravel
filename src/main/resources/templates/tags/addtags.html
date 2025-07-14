@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Tag</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script>
+        function fillSceneryName(select) {
+            const selectedOption = select.options[select.selectedIndex];
+            document.getElementById("sceneryNameInput").value = selectedOption.text;
+        }
+    </script>
+</head>
+<body>
+<div class="container mt-5">
+    <h1>Add Tag to Scenery</h1>
+
+    <div th:if="${error}" class="alert alert-danger">
+        <p th:text="${error}"></p>
+    </div>
+
+    <form th:action="@{/tags/add}" th:object="${tagsForm}" method="post">
+        <!-- Tag selection -->
+        <div class="mb-3">
+            <label for="tagsdbId">Select Tag:</label>
+            <select class="form-select" th:field="*{tagsdbId}" required>
+                <option value="" disabled selected>Select a tag</option>
+                <option th:each="tagdb : ${tagsdbList}"
+                        th:value="${tagdb.tagsdbId}"
+                        th:text="${tagdb.tagsName}"></option>
+            </select>
+        </div>
+        
+        
+           <!-- Optional: Hidden or minimized dropdown for selecting -->
+        <div class="mb-3">
+            <label for="sceneryDropdown">Choose from existing scenery:</label>
+            <select class="form-select" id="sceneryDropdown" onchange="fillSceneryName(this)">
+                <option value="" disabled selected>Select to autofill</option>
+                <option th:each="scene : ${sceneryList}"
+                        th:value="${scene.sceneryId}"
+                        th:text="${scene.sceneryName}"></option>
+            </select>
+        </div>
+
+        <!-- Scenery name field with dropdown to auto-fill -->
+        <div class="mb-3">
+            <label for="sceneryName">Scenery Name:</label>
+            <input type="text" class="form-control" th:field="*{sceneryName}" id="sceneryNameInput"
+                   placeholder="Enter or select a scenery" required />
+        </div>
+
+     
+
+        <button type="submit" class="btn btn-success">Add Tag</button>
+    </form>
+</div>
+</body>
+</html>

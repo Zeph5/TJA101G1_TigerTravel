@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>我的收藏</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0 20px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 30px;
+            color: #333;
+        }
+
+        .nav-buttons, .tab-buttons {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 10px;
+        }
+
+        .nav-buttons a, .tab-buttons button {
+            text-decoration: none;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-buttons a:hover, .tab-buttons button:hover {
+            background-color: #388e3c;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        .banner {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .placeholder {
+            background-color: #e0e0e0;
+            color: #999;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 180px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .no-fav {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<h2>🧡 我的收藏</h2>
+
+<!-- 🔗 導覽按鈕 -->
+<div class="nav-buttons">
+    <a th:href="@{/index}">🏠 回首頁</a>
+    <a th:href="@{/member/home}">👤 會員中心</a>
+</div>
+
+<!-- 📌 Tab 切換按鈕 -->
+<div class="tab-buttons">
+    <button onclick="showTab('scenery')">📍 收藏景點</button>
+    <button onclick="showTab('tour')">🧳 收藏旅程</button>
+</div>
+
+<!-- 📍 收藏景點區塊 -->
+<div id="tab-scenery">
+    <div class="no-fav" th:if="${sceneryFavorites.size() == 0}">
+        <p>你尚未收藏任何景點。</p>
+    </div>
+    <div th:each="scenery : ${sceneryFavorites}" class="card">
+	    <h3 th:text="${scenery.sceneryName}">景點名稱</h3>
+	    <p th:text="${scenery.sceneryIntro}">景點介紹</p>
+	    <p th:text="${scenery.sceneryAddress}">景點地址</p>
+	</div>
+
+</div>
+
+<!-- 🧳 收藏旅程區塊 -->
+<div id="tab-tour" style="display: none;">
+    <div class="no-fav" th:if="${tourFavorites.size() == 0}">
+        <p>你尚未收藏任何旅程。</p>
+    </div>
+    <div th:each="plan : ${tourFavorites}" class="card">
+        <div class="placeholder" th:if="${plan.travelPlanBannerUrl == null}">
+            尚未上傳圖片
+        </div>
+        <img class="banner" th:if="${plan.travelPlanBannerUrl != null}"
+             th:src="@{'/images/' + ${plan.travelPlanBannerUrl}}" alt="旅程圖片" />
+        <h3 th:text="${plan.travelTitle}">旅程標題</h3>
+        <p th:text="${plan.travelPlanDescription}">旅程介紹</p>
+    </div>
+</div>
+
+<script>
+    function showTab(tab) {
+        document.getElementById("tab-scenery").style.display = (tab === 'scenery') ? 'block' : 'none';
+        document.getElementById("tab-tour").style.display = (tab === 'tour') ? 'block' : 'none';
+    }
+</script>
+
+</body>
+</html>

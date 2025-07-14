@@ -1,65 +1,88 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Insert title here</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<title>Update Scenery</title>
+<style>
+  .error { color: red; }
+  label { display: inline-block; width: 100px; }
+  input[type="text"] { width: 300px; }
+  div.form-group { margin-bottom: 10px; }
+</style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-md navbar-dark bg-success fixed-top justify-content-center">
-		 <div align="center"> <h2>updatescenery.html</h2>
-		 <h3><a class="navbar-brand" th:href="@{/scenery/sceneryindex}">回查詢頁</a></h3></div>
+    <div align="center">
+        <h2>updatescenery.html</h2>
+        <h3><a class="navbar-brand" th:href="@{/scenery/sceneryindex}">回查詢頁</a></h3>
+    </div>
 </nav>
 
-	<div align="center">
-		<h3><b>所有欄位皆為必填欄位</b></h3>
-		<form th:action="@{update}" method="post" th:object="${SceneryVO}" enctype="multipart/form-data">
-			<div>
-			<label>景點編號:</label>
-			<input type="text" th:field="*{sceneryId}" style="border:0px ; font-weight: bold;" readonly /><br/>
+<div align="center" style="margin-top:80px;">
+    <h3><b>所有欄位皆為必填欄位</b></h3>
+    
+    <form th:action="@{/scenery/update}" method="post" th:object="${SceneryVO}" enctype="multipart/form-data">
 
-			</div>
-			
-			<div>
-			<label>景點名稱:</label>
-			<input type="text" th:field="*{sceneryName}" onclick="hideContent('sceneryName.errors');" /><br/>
-			<span  th:if="${#fields.hasErrors('sceneryName')}" th:errors="*{sceneryName}" class="error" id="sceneryName.errors"></span>
-			</div>
-			
-			<div>
-			<label>景點介紹:</label>
-			<input type="text" th:field="*{sceneryIntro}" onclick="hideContent('sceneryIntro.errors');" /><br/>
-			<span  th:if="${#fields.hasErrors('sceneryIntro')}" th:errors="*{sceneryIntro}" class="error" id="sceneryIntro.errors"></span>
-			</div>
-			
-			<div>
-			<label>景點地址:</label>
-			<input type="text" th:field="*{sceneryAddress}" onclick="hideContent('sceneryAddress.errors');" /><br/>
-			<span  th:if="${#fields.hasErrors('sceneryAddress')}" th:errors="*{sceneryAddress}" class="error" id="sceneryAddress.errors"></span>
-			</div>
+        <!-- CSRF token -->
+        <input type="hidden" th:if="${_csrf != null}"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}" />
 
-			<div>
-			<label>景點經度:</label>
-			<input type="text" th:field="*{sceneryLongitude}" onclick="hideContent('sceneryLongitude.errors');" /><br/>
-			<span  th:if="${#fields.hasErrors('sceneryLongitude')}" th:errors="*{sceneryLongitude}" class="error" id="sceneryLongitude.errors"></span>
-			</div>
-			
-			<div>
-			<label>景點緯度:</label>
-			<input type="text" th:field="*{sceneryLatitude}" onclick="hideContent('sceneryLatitude.errors');" /><br/>
-			<span  th:if="${#fields.hasErrors('sceneryLatitude')}" th:errors="*{sceneryLatitude}" class="error" id="sceneryLatitude.errors"></span>
-			</div>
-				
-			
-			<div>
-				<div></div>
-				<div><button type="submit" id="submit"> 送出新增 </button></div>
-				<div></div>
-			</div>		
-		</form>
-	
-	</div>
+        <div class="form-group">
+            <label for="sceneryId">景點編號:</label>
+            <input type="text" id="sceneryId" th:field="*{sceneryId}" readonly style="border:0; font-weight:bold;" />
+        </div>
+
+        <div class="form-group">
+            <label for="sceneryName">景點名稱:</label>
+            <input type="text" id="sceneryName" th:field="*{sceneryName}" onclick="hideContent('sceneryName.errors');" />
+            <br/>
+            <span th:if="${#fields.hasErrors('sceneryName')}" th:errors="*{sceneryName}" class="error" id="sceneryName.errors"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="sceneryIntro">景點介紹:</label>
+            <input type="text" id="sceneryIntro" th:field="*{sceneryIntro}" onclick="hideContent('sceneryIntro.errors');" />
+            <br/>
+            <span th:if="${#fields.hasErrors('sceneryIntro')}" th:errors="*{sceneryIntro}" class="error" id="sceneryIntro.errors"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="sceneryAddress">景點地址:</label>
+            <input type="text" id="sceneryAddress" th:field="*{sceneryAddress}" onclick="hideContent('sceneryAddress.errors');" />
+            <br/>
+            <span th:if="${#fields.hasErrors('sceneryAddress')}" th:errors="*{sceneryAddress}" class="error" id="sceneryAddress.errors"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="sceneryLongitude">景點經度:</label>
+            <input type="text" id="sceneryLongitude" th:field="*{sceneryLongitude}" onclick="hideContent('sceneryLongitude.errors');" />
+            <br/>
+            <span th:if="${#fields.hasErrors('sceneryLongitude')}" th:errors="*{sceneryLongitude}" class="error" id="sceneryLongitude.errors"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="sceneryLatitude">景點緯度:</label>
+            <input type="text" id="sceneryLatitude" th:field="*{sceneryLatitude}" onclick="hideContent('sceneryLatitude.errors');" />
+            <br/>
+            <span th:if="${#fields.hasErrors('sceneryLatitude')}" th:errors="*{sceneryLatitude}" class="error" id="sceneryLatitude.errors"></span>
+        </div>
+
+        <div>
+            <button type="submit" id="submit">送出更新</button>
+        </div>
+    </form>
+</div>
+
+<script>
+  // Example stub for hideContent function; customize as needed
+  function hideContent(id) {
+    var el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  }
+</script>
 
 </body>
 </html>
