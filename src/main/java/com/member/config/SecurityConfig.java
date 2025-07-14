@@ -3,7 +3,9 @@ package com.member.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+
 import org.springframework.http.HttpMethod;
+
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -36,6 +38,7 @@ public class SecurityConfig {
 
     // Bean: 用於會員的 SecurityFilterChain (優先順序較低，排在後面處理)
     @Bean
+
     @Order(2)
     public SecurityFilterChain memberFilterChain(HttpSecurity http,
             AuthenticationProvider memberAuthenticationProvider) throws Exception {
@@ -159,4 +162,5 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
+
 }

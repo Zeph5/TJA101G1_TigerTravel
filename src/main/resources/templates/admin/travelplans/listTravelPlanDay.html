@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<title>旅行每日行程列表</title>
+
+<a
+	th:href="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/new(planId=${planId}, itineraryId=${itineraryId})}"
+	class="btn-link" style="font-weight: bold; font-size: 1.1em;"> ➕
+	新增每日行程 </a>
+
+<link rel="stylesheet"
+	href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css" />
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script
+	src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+
+<script>
+	$(document).ready(function() {
+		$('#travelPlanDayTable').DataTable({
+			"lengthMenu" : [ 5, 10, 20 ],
+			"language" : {
+				"search" : "搜尋:",
+				"lengthMenu" : "每頁顯示 _MENU_ 筆",
+				"zeroRecords" : "找不到資料",
+				"info" : "顯示第 _START_ 至 _END_ 筆資料，共 _TOTAL_ 筆",
+				"paginate" : {
+					"first" : "第一頁",
+					"previous" : "上一頁",
+					"next" : "下一頁",
+					"last" : "最後一頁"
+				}
+			}
+		});
+	});
+</script>
+
+<style>
+body {
+	margin: 2rem 4rem;
+	font-family: Arial, sans-serif;
+}
+
+table {
+	width: 100%;
+}
+
+th, td {
+	padding: 8px;
+	text-align: left;
+}
+
+img {
+	max-width: 100px;
+	height: auto;
+}
+
+.btn-link {
+	background: none;
+	border: none;
+	color: blue;
+	cursor: pointer;
+	text-decoration: underline;
+	padding: 0;
+	font-size: 1em;
+}
+</style>
+</head>
+<body>
+
+	<h2>每日行程列表</h2>
+
+	<table id="travelPlanDayTable" class="display">
+		<thead>
+			<tr>
+				<th>序號</th>
+				<th>旅程天數</th>
+				<th>行程序號</th>
+				<th>旅行日期</th>
+				<th>景點名稱</th>
+				<th>建立時間</th>
+				<th>編輯</th>
+				<th>刪除</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="day, iterStat : ${travelPlanDays}">
+				<td th:text="${iterStat.count}">1</td>
+				<td th:text="${day.travelDayNumber}">1</td>
+				<td th:text="${day.travelSequenceNumber}">1</td>
+				<td th:text="${#temporals.format(day.traveltime, 'yyyy-MM-dd')}">2025-07-12</td>
+				<td th:text="${day.scenery != null ? day.scenery.sceneryName : '無'}">日月潭</td>
+				<td
+					th:text="${#temporals.format(day.createtime, 'yyyy-MM-dd HH:mm')}">2025-07-01
+					12:00</td>
+				<td><a
+					th:href="@{'/admin/travelplans/' + ${planId} + '/itinerary/' + ${itineraryId} + '/days/edit/' + ${day.travelPlanDayId}}"
+					class="btn-link">編輯</a></td>
+				<td>
+					<form
+						th:action="@{'/admin/travelplandays/delete/' + ${day.travelPlanDayId}}"
+						method="post" onsubmit="return confirm('確定要刪除嗎？');">
+						<input type="hidden" name="_method" value="delete" />
+						<button type="submit" class="btn-link" style="color: red;">刪除</button>
+					</form>
+				</td>
+			</tr>
+			<tr th:if="${#lists.isEmpty(travelPlanDays)}">
+				<td colspan="8" style="text-align: center;">目前沒有任何行程資料</td>
+			</tr>
+		</tbody>
+	</table>
+
+</body>
+</html>

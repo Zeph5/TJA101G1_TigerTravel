@@ -2,6 +2,7 @@ package com.travel_plan.service;
 
 
 
+import java.util.List;
 import java.util.Optional;
 
 import com.travel_plan.dto.TravelItineraryDTO;
@@ -29,8 +30,17 @@ public interface TravelItineraryService {
 	Optional<TravelItinerary> getTravelItineraryEntityById(Integer itineraryId);
 
 
-	TravelItinerary createTravelItineraryFromDto(@Valid Integer planId, TravelItineraryDTO dto);
+	
 	
 	Optional<TravelItineraryDTO> getTravelItineraryByTravelPlanId(Integer travelPlanId);//?
+
+
+	TravelItinerary saveTravelItineraryFromDto(@Valid TravelItineraryDTO travelItineraryDto);
+
+
+	List<TravelItinerary> getItinerariesByTravelPlanId(Integer planId);
+
+
+	
 
 }
