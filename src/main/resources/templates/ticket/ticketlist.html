@@ -42,7 +42,8 @@
                                     <li class="list-group-item">狀態：<span th:text="${ticket.ticketStatus == 1 ? '有庫存' : '無庫存'}" th:classappend="${ticket.ticketStatus == 1 ? 'text-success' : 'text-danger'}"></span></li>
                                 </ul>
                                 <div class="form-check mt-2 mb-1 text-center">
-                                    <input class="form-check-input" type="checkbox" name="ticketIds" th:value="${ticket.ticketId}"
+                                    <input class="form-check-input" type="checkbox" name="ticketIds"
+                                           th:value="${ticket.ticketId}"
                                            th:id="'searchSelectTicket__' + ${ticket.ticketId}"
                                            th:data-ticket-id="${ticket.ticketId}"
                                            th:data-ticket-name="${ticket.ticketName}"
@@ -77,7 +78,8 @@
                                 <li class="list-group-item">狀態：<span th:text="${ticket.ticketStatus == 1 ? '有庫存' : '無庫存'}" th:classappend="${ticket.ticketStatus == 1 ? 'text-success' : 'text-danger'}"></span></li>
                             </ul>
                             <div class="form-check mt-2 mb-1 text-center">
-                                <input class="form-check-input" type="checkbox" name="ticketIds" th:value="${ticket.ticketId}"
+                                <input class="form-check-input" type="checkbox" name="ticketIds"
+                                       th:value="${ticket.ticketId}"
                                        th:id="'allSelectTicket__' + ${ticket.ticketId}"
                                        th:data-ticket-id="${ticket.ticketId}"
                                        th:data-ticket-name="${ticket.ticketName}"
@@ -120,9 +122,13 @@
     </div>
 </div>
 
+<!-- 跨頁購物車記憶功能 JS，直接複製以下即可 -->
 <script>
-const selectedTickets = {};
+const STORAGE_KEY = 'cartTickets';
+// 初始化 selectedTickets 內容
+let selectedTickets = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
 
+// 更新右側預覽欄
 function updateCartView() {
     const container = document.getElementById('cartPreview');
     container.innerHTML = '';
@@ -143,16 +149,33 @@ function updateCartView() {
     container.innerHTML += `<div class="mt-2 font-weight-bold">合計：$${total} 元</div>`;
 }
 
+// 還原已選票券的 checkbox 狀態
+function restoreCheckboxState() {
+    for (const id in selectedTickets) {
+        const checkbox = document.querySelector(`[data-ticket-id="${id}"]`);
+        if (checkbox) checkbox.checked = true;
+    }
+}
+
+// 當勾選/取消時同步 localStorage
 function handleTicketCheck(e) {
     const ticketId = e.getAttribute('data-ticket-id');
     const name = e.getAttribute('data-ticket-name');
     const price = e.getAttribute('data-ticket-price');
     if (e.checked) {
-        selectedTickets[ticketId] = {name, price};
+        selectedTickets[ticketId] = { name, price };
     } else {
         delete selectedTickets[ticketId];
     }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedTickets));
     updateCartView();
+}
+
+// 頁面載入時自動還原
+window.onload = function() {
+    selectedTickets = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    updateCartView();
+    restoreCheckboxState();
 }
 </script>
 </body>
