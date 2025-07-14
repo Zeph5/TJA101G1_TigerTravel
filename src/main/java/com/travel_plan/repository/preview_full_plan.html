@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>旅行計畫預覽</title>
+    <link rel="stylesheet" th:href="@{/css/your-styles.css}">
+    <style>
+        /* 簡單的樣式，您可以根據需求修改 */
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 900px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        h1, h2, h3 { color: #333; }
+        .banner-image { max-width: 100%; height: auto; display: block; margin-bottom: 20px; border-radius: 4px; }
+        .itinerary-info { margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-left: 5px solid #007bff; }
+        .daily-itinerary { margin-bottom: 25px; padding: 15px; border: 1px solid #eee; border-radius: 6px; }
+        .daily-itinerary h3 { margin-top: 0; color: #0056b3; }
+        .daily-item { margin-bottom: 10px; padding-left: 15px; border-left: 2px solid #ccc; }
+        .daily-item strong { color: #555; }
+        .back-button { margin-top: 20px; display: inline-block; padding: 10px 15px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>旅行計畫預覽</h1>
+
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+            <p th:text="${errorMessage}"></p>
+        </div>
+
+        <div th:if="${travelPlanPreview != null}">
+            <section>
+                <h2>計畫名稱：<span th:text="${travelPlanPreview.travelTitle}"></span></h2>
+                <p><strong>描述：</strong> <span th:text="${travelPlanPreview.travelPlanDescription}"></span></p>
+                <div th:if="${travelPlanPreview.travelPlanBannerUrl}">
+                    <img th:src="@{${travelPlanPreview.travelPlanBannerUrl}}" alt="旅行計畫橫幅" class="banner-image">
+                </div>
+            </section>
+
+            <hr>
+
+            <section class="itinerary-info" th:if="${travelPlanPreview.travelItineraryId != null}">
+                <h2>梯次資訊</h2>
+                <p><strong>開始日期：</strong> <span th:text="${#temporals.format(travelPlanPreview.startDate, 'yyyy-MM-dd')}"></span></p>
+                <p><strong>結束日期：</strong> <span th:text="${#temporals.format(travelPlanPreview.endDate, 'yyyy-MM-dd')}"></span></p>
+                <p><strong>總天數：</strong> <span th:text="${totalTravelDays}"></span> 天</p>
+                <p><strong>最大旅客數：</strong> <span th:text="${travelPlanPreview.maxTourist}"></span> 人</p>
+                <p><strong>總價格：</strong> <span th:text="${#numbers.formatCurrency(travelPlanPreview.totalPrice)}"></span></p>
+            </section>
+            <section th:unless="${travelPlanPreview.travelItineraryId != null}">
+                <p>此旅行計畫尚未設定行程梯次資訊。</p>
+            </section>
+
+            <hr>
+
+            <section>
+                <h2>每日行程</h2>
+                <div th:if="${travelPlanPreview.dailyItineraries.isEmpty()}">
+                    <p>此旅行計畫尚未設定每日行程細節。</p>
+                </div>
+                <div th:each="entry : ${travelPlanPreview.dailyItineraries}" class="daily-itinerary">
+                    <h3 th:text="${#temporals.format(entry.key, 'yyyy-MM-dd')} + ' (第 ' + ${travelPlanPreview.calculateTravelDayNumber(travelPlanPreview.travelItineraryId, entry.key)} + ' 天)'">日期與天數</h3>
+                    <ul th:if="${!entry.value.isEmpty()}">
+                        <li th:each="item : ${entry.value}" class="daily-item">
+                            <strong th:text="${#temporals.format(item.travelTime, 'HH:mm')}">時間</strong> -
+                            <span th:text="${item.activityDescription}">活動描述</span>
+                            <span th:if="${item.sceneryName}"> (景點: <span th:text="${item.sceneryName}"></span>)</span>
+                        </li>
+                    </ul>
+                    <p th:if="${entry.value.isEmpty()}">這天沒有行程安排。</p>
+                </div>
+            </section>
+        </div>
+        <div th:unless="${travelPlanPreview != null}">
+            <p>找不到該旅行計畫的預覽資訊。</p>
+        </div>
+
+        <a th:href="@{/admin/travelplans}" class="back-button">返回旅行計畫列表</a>
+    </div>
+</body>
+</html>

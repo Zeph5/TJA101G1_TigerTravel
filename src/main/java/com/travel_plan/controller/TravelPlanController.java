@@ -1,8 +1,12 @@
 package com.travel_plan.controller;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -15,7 +19,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.travel_plan.dto.DailyItineraryFormDTO;
+import com.travel_plan.dto.TravelItineraryDTO;
 import com.travel_plan.dto.TravelPlanCreationDTO;
+import com.travel_plan.dto.TravelPlanDayDTO;
+import com.travel_plan.dto.TravelPlanPreviewDTO;
+import com.travel_plan.model.TravelItinerary;
 import com.travel_plan.model.TravelPlan;
 import com.travel_plan.service.TravelPlanService;
 
@@ -84,11 +93,11 @@ public class TravelPlanController {
 		session.removeAttribute("currentTravelItineraryId"); // 清除可能存在的行程 ID，因為新增計畫時不需要行程 ID
 		// 添加成功訊息，並在重定向後顯示
 		redirectAttributes.addFlashAttribute("successMessage", "計畫基本資訊儲存成功，請繼續編輯行程細節。");
-		// 重定向到下一步的行程細節編輯頁面
-		return "redirect:/admin/travelplans/" + savedPlan.getTravelPlanId() + "/itinerary/overview";
+		return "redirect:/admin/travelplans";
 	}
 
 	// 編輯現有計畫的入口點 (可重用第一步表單)
+	// 當使用者點擊「編輯」按鈕時，會跳轉到這個方法。
 	@GetMapping("/{id}/edit")
 	public String editTravelPlan(@PathVariable("id") Integer id, Model model, HttpSession session) {
 
@@ -109,5 +118,33 @@ public class TravelPlanController {
 
 		return "admin/travelplans/form_step1_plan_details";
 	}
-	// ... (其他只與 TravelPlan 相關的方法，如刪除)
-}
+	
+	
+
+	
+	@GetMapping("/{planId}/preview")
+	public String previewTravelPlan(@PathVariable("planId") Integer planId, Model model) {
+	    // 獲取完整的旅行計畫數據 (包含所有行程天數和景點)
+	    // 這需要 TravelPlanService 提供一個方法來獲取完整的 DTO
+	    // 將這裡的類型從 TravelPlanCreationDTO 改為 TravelPlanPreviewDTO
+	    TravelPlanPreviewDTO travelPlanPreviewDTO = travelPlanService.getFullTravelPlanDetails(planId); // <-- 修正這裡的類型
+
+	    // 將 Model Attribute 的名稱改為 "travelPlanPreview"，與前端模板預期的名稱一致
+	    model.addAttribute("travelPlanPreview", travelPlanPreviewDTO); // <-- 修正這裡的名稱
+
+	    // 計算總天數，從 TravelPlanPreviewDTO 中獲取梯次日期
+	    if (travelPlanPreviewDTO.getStartDate() != null && travelPlanPreviewDTO.getEndDate() != null) {
+	        long totalDays = ChronoUnit.DAYS.between(travelPlanPreviewDTO.getStartDate(), travelPlanPreviewDTO.getEndDate()) + 1;
+	        model.addAttribute("totalTravelDays", totalDays); // 將總天數傳遞給 Model
+	    } else {
+	        model.addAttribute("totalTravelDays", 0);
+	    }
+
+	    return "admin/travelplans/preview_full_plan"; // 一個新的 Thymeleaf 模板來顯示預覽
+	}
+	
+	
+	
+		
+	}
+

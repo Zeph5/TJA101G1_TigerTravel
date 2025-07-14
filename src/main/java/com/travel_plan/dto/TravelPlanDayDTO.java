@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.scenery.model.SceneryVO;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,6 +17,9 @@ public class TravelPlanDayDTO {
     @NotNull(message = "景點ID不能為空")
     @Min(value = 1, message = "景點ID必須大於0")
     private Integer sceneryId; // 如果景點是從外部系統或固定列表選擇的 ID
+    
+    
+    private SceneryVO scenery;
     
     @NotBlank(message = "景點名稱不能為空")
     private String sceneryName; // 景點名稱，這是可選的，可能用於顯示或選擇
@@ -32,6 +37,16 @@ public class TravelPlanDayDTO {
     private LocalDate traveltime;
     
     
+    
+    
+
+	public SceneryVO getScenery() {
+		return scenery;
+	}
+
+	public void setScenery(SceneryVO scenery) {
+		this.scenery = scenery;
+	}
 
 	public String getSceneryName() {
 		return sceneryName;
@@ -76,8 +91,8 @@ public class TravelPlanDayDTO {
 	public LocalDate getTraveltime() {
 		return traveltime;
 	}
-
-	public void setTraveltime(LocalDate traveltime) {
+	
+		public void setTraveltime(LocalDate traveltime) {
 		this.traveltime = traveltime;
 	}
 

@@ -43,12 +43,12 @@
                 <td th:text="${#temporals.format(plan.publishedDate, 'yyyy-MM-dd HH:mm')}">2023-01-01</td>
                 <td th:text="${#temporals.format(plan.lastModifiedDate, 'yyyy-MM-dd HH:mm')}">2023-01-01</td>
                 <td class="actions">
-                    <a th:href="@{/admin/travelplans/{id}/edit(id=${plan.travelPlanId})}">編輯</a>
+                   <a th:href="@{/admin/travelplans/{id}/edit(id=${plan.travelPlanId})}">編輯</a>
                     <form th:action="@{/admin/travelplans/{id}(id=${plan.travelPlanId})}" method="post" style="display:inline;"
                           onsubmit="return confirm('您確定要刪除這個旅行計畫嗎？');">
                         <input type="hidden" name="_method" value="delete" /> <button type="submit">刪除</button>
                     </form>
-                    <a th:href="@{/admin/travelplans/{id}(id=${plan.travelPlanId})}">詳情</a>
+                    <a th:href="@{/admin/travelplans/{id}/itinerary(id=${plan.travelPlanId})}">詳情</a>
                 </td>
             </tr>
             <tr th:if="${#lists.isEmpty(travelPlans)}">

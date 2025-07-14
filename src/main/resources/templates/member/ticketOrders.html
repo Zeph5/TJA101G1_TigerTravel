@@ -29,11 +29,20 @@
 			    <tr th:each="order : ${ticketOrders}">
 			        <td th:text="${order.ticketOrderId}">1001</td>
 			        <td>
-					    <div th:each="receipt : ${order.ticketOrderReceipts}">
-					        <img th:src="'data:image/jpeg;base64,' + ${receipt.ticketImageBase64}"
-     							style="width: 80px; height: 60px; object-fit: cover;" class="me-2 mb-1">
-					        <span th:text="${receipt.ticket.ticketName}"></span><br>
-					    </div>
+			        
+					    <div th:each="receipt : ${receiptMap[order.ticketOrderId]}">
+						    <div th:if="${receipt != null}">
+						        <div th:if="${receiptImageMap[receipt.ticketOrderReceiptId] != null}">
+						            <img th:src="'data:image/jpeg;base64,' + ${receiptImageMap[receipt.ticketOrderReceiptId]}"
+						                 alt="票券圖片" style="width:200px;" />
+						        </div>
+						        <div th:if="${receiptImageMap[receipt.ticketOrderReceiptId] == null}">
+						            <span class="text-muted">尚無圖片</span>
+						        </div>
+						        <span th:text="${ticketMap[receipt.ticketOrderReceiptId]?.ticketName}">票券名稱</span><br>
+						    </div>
+						</div>
+
 					</td>
 			        <td th:text="${order.orderPrice} + ' 元'">3000 元</td>
 			        <td>
@@ -44,9 +53,11 @@
 			                <span th:case="*">未知</span>
 			            </span>
 			        </td>
-			        <td th:text="${#dates.format(order.orderDatetime, 'yyyy/MM/dd HH:mm')}">2025/07/08</td>
+			        
+			        <td th:text="${order.orderDatetime != null} ? ${#temporals.format(order.orderDatetime, 'yyyy/MM/dd HH:mm')} : '-'"></td>
+
 			        <td>
-			            <a th:href="@{'/member/order/' + ${order.ticketOrderId}}"
+			            <a th:href="@{'/member/detail/order/' + ${order.ticketOrderId}}"
 			               class="btn btn-sm btn-outline-primary">查看明細</a>
 			        </td>
 			    </tr>

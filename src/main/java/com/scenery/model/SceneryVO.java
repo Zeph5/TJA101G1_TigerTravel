@@ -206,4 +206,5 @@ public class SceneryVO implements java.io.Serializable {
     public void setSceneryStatus(Integer sceneryStatus) {
         this.sceneryStatus = sceneryStatus;
     }
+
 }
