@@ -13,13 +13,19 @@
         <strong th:text="${startDate}">2025-07-01</strong> ~
         <strong th:text="${endDate}">2025-07-07</strong>
     </p>
+     <!-- 錯誤訊息區 -->
+    <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+    <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
 
     <form th:action="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/save(planId=${travelPlanId}, itineraryId=${travelItineraryId})}" 
-          method="post" id="dailyForm">
+      method="post" 
+      th:object="${dailyItineraryFormDTO}"   
+      id="dailyForm">
+      <input type="hidden" name="traveltime" th:value="${currentEditDate}" />
 
         <div id="itineraryItems">
             <div th:each="item, iterStat : *{dailyItems}" class="row mb-3 border p-2 itinerary-row">
-                <input type="hidden" th:name="|dailyItems[${iterStat.index}].travelPlanDayId|" th:value="${item.travelPlanDayId}" />
+                
 
                 <label>景點：</label>
                 <select th:name="|dailyItems[${iterStat.index}].sceneryId|" class="form-select" required
@@ -33,12 +39,8 @@
                 <input type="text" th:name="|dailyItems[${iterStat.index}].sceneryName|" th:value="${item.sceneryName}" class="form-control" readonly />
 
                 <label>旅遊日期：</label>
-                <input type="date" 
-                       th:name="|dailyItems[${iterStat.index}].traveltime|" 
-                       th:value="${item.traveltime}" 
-                       class="form-control" required 
-                       th:min="${startDate}" th:max="${endDate}" />
-
+                <input type="date" name="dailyItems[${newIndex}].traveltime" class="form-control" required min="${startDate}" max="${endDate}" value="${currentEditDate}" />
+                
                 <label>行程順序：</label>
                 <input type="number" th:name="|dailyItems[${iterStat.index}].travelSequenceNumber|" 
                        th:value="${item.travelSequenceNumber}" class="form-control" min="1" required />
@@ -63,6 +65,7 @@
     const allSceneries = /*[[${allSceneries}]]*/ {};
     const startDate = /*[[${startDate}]]*/ '2025-07-01';
     const endDate = /*[[${endDate}]]*/ '2025-07-07';
+    const currentEditDate = /*[[${currentEditDate}]]*/ '2025-07-01';
     let indexCounter = /*[[${#lists.size(dailyItineraryFormDTO.dailyItems)}]]*/ 0;
 
     function addNewRow() {
@@ -77,7 +80,7 @@
         const newRow = document.createElement("div");
         newRow.classList.add("row", "mb-3", "border", "p-2", "itinerary-row");
         newRow.innerHTML = `
-            <input type="hidden" name="dailyItems[${newIndex}].travelPlanDayId" />
+           
 
             <label>景點：</label>
             <select name="dailyItems[${newIndex}].sceneryId" class="form-select" required onchange="updateSceneryName(this, ${newIndex})">
@@ -88,7 +91,7 @@
             <input type="text" name="dailyItems[${newIndex}].sceneryName" class="form-control" readonly />
 
             <label>旅遊日期：</label>
-            <input type="date" name="dailyItems[${newIndex}].traveltime" class="form-control" required min="${startDate}" max="${endDate}" />
+            <input type="date" name="dailyItems[${newIndex}].traveltime" class="form-control" required min="${startDate}" max="${endDate}" value="${currentEditDate}" />
 
             <label>行程順序：</label>
             <input type="number" name="dailyItems[${newIndex}].travelSequenceNumber" class="form-control" min="1" required />

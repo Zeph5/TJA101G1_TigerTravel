@@ -1,7 +1,6 @@
-package 資料庫建立;
+package com;
 
 import javax.json.*;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.*;
 import java.math.BigDecimal;
@@ -9,23 +8,24 @@ import java.math.BigDecimal;
 // 將 https://data.gov.tw/dataset/7777 網站下載的景點JSON檔寫入MySQL資料庫
 public class SceneryJSONReader {
 
-	public static void main(String[] args) {
+    public static void main(String[] args) {
         String jdbcURL = "jdbc:mysql://localhost:3306/TigerTravelDB";
         String dbUser = "root";
         String dbPassword = "123456";
 
-        String sql = "INSERT INTO scenery (sce_name, sce_intro, sce_total_score, score_sce_total_score, sce_address, sce_longitude, sce_latitude) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO scenery (sce_name, sce_intro, sce_total_score, score_sce_total_score, sce_address, sce_longitude, sce_latitude, sce_status) "
+                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (
-        	InputStream fis = SceneryJSONReader.class.getResourceAsStream("scenic_spot_C_f.json");
+            InputStream fis = SceneryJSONReader.class.getResourceAsStream("scenic_spot_C_f.json");
             JsonReader jsonReader = Json.createReader(fis);
             Connection conn = DriverManager.getConnection(jdbcURL, dbUser, dbPassword);
             PreparedStatement stmt = conn.prepareStatement(sql);
         ) {
-        	JsonObject root = jsonReader.readObject(); 
-        	JsonObject xmlHead = root.getJsonObject("XML_Head");
-        	JsonObject infos = xmlHead.getJsonObject("Infos");
-        	JsonArray sceneryArray = infos.getJsonArray("Info");
+            JsonObject root = jsonReader.readObject();
+            JsonObject xmlHead = root.getJsonObject("XML_Head");
+            JsonObject infos = xmlHead.getJsonObject("Infos");
+            JsonArray sceneryArray = infos.getJsonArray("Info");
 
             for (JsonValue value : sceneryArray) {
                 JsonObject obj = value.asJsonObject();
@@ -47,6 +47,7 @@ public class SceneryJSONReader {
                 stmt.setString(5, address);
                 stmt.setBigDecimal(6, longitude);
                 stmt.setBigDecimal(7, latitude);
+                stmt.setInt(8, 1); // set sce_status to 1
 
                 try {
                     stmt.executeUpdate();

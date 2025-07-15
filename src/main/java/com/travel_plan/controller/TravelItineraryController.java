@@ -43,31 +43,7 @@ public class TravelItineraryController {
         this.travelPlanDayService = travelPlanDayService; // 初始化每日行程服務
     }
     
-//    @GetMapping("/{itineraryId}/days")
-//    public String listTravelPlanDays(@PathVariable("planId") Integer planId,
-//                                    @PathVariable("itineraryId") Integer itineraryId,
-//                                    Model model) {
-//
-//        // 1. 確認這個行程梯次屬於該計畫
-//        TravelItinerary itinerary = travelItineraryService.getTravelItineraryEntityById(itineraryId)
-//            .orElseThrow(() -> new IllegalArgumentException("找不到 ID 為 " + itineraryId + " 的行程梯次"));
-//
-//        if (!itinerary.getTravelPlan().getTravelPlanId().equals(planId)) {
-//            throw new IllegalArgumentException("行程梯次不屬於指定的旅行計畫");
-//        }
-//
-//        // 2. 從 service 拿每日行程列表（你要確保 service 裡有這個方法）
-//        List<TravelPlanDay> travelPlanDays = travelPlanDayService.getDaysByItineraryId(itineraryId);
-//        model.addAttribute("travelPlanDays", travelPlanDays);
-//
-//        // 3. 傳送其他你需要給前端的資料（選填）
-//        model.addAttribute("travelPlanId", planId);
-//        model.addAttribute("travelItineraryId", itineraryId);
-//       
-//
-//        // 4. 返回你想要呈現每日行程的 Thymeleaf 頁面名稱
-//        return "admin/travelplans/listTravelPlanDays";  // 你每日行程列表的 HTML 名稱
-//    }
+
     // 顯示新增旅行行程第二步的表單
     @GetMapping // 映射到 Controller 的根路徑，但必須接收 planId
     public String listItinerariesForTravelPlan(@PathVariable("planId") Integer planId, Model model) {

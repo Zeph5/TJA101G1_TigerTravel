@@ -23,6 +23,7 @@ public class SceneryImageVO implements java.io.Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "sce_image_id")
 	private Integer sceneryImageId;
 
 	@ManyToOne
@@ -31,8 +32,9 @@ public class SceneryImageVO implements java.io.Serializable {
 
 	@Lob
 	@Basic(fetch = FetchType.EAGER)
+	@Column(name = "sce_image", nullable = false, columnDefinition = "LONGBLOB")
 	private Byte[] sceneryImage;
-
+	
 	@Column(updatable = false)
 	@CreationTimestamp
 	private Timestamp createTime;

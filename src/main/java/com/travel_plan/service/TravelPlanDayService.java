@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import com.scenery.model.SceneryVO;
 import com.travel_plan.dto.TravelPlanDayDTO;
 import com.travel_plan.model.TravelItinerary;
 import com.travel_plan.model.TravelPlanDay;
@@ -24,6 +25,18 @@ public interface TravelPlanDayService {
 
 	void updateTravelPlanDay(TravelPlanDayDTO travelPlanDayDTO, Integer itineraryId);
 
-	List<TravelPlanDay> getDaysByItineraryIdAndDate(Integer itineraryId, LocalDate currentEditDate);	
+	List<TravelPlanDay> getDaysByItineraryIdAndDate(Integer itineraryId, LocalDate currentEditDate);
+
+
+
+	List<SceneryVO> findAllScenery();
+
+
+
+	List<TravelPlanDay> getDaysByItineraryIdAndDateSortedBySequence(Integer itineraryId, LocalDate currentEditDate);
+
+
+
+	void deleteTravelPlanDayById(Integer travelPlanDayId, Integer itineraryId);
 
 }

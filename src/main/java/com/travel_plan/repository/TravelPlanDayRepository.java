@@ -9,13 +9,14 @@ import org.springframework.stereotype.Repository;
 import com.travel_plan.model.TravelPlanDay;
 
 @Repository
-public interface TravelPlanDayRepository extends JpaRepository<TravelPlanDay, Integer> {
-
-    // 查詢指定行程梯次與日期的每日行程
+public interface TravelPlanDayRepository extends JpaRepository<TravelPlanDay, Integer> {  
     
 
     // 根據行程梯次ID查詢所有每日行程
     List<TravelPlanDay> findByTravelItinerary_TravelItineraryId(Integer travelItineraryId);
+    
+    // 根據行程梯次ID和日期查詢每日行程且排序
+    List<TravelPlanDay> findByTravelItinerary_TravelItineraryIdAndTraveltimeOrderByTravelSequenceNumberAsc(Integer itineraryId, LocalDate date);
 
     // 刪除指定行程梯次的所有每日行程
     void deleteByTravelItinerary_TravelItineraryId(Integer travelItineraryId);

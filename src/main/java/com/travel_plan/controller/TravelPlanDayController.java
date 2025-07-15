@@ -16,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
 import org.springframework.ui.Model;
-
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -82,7 +82,7 @@ public class TravelPlanDayController {
 	    LocalDate currentEditDate = (date != null) ? date : itinerary.getStartDate();
 	    
 	    // 取得該日期的每日行程資料
-	    List<TravelPlanDay> travelPlanDays = travelPlanDayService.getDaysByItineraryIdAndDate(itineraryId, currentEditDate);
+	    List<TravelPlanDay> travelPlanDays = travelPlanDayService.getDaysByItineraryIdAndDateSortedBySequence(itineraryId, currentEditDate);
 	    //計算可選日期區間
 	    List<LocalDate> itineraryDates = travelPlanService.generateItineraryDates(itinerary.getStartDate(), itinerary.getEndDate());
 	    //計算第幾天
@@ -92,7 +92,7 @@ public class TravelPlanDayController {
 	   
 	    
 
-	    List<SceneryVO> allSceneriesList = sceneryService.findAllScenery();
+	    List<SceneryVO> allSceneriesList = travelPlanDayService.findAllScenery();
 	    Map<Integer, String> allSceneriesMap = allSceneriesList.stream()
 	        .collect(Collectors.toMap(SceneryVO::getSceneryId, SceneryVO::getSceneryName));
 
@@ -143,7 +143,7 @@ public class TravelPlanDayController {
 	@GetMapping("/api/sceneries/all")
 	@ResponseBody
 	public ResponseEntity<List<SceneryVO>> getAllSceneries() {
-		List<SceneryVO> sceneries = sceneryService.findAllScenery();
+		List<SceneryVO> sceneries = travelPlanDayService.findAllScenery();
 		return ResponseEntity.ok(sceneries);
 	}
 
@@ -169,7 +169,7 @@ public class TravelPlanDayController {
 		LocalDate currentEditDate = (date != null) ? date : itinerary.getStartDate();
 		int travelDayNumber = travelPlanDayService.calculateTravelDayNumber(itineraryId, currentEditDate);
 
-		List<SceneryVO> allSceneriesList = sceneryService.findAllScenery();
+		List<SceneryVO> allSceneriesList = travelPlanDayService.findAllScenery();
 		Map<Integer, String> allSceneriesMap = allSceneriesList.stream()
 				.collect(Collectors.toMap(SceneryVO::getSceneryId, SceneryVO::getSceneryName));
 		model.addAttribute("allSceneries", allSceneriesMap);
@@ -201,6 +201,7 @@ public class TravelPlanDayController {
 	public String saveDailyItineraryFormView(@PathVariable Integer planId, @PathVariable Integer itineraryId,
 			@ModelAttribute DailyItineraryFormDTO dailyItineraryFormDTO, Model model,
 			RedirectAttributes redirectAttributes) {
+		System.out.println("🚨 travelPlanDayService 實例是：" + travelPlanDayService.getClass().getName());
 		TravelItinerary itinerary = travelItineraryService.getTravelItineraryEntityById(itineraryId)
 				.orElseThrow(() -> new IllegalArgumentException("找不到行程梯次"));
 		model.addAttribute("startDate", itinerary.getStartDate());
@@ -221,7 +222,12 @@ public class TravelPlanDayController {
 			travelPlanDayService.saveDailyItems(itineraryId, date, dailyItineraryFormDTO.getDailyItems());
 
 			redirectAttributes.addFlashAttribute("successMessage", "當天行程已成功儲存！");
-		} catch (Exception e) {
+		} 
+		catch (IllegalArgumentException e) {
+		    redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+		    return "redirect:/admin/travelplans/" + planId + "/itinerary/" + itineraryId + "/days?date=" + dailyItineraryFormDTO.getTraveltime();
+		}catch (Exception e) {
+			e.printStackTrace(); // <== 把錯誤印出來
 			redirectAttributes.addFlashAttribute("errorMessage", "儲存失敗：" + e.getMessage());
 		}
 
@@ -273,7 +279,7 @@ public class TravelPlanDayController {
 		int travelDayNumber = travelPlanDayService.calculateTravelDayNumber(itineraryId, currentEditDate);
 
 		DailyItineraryFormDTO dailyItineraryFormDTO = new DailyItineraryFormDTO(); // 空表單
-		List<SceneryVO> allSceneriesList = sceneryService.findAllScenery();
+		List<SceneryVO> allSceneriesList = travelPlanDayService.findAllScenery();
 		Map<Integer, String> allSceneriesMap = allSceneriesList.stream()
 				.collect(Collectors.toMap(SceneryVO::getSceneryId, SceneryVO::getSceneryName));
 
@@ -302,5 +308,21 @@ public class TravelPlanDayController {
 		}
 		return "redirect:/admin/travelplans/" + planId + "/itinerary/" + itineraryId + "/days";
 	}
+	@GetMapping("/{travelPlanDayId}/delete")
+	public String deleteTravelPlanDay(@PathVariable Integer planId
+			, @PathVariable Integer itineraryId
+			,@PathVariable Integer travelPlanDayId
+			,@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+			, RedirectAttributes redirectAttributes) {
+			
+		try {
+			travelPlanDayService.deleteTravelPlanDayById(travelPlanDayId, itineraryId);
+			redirectAttributes.addFlashAttribute("successMessage", "行程已成功刪除！");			
+		
+		} catch (Exception e) {
+			e.printStackTrace();
+			redirectAttributes.addFlashAttribute("errorMessage", "刪除失敗：" + e.getMessage());
+		}
+		return "redirect:/admin/travelplans/" + planId + "/itinerary/" + itineraryId + "/days?date=" + date;}
 
 }
