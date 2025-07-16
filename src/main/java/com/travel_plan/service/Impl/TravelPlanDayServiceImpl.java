@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.scenery.model.SceneryRepository;
+import com.scenery.model.SceneryVO;
 import com.travel_plan.dto.TravelItineraryDTO;
 import com.travel_plan.dto.TravelPlanDayDTO;
 import com.travel_plan.model.TravelItinerary;
@@ -48,10 +49,7 @@ public class TravelPlanDayServiceImpl implements TravelPlanDayService {
 		// 返回儲存後的 TravelPlanDay 實體
 	}
 
-	@Override
-	public List<TravelPlanDay> getDaysByItineraryId(Integer itineraryId) {
-		return travelPlanDayRepository.findByTravelItinerary_TravelItineraryId(itineraryId);
-	}
+
 
 	@Override
 	public Optional<TravelPlanDayDTO> getTravelPlanDayDTOById(Integer id) {
@@ -73,59 +71,50 @@ public class TravelPlanDayServiceImpl implements TravelPlanDayService {
 
 	@Override
 	@Transactional
-	public void saveDailyItems(Integer itineraryId, LocalDate date, List<TravelPlanDayDTO> dailyItems) {
-		List<TravelPlanDay> existingEntities = travelPlanDayRepository
-				.findByTravelItinerary_TravelItineraryIdAndTraveltime(itineraryId, date);
-		Map<Integer, TravelPlanDay> existingMap = existingEntities.stream()
-				.collect(Collectors.toMap(TravelPlanDay::getTravelPlanDayId, e -> e));
-		Set<Integer> toDeleteIds = new HashSet<>(existingMap.keySet());
+	public void saveDailyItems(Integer itineraryId, LocalDate unusedDate, List<TravelPlanDayDTO> dailyItems) {
+	   
 
-		TravelItinerary itinerary = travelItineraryRepository.findById(itineraryId)
-				.orElseThrow(() -> new IllegalArgumentException("Travel Itinerary not found with ID: " + itineraryId));
-		TravelPlan travelPlan = itinerary.getTravelPlan();
+	    TravelItinerary itinerary = travelItineraryRepository.findById(itineraryId)
+	            .orElseThrow(() -> new IllegalArgumentException("Travel Itinerary not found with ID: " + itineraryId));
+	    TravelPlan travelPlan = itinerary.getTravelPlan();
 
-		List<TravelPlanDay> itemsToSave = new ArrayList<>();
+	    List<TravelPlanDay> itemsToSave = new ArrayList<>();
 
-		for (int i = 0; i < dailyItems.size(); i++) {
-			TravelPlanDayDTO dto = dailyItems.get(i);
-			dto.setTraveltime(date);
-			dto.setTravelDayNumber(calculateTravelDayNumber(itinerary.getTravelItineraryId(), date));
-			
+	    for (TravelPlanDayDTO dto : dailyItems) {
+	        if (dto.getTravelPlanDayId() != null) {	           
+	            continue;
+	        }
 
-			TravelPlanDay entity;
-			if (dto.getTravelPlanDayId() != null && existingMap.containsKey(dto.getTravelPlanDayId())) {
-				entity = existingMap.get(dto.getTravelPlanDayId());
-				toDeleteIds.remove(dto.getTravelPlanDayId());
+	        LocalDate date = dto.getTraveltime();
+	        if (date == null) {	            
+	            continue;
+	        }
 
-				entity.setTravelSequenceNumber(dto.getTravelSequenceNumber());
-				entity.setTraveltime(dto.getTraveltime());
-				entity.setTravelDayNumber(dto.getTravelDayNumber());
-				entity.setTravelItinerary(itinerary);
-				entity.setTravelPlan(travelPlan);
+	        dto.setTravelDayNumber(calculateTravelDayNumber(itineraryId, date));
 
-				Integer currentSceneryId = entity.getScenery() != null ? entity.getScenery().getSceneryId() : null;
-				if (!Objects.equals(currentSceneryId, dto.getSceneryId())) {
-					if (dto.getSceneryId() != null) {
-						sceneryRepository.findById(dto.getSceneryId()).ifPresent(entity::setScenery);
-					} else {
-						entity.setScenery(null);
-					}
-				}
-			} else {
-				entity = convertToTravelPlanDayEntity(dto);
-				entity.setTravelItinerary(itinerary);
-				entity.setTravelPlan(travelPlan);
-			}
-			itemsToSave.add(entity);
-		}
+	        TravelPlanDay entity = convertToTravelPlanDayEntity(dto);
+	        entity.setTravelItinerary(itinerary);
+	        entity.setTravelPlan(travelPlan);
+	        entity.setTraveltime(date);
+	        entity.setTravelDayNumber(dto.getTravelDayNumber());
+	        entity.setTravelSequenceNumber(dto.getTravelSequenceNumber());
 
-		if (!itemsToSave.isEmpty()) {
-			travelPlanDayRepository.saveAll(itemsToSave);
-		}
-		if (!toDeleteIds.isEmpty()) {
-			travelPlanDayRepository.deleteAllById(toDeleteIds);
-		}
+	        if (dto.getSceneryId() != null) {
+	            sceneryRepository.findById(dto.getSceneryId()).ifPresent(entity::setScenery);
+	        }
+
+	        itemsToSave.add(entity);
+	    }
+
+	    if (!itemsToSave.isEmpty()) {
+	        travelPlanDayRepository.saveAll(itemsToSave);
+	        System.out.println("✅ 儲存成功筆數：" + itemsToSave.size());
+	    } else {
+	        System.out.println("⚠️ 沒有要儲存的資料");
+	    }
 	}
+
+
 
 	@Override
 	public Integer calculateTravelDayNumber(Integer itineraryId, LocalDate currentDate) {
@@ -156,24 +145,76 @@ public class TravelPlanDayServiceImpl implements TravelPlanDayService {
 	}
 
 	@Override
-	public void updateTravelPlanDay(TravelPlanDayDTO travelPlanDayDTO, Integer itineraryId) {
-		TravelPlanDay entity;
-	    if (travelPlanDayDTO.getTravelPlanDayId() != null) {
-	        entity = travelPlanDayRepository.findById(travelPlanDayDTO.getTravelPlanDayId())
-	                 .orElse(new TravelPlanDay());
+	@Transactional
+	public void updateTravelPlanDay(TravelPlanDayDTO dto, Integer itineraryId) {
+	    TravelPlanDay entity = travelPlanDayRepository.findById(dto.getTravelPlanDayId())
+	        .orElseThrow(() -> new IllegalArgumentException("找不到對應的 TravelPlanDay，ID: " + dto.getTravelPlanDayId()));
+
+	    entity.setTravelSequenceNumber(dto.getTravelSequenceNumber());
+	    entity.setTraveltime(dto.getTraveltime());
+
+	    // 加入防 null 的邏輯
+	    if (dto.getTravelDayNumber() == null) {
+	        int calculatedDayNumber = calculateTravelDayNumber(itineraryId, dto.getTraveltime());
+	        System.out.println("TravelDayNumber 為 null，自動計算為: " + calculatedDayNumber);
+	        entity.setTravelDayNumber(calculatedDayNumber);
 	    } else {
-	        entity = new TravelPlanDay();
+	        entity.setTravelDayNumber(dto.getTravelDayNumber());
 	    }
-	    BeanUtils.copyProperties(travelPlanDayDTO, entity, "scenery");
-	    if (travelPlanDayDTO.getSceneryId() != null) {
-	        sceneryRepository.findById(travelPlanDayDTO.getSceneryId()).ifPresent(entity::setScenery);
+
+	    // 景點處理
+	    if (dto.getSceneryId() != null) {
+	        sceneryRepository.findById(dto.getSceneryId()).ifPresent(entity::setScenery);
+	    } else {
+	        entity.setScenery(null);
 	    }
+
 	    TravelItinerary itinerary = travelItineraryRepository.findById(itineraryId)
-	            .orElseThrow(() -> new IllegalArgumentException("找不到行程梯次"));
+	        .orElseThrow(() -> new IllegalArgumentException("找不到行程梯次"));
 	    entity.setTravelItinerary(itinerary);
 	    entity.setTravelPlan(itinerary.getTravelPlan());
+
 	    travelPlanDayRepository.save(entity);
+	}
+
+	@Override
+	public List<TravelPlanDay> getDaysByItineraryIdAndDate(Integer itineraryId, LocalDate currentEditDate) {
+		return travelPlanDayRepository.findByTravelItinerary_TravelItineraryIdAndTraveltime(itineraryId, currentEditDate);
+	}
+
+	@Override
+	public List<SceneryVO> findAllScenery() {
+		return sceneryRepository.findAll().stream()
+				.map(scenery -> {
+					SceneryVO sceneryVO = new SceneryVO();
+					BeanUtils.copyProperties(scenery, sceneryVO);
+					return sceneryVO;
+				}).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<TravelPlanDay> getDaysByItineraryIdAndDateSortedBySequence(Integer itineraryId,
+			LocalDate currentEditDate) {
+		 return travelPlanDayRepository
+			        .findByTravelItinerary_TravelItineraryIdAndTraveltimeOrderByTravelSequenceNumberAsc(itineraryId, currentEditDate);
+	}
+
+	@Override
+	@Transactional
+	public void deleteTravelPlanDayById(Integer travelPlanDayId, Integer itineraryId) {
+		travelPlanDayRepository.deleteById(travelPlanDayId);
 		
 	}
+	
+	
+	@Override
+	public List<Integer> findSequenceNumbersByItineraryIdAndDate(Integer itineraryId, LocalDate date) {
+		 return travelPlanDayRepository.findByTravelItinerary_TravelItineraryIdAndTraveltime(itineraryId, date)
+			        .stream()
+			        .map(TravelPlanDay::getTravelSequenceNumber)
+			        .filter(Objects::nonNull)
+			        .collect(Collectors.toList());
+	}
+
 
 }

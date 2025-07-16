@@ -1,115 +1,110 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8" />
-<title>旅行每日行程列表</title>
+<title>每日行程列表與編輯</title>
 
-<a
-	th:href="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/new(planId=${planId}, itineraryId=${itineraryId})}"
-	class="btn-link" style="font-weight: bold; font-size: 1.1em;"> ➕
-	新增每日行程 </a>
-
-<link rel="stylesheet"
-	href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css" />
-<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-<script
-	src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
-
-<script>
-	$(document).ready(function() {
-		$('#travelPlanDayTable').DataTable({
-			"lengthMenu" : [ 5, 10, 20 ],
-			"language" : {
-				"search" : "搜尋:",
-				"lengthMenu" : "每頁顯示 _MENU_ 筆",
-				"zeroRecords" : "找不到資料",
-				"info" : "顯示第 _START_ 至 _END_ 筆資料，共 _TOTAL_ 筆",
-				"paginate" : {
-					"first" : "第一頁",
-					"previous" : "上一頁",
-					"next" : "下一頁",
-					"last" : "最後一頁"
-				}
-			}
-		});
-	});
-</script>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+	rel="stylesheet" />
 
 <style>
 body {
-	margin: 2rem 4rem;
-	font-family: Arial, sans-serif;
+	margin: 20px;
 }
 
-table {
-	width: 100%;
-}
-
-th, td {
-	padding: 8px;
-	text-align: left;
-}
-
-img {
-	max-width: 100px;
-	height: auto;
-}
-
-.btn-link {
-	background: none;
-	border: none;
-	color: blue;
-	cursor: pointer;
-	text-decoration: underline;
-	padding: 0;
-	font-size: 1em;
+.date-select {
+	margin-bottom: 20px;
 }
 </style>
 </head>
 <body>
+	<div class="container">
 
-	<h2>每日行程列表</h2>
+		<h2>每日行程列表</h2>
 
-	<table id="travelPlanDayTable" class="display">
-		<thead>
-			<tr>
-				<th>序號</th>
-				<th>旅程天數</th>
-				<th>行程序號</th>
-				<th>旅行日期</th>
-				<th>景點名稱</th>
-				<th>建立時間</th>
-				<th>編輯</th>
-				<th>刪除</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr th:each="day, iterStat : ${travelPlanDays}">
-				<td th:text="${iterStat.count}">1</td>
-				<td th:text="${day.travelDayNumber}">1</td>
-				<td th:text="${day.travelSequenceNumber}">1</td>
-				<td th:text="${#temporals.format(day.traveltime, 'yyyy-MM-dd')}">2025-07-12</td>
-				<td th:text="${day.scenery != null ? day.scenery.sceneryName : '無'}">日月潭</td>
-				<td
-					th:text="${#temporals.format(day.createtime, 'yyyy-MM-dd HH:mm')}">2025-07-01
-					12:00</td>
-				<td><a
-					th:href="@{'/admin/travelplans/' + ${planId} + '/itinerary/' + ${itineraryId} + '/days/edit/' + ${day.travelPlanDayId}}"
-					class="btn-link">編輯</a></td>
-				<td>
-					<form
-						th:action="@{'/admin/travelplandays/delete/' + ${day.travelPlanDayId}}"
-						method="post" onsubmit="return confirm('確定要刪除嗎？');">
-						<input type="hidden" name="_method" value="delete" />
-						<button type="submit" class="btn-link" style="color: red;">刪除</button>
-					</form>
-				</td>
-			</tr>
-			<tr th:if="${#lists.isEmpty(travelPlanDays)}">
-				<td colspan="8" style="text-align: center;">目前沒有任何行程資料</td>
-			</tr>
-		</tbody>
-	</table>
+		<p>
+			旅程期間：<strong th:text="${startDate}">2025-07-01</strong> ~ <strong
+				th:text="${endDate}">2025-07-07</strong>
+		</p>
 
+		<!-- 日期選擇 -->
+		<form method="get"
+			th:action="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days(planId=${travelPlanId}, itineraryId=${travelItineraryId})}">
+			<div class="date-select">
+				<label for="dateSelect">選擇日期編輯行程：</label> <select id="dateSelect"
+					name="date" class="form-select" onchange="this.form.submit()">
+					<option th:each="date : ${itineraryDates}" th:value="${date}"
+						th:text="${date}" th:selected="${date == currentEditDate}">
+					</option>
+				</select>
+			</div>
+		</form>
+		<div class="mb-3">
+			<a
+				th:href="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/new(planId=${travelPlanId}, itineraryId=${travelItineraryId})}"
+				class="btn btn-success"> ➕ 新增每日行程 </a>
+		</div>
+
+		<!-- 顯示每日行程清單 -->
+		<table class="table table-bordered table-hover">
+			<thead>
+				<tr>
+					<th>序號</th>
+					<th>旅程天數</th>
+					<th>行程序號</th>
+					<th>旅行日期</th>
+					<th>景點名稱</th>
+					<th>建立時間</th>
+					<th>編輯</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="day, iterStat : ${travelPlanDays}">
+					<td th:text="${iterStat.count}">1</td>
+					<td th:text="${day.travelDayNumber}">1</td>
+					<td th:text="${day.travelSequenceNumber}">1</td>
+					<td th:text="${#temporals.format(day.traveltime, 'yyyy-MM-dd')}">2025-07-12</td>
+					<td
+						th:text="${day.scenery != null ? day.scenery.sceneryName : '無'}">日月潭</td>
+					<td
+						th:text="${#temporals.format(day.createtime, 'yyyy-MM-dd HH:mm')}">2025-07-01
+						12:00</td>
+					<td><a
+						th:href="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/edit/{travelPlanDayId}(planId=${travelPlanId}, itineraryId=${travelItineraryId}, travelPlanDayId=${day.travelPlanDayId})}"
+						class="btn btn-sm btn-primary">編輯</a> <a
+							th:href="@{|/admin/travelplans/${travelPlanId}/itinerary/${travelItineraryId}/days/${day.travelPlanDayId}/delete?date=${currentEditDate}|}"
+							class="btn btn-sm btn-danger"
+							onclick="return confirm('確定要刪除這筆行程嗎？')"> 刪除 </a>
+				</tr>
+				<tr th:if="${#lists.isEmpty(travelPlanDays)}">
+					<td colspan="7" class="text-center">目前沒有任何行程資料</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<hr />
+
+
+
+		<script>
+			// Bootstrap 表單驗證
+			(function() {
+				'use strict'
+				window.addEventListener('load', function() {
+					var forms = document
+							.getElementsByClassName('needs-validation')
+					Array.prototype.filter.call(forms, function(form) {
+						form.addEventListener('submit', function(event) {
+							if (form.checkValidity() === false) {
+								event.preventDefault()
+								event.stopPropagation()
+							}
+							form.classList.add('was-validated')
+						}, false)
+					})
+				}, false)
+			})()
+		</script>
 </body>
 </html>

@@ -35,15 +35,63 @@ public class SecurityConfig {
         this.managerUserDetailService = managerUserDetailService;
         this.failureHandler = failureHandler;
     }
+    @Bean
+    @Order(1) // Manager 的規則優先
+    public SecurityFilterChain managerFilterChain(HttpSecurity http,
+    		AuthenticationProvider managerAuthenticationProvider) throws Exception {
+        http.securityMatcher("/manager/**") // 這個規則只看「管理者專屬的路」
+                .authorizeHttpRequests(auth -> auth // 定義「誰能走，誰不能走」
+                        .requestMatchers("/manager/register", "/manager/login").permitAll() // 對所有人（包括未登入的訪客）開放
+                        .anyRequest().hasRole("ADMIN") // 其他所有 /manager/** 頁面需要 ADMIN 角色
+                ).formLogin(form -> form // 定義「怎麼登入」
+                        .loginPage("/manager/login") // Manager 的登入頁面 URL
+                        .loginProcessingUrl("/manager/login") // Manager 表單提交的 URL
+                        .defaultSuccessUrl("/manager/home", true) // 登入成功導向的 URL
+                        .failureUrl("/manager/login?error") // 登入失敗導向的 URL
+                        .permitAll())
+                .logout(logout -> logout
+                        .logoutRequestMatcher(new AntPathRequestMatcher("/manager/logout")) // Manager 的登出 URL
+                        .logoutSuccessUrl("/manager/login")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID"))
+                .csrf(csrf -> csrf.disable()); // 暫時禁用 CSRF
 
+        http.authenticationProvider(managerAuthenticationProvider);
+        return http.build();
+    }
+    @Bean
+    @Order(2) // 放在 manager/member 後面處理
+    public SecurityFilterChain adminFilterChain(HttpSecurity http,
+                                                AuthenticationProvider managerAuthenticationProvider) throws Exception {
+        http
+            .securityMatcher("/admin/**") // 只處理 /admin/** 開頭的路徑
+            .authorizeHttpRequests(auth -> auth
+                .anyRequest().hasRole("ADMIN") // 必須具備 ADMIN 角色
+            )
+            .formLogin(form -> form
+                .loginPage("/manager/login") // 沿用 manager 登入頁
+                .loginProcessingUrl("/manager/login")
+                .defaultSuccessUrl("/admin", true)
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutRequestMatcher(new AntPathRequestMatcher("/admin/logout"))
+                .logoutSuccessUrl("/index")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+            )
+            .csrf(csrf -> csrf.disable());
+
+        http.authenticationProvider(managerAuthenticationProvider);
+        return http.build();
+    }
     // Bean: 用於會員的 SecurityFilterChain (優先順序較低，排在後面處理)
     @Bean
-
-    @Order(2)
+    @Order(3)
     public SecurityFilterChain memberFilterChain(HttpSecurity http,
             AuthenticationProvider memberAuthenticationProvider) throws Exception {
-
-        http
+    	
+    	http.securityMatcher("/**")
             // ❗ 關閉 CSRF（如果沒有表單驗證需求）
             .csrf(csrf -> csrf.disable())
 
@@ -117,33 +165,11 @@ public class SecurityConfig {
 
         return http.build();
     }
+    
 
 
-    // Bean: 用於管理員的 SecurityFilterChain (優先順序較高，先匹配 /manager/** 路徑)
-    @Bean
-    @Order(1) // Manager 的規則優先
-    public SecurityFilterChain managerFilterChain(HttpSecurity http,
-    		AuthenticationProvider managerAuthenticationProvider) throws Exception {
-        http.securityMatcher("/manager/**") // 這個規則只看「管理者專屬的路」
-                .authorizeHttpRequests(auth -> auth // 定義「誰能走，誰不能走」
-                        .requestMatchers("/manager/register", "/manager/login").permitAll() // 對所有人（包括未登入的訪客）開放
-                        .anyRequest().hasRole("ADMIN") // 其他所有 /manager/** 頁面需要 ADMIN 角色
-                ).formLogin(form -> form // 定義「怎麼登入」
-                        .loginPage("/manager/login") // Manager 的登入頁面 URL
-                        .loginProcessingUrl("/manager/login") // Manager 表單提交的 URL
-                        .defaultSuccessUrl("/manager/home", true) // 登入成功導向的 URL
-                        .failureUrl("/manager/login?error") // 登入失敗導向的 URL
-                        .permitAll())
-                .logout(logout -> logout
-                        .logoutRequestMatcher(new AntPathRequestMatcher("/manager/logout")) // Manager 的登出 URL
-                        .logoutSuccessUrl("/manager/login")
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID"))
-                .csrf(csrf -> csrf.disable()); // 暫時禁用 CSRF
-
-        http.authenticationProvider(managerAuthenticationProvider);
-        return http.build();
-    }
+    
+    
 
     // Bean: 會員的 AuthenticationProvider
     @Bean
