@@ -249,6 +249,7 @@ public class MemberController {
 	
 	@GetMapping("/member/home")
 	public String showMemberHome(Model model) {
+
 		List<SceneryVO> allScenery = travelPlanDayService.findAllScenery();
 		
 		List<SceneryVO> topScenery = allScenery.stream().limit(6).toList();
