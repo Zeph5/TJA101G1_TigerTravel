@@ -90,7 +90,7 @@ public class TravelPlanDayController {
 		DailyItineraryFormDTO dailyDTO = TravelPlanService.getDailyItineraryFormDTO(itineraryId, currentEditDate,
 				travelDayNumber);
 
-		List<SceneryVO> allSceneriesList = sceneryService.findAllScenery();
+		List<SceneryVO> allSceneriesList = sceneryService.getAllSceneries();
 		Map<Integer, String> allSceneriesMap = allSceneriesList.stream()
 				.collect(Collectors.toMap(SceneryVO::getSceneryId, SceneryVO::getSceneryName));
 
@@ -139,7 +139,7 @@ public class TravelPlanDayController {
 	@GetMapping("/api/sceneries/all")
 	@ResponseBody
 	public ResponseEntity<List<SceneryVO>> getAllSceneries() {
-		List<SceneryVO> sceneries = sceneryService.findAllScenery();
+		List<SceneryVO> sceneries = sceneryService.getAllSceneries();
 		return ResponseEntity.ok(sceneries);
 	}
 
@@ -169,7 +169,7 @@ public class TravelPlanDayController {
 		int travelDayNumber = travelPlanDayService.calculateTravelDayNumber(itineraryId, currentEditDate);
 		
 		
-		List<SceneryVO> allSceneriesList = sceneryService.findAllScenery();
+		List<SceneryVO> allSceneriesList = sceneryService.getAllSceneries();
 		Map<Integer, String> allSceneriesMap = allSceneriesList.stream()
 				.collect(Collectors.toMap(SceneryVO::getSceneryId, SceneryVO::getSceneryName));
 		model.addAttribute("allSceneries", allSceneriesMap);
@@ -264,7 +264,7 @@ public class TravelPlanDayController {
 	    int travelDayNumber = travelPlanDayService.calculateTravelDayNumber(itineraryId, currentEditDate);
 
 	    DailyItineraryFormDTO dailyItineraryFormDTO = new DailyItineraryFormDTO(); // 空表單
-	    List<SceneryVO> allSceneriesList = sceneryService.findAllScenery();
+	    List<SceneryVO> allSceneriesList = sceneryService.getAllSceneries();
 	    Map<Integer, String> allSceneriesMap = allSceneriesList.stream()
 	            .collect(Collectors.toMap(SceneryVO::getSceneryId, SceneryVO::getSceneryName));
 
