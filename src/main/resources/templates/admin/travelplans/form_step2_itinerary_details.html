@@ -41,7 +41,7 @@
     <div class="container">
         <h2>建立/編輯行程梯次 - 步驟 2</h2>
 
-        <form th:action="@{/admin/travelplans/itineraries/save}" th:object="${travelItineraryDTO}" method="post">
+        <form th:action="@{/admin/travelplans/{planId}/itinerary/save(planId=${travelPlanId})}" th:object="${travelItineraryDTO}" method="post">
 
             <input type="hidden" th:field="*{travelPlanId}" />
             <input type="hidden" th:field="*{travelItineraryId}" />

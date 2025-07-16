@@ -13,9 +13,9 @@
         <strong th:text="${startDate}">2025-07-01</strong> ~
         <strong th:text="${endDate}">2025-07-07</strong>
     </p>
-     <!-- 錯誤訊息區 -->
-    <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
-    <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+     <div th:if="${errorMessage}" class="alert alert-danger">
+    <p th:text="${errorMessage}"></p>
+</div>
 
     <form th:action="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/save(planId=${travelPlanId}, itineraryId=${travelItineraryId})}" 
       method="post" 
@@ -39,7 +39,12 @@
                 <input type="text" th:name="|dailyItems[${iterStat.index}].sceneryName|" th:value="${item.sceneryName}" class="form-control" readonly />
 
                 <label>旅遊日期：</label>
-                <input type="date" name="dailyItems[${newIndex}].traveltime" class="form-control" required min="${startDate}" max="${endDate}" value="${currentEditDate}" />
+                <input type="date"
+       th:name="|dailyItems[${iterStat.index}].traveltime|"
+       th:value="${item.traveltime}"
+       class="form-control"
+       required
+       th:attr="min=${startDate}, max=${endDate}" />
                 
                 <label>行程順序：</label>
                 <input type="number" th:name="|dailyItems[${iterStat.index}].travelSequenceNumber|" 
@@ -59,9 +64,9 @@
         </div>
     </form>
 </div>
-
 <script th:inline="javascript">
 /*<![CDATA[*/
+	const duplicateSequenceSet = /*[[${duplicateSequenceSet}]]*/ [];
     const allSceneries = /*[[${allSceneries}]]*/ {};
     const startDate = /*[[${startDate}]]*/ '2025-07-01';
     const endDate = /*[[${endDate}]]*/ '2025-07-07';
@@ -80,8 +85,6 @@
         const newRow = document.createElement("div");
         newRow.classList.add("row", "mb-3", "border", "p-2", "itinerary-row");
         newRow.innerHTML = `
-           
-
             <label>景點：</label>
             <select name="dailyItems[${newIndex}].sceneryId" class="form-select" required onchange="updateSceneryName(this, ${newIndex})">
                 ${sceneryOptions}
@@ -94,7 +97,7 @@
             <input type="date" name="dailyItems[${newIndex}].traveltime" class="form-control" required min="${startDate}" max="${endDate}" value="${currentEditDate}" />
 
             <label>行程順序：</label>
-            <input type="number" name="dailyItems[${newIndex}].travelSequenceNumber" class="form-control" min="1" required />
+            <input type="number" name="dailyItems[${newIndex}].travelSequenceNumber" class="form-control travel-seq-input" min="1" required />
 
             <div class="text-end mt-2">
                 <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">🗑 刪除</button>
@@ -117,7 +120,47 @@
         const input = document.querySelector(`input[name='dailyItems[${index}].sceneryName']`);
         input.value = allSceneries[sceneryId] || '';
     }
+
+    // ✅ 表單送出前檢查 travelSequenceNumber 是否重複
+    document.getElementById("dailyForm").addEventListener("submit", function(event) {
+        const inputs = document.querySelectorAll("input[name$='.travelSequenceNumber']");
+        const values = [];
+        let hasDuplicates = false;
+
+        // 清除先前的紅框
+        inputs.forEach(input => input.classList.remove("is-invalid"));
+
+        inputs.forEach(input => {
+            const val = input.value;
+            if (val && values.includes(val)) {
+                hasDuplicates = true;
+                input.classList.add("is-invalid");
+            } else {
+                values.push(val);
+            }
+        });
+
+        if (hasDuplicates) {
+            event.preventDefault();
+            alert("❗行程順序（travelSequenceNumber）不能重複！");
+        }
+    });
+    window.addEventListener("DOMContentLoaded", function () {
+    	  const inputs = document.querySelectorAll("input[name$='.travelSequenceNumber']");
+    	  inputs.forEach(input => {
+    	    const val = Number(input.value);
+    	    if (duplicateSequenceSet.includes(val)) {
+    	      input.classList.add("is-invalid");
+    	    }
+    	  });
+
+    	  if (duplicateSequenceSet.length > 0) {
+    	    alert("⚠️ 此日期中有與資料庫重複的行程順序，請修正！");
+    	  }
+    	});
 /*]]>*/
 </script>
+
+
 </body>
 </html>

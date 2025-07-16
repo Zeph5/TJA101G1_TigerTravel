@@ -205,6 +205,16 @@ public class TravelPlanDayServiceImpl implements TravelPlanDayService {
 		travelPlanDayRepository.deleteById(travelPlanDayId);
 		
 	}
+	
+	
+	@Override
+	public List<Integer> findSequenceNumbersByItineraryIdAndDate(Integer itineraryId, LocalDate date) {
+		 return travelPlanDayRepository.findByTravelItinerary_TravelItineraryIdAndTraveltime(itineraryId, date)
+			        .stream()
+			        .map(TravelPlanDay::getTravelSequenceNumber)
+			        .filter(Objects::nonNull)
+			        .collect(Collectors.toList());
+	}
 
 
 }

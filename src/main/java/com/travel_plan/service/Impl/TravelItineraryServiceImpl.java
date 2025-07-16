@@ -78,75 +78,81 @@ public class TravelItineraryServiceImpl implements TravelItineraryService {
 	 @Override
 	    @Transactional
 	    public TravelItinerary saveTravelItineraryFromDto(@Valid TravelItineraryDTO dto) {
-	        if (dto.getStartDate().isAfter(dto.getEndDate())) {
-	            throw new IllegalArgumentException("結束日期不能早於開始日期。");
-	        }
+		 if (dto.getStartDate().isAfter(dto.getEndDate())) {
+		        throw new IllegalArgumentException("結束日期不能早於開始日期。");
+		    }
 
-	        TravelItinerary travelItinerary;
-	        if (dto.getTravelItineraryId() != null) {
-	            // 編輯現有梯次
-	            travelItinerary = travelItineraryRepository.findById(dto.getTravelItineraryId())
-	                    .orElseThrow(() -> new IllegalArgumentException("找不到要更新的行程梯次，ID: " + dto.getTravelItineraryId()));
-	        } else {
-	            // 新增梯次
-	            travelItinerary = new TravelItinerary();
-	            TravelPlan travelPlan = travelPlanRepository.findById(dto.getTravelPlanId())
-	                    .orElseThrow(() -> new IllegalArgumentException("找不到關聯的旅行計畫，ID: " + dto.getTravelPlanId()));
-	            travelItinerary.setTravelPlan(travelPlan);
-	        }
+		    TravelPlan travelPlan = travelPlanRepository.findById(dto.getTravelPlanId())
+		            .orElseThrow(() -> new IllegalArgumentException("找不到關聯的旅行計畫，ID: " + dto.getTravelPlanId()));
 
-	        // 複製 DTO 屬性到 Entity
-	        travelItinerary.setMaxTourist(dto.getMaxTourist());
-	        travelItinerary.setTotalPrice(dto.getTotalPrice());
-	        travelItinerary.setStartDate(dto.getStartDate());
-	        travelItinerary.setEndDate(dto.getEndDate());
-	        // publishedDate 和 lastModifiedDate 由 Auditing 自動處理，無需手動複製
+		    TravelItinerary travelItinerary = new TravelItinerary();
+		    travelItinerary.setTravelPlan(travelPlan);
+		    travelItinerary.setMaxTourist(dto.getMaxTourist());
+		    travelItinerary.setTotalPrice(dto.getTotalPrice());
+		    travelItinerary.setStartDate(dto.getStartDate());
+		    travelItinerary.setEndDate(dto.getEndDate());
 
-	        // 保存 TravelItinerary 實體（如果它是一個新實體，ID 會在這裡生成）
-	        TravelItinerary savedItinerary = travelItineraryRepository.save(travelItinerary);
+		    TravelItinerary savedItinerary = travelItineraryRepository.save(travelItinerary);
 
-	        // ===========================================
-	        // *** 關鍵步驟：儲存每日行程 ***
-	        // ===========================================
-	        // 1. 如果是更新操作，先刪除舊的每日行程，再重新添加。
-	        //    這是一種常見的處理方式，確保數據同步且不重複。
-	        //    如果是新建梯次，這裡不會刪除任何東西。
-	        if (savedItinerary.getTravelItineraryId() != null) {
-	            travelPlanDayRepository.deleteByTravelItinerary_TravelItineraryId(savedItinerary.getTravelItineraryId());
-	        }
+		    // 儲存每日行程
+		    saveTravelPlanDays(savedItinerary, dto.getDailyItineraries());
 
-
-	        // 2. 遍歷 DTO 中的每日行程列表，並儲存每個 TravelPlanDay
-	        //    使用 dto.getDailyItineraries()，而不是 itineraryItems
-	        if (dto.getDailyItineraries() != null && !dto.getDailyItineraries().isEmpty()) {
-	            for (TravelPlanDayDTO dayDto : dto.getDailyItineraries()) {
-	                TravelPlanDay travelPlanDay = new TravelPlanDay();
-	                // 設置關聯的 TravelItinerary 實體
-	                travelPlanDay.setTravelItinerary(savedItinerary); // 與剛才保存的 TravelItinerary 關聯
-
-	                // 複製 DTO 屬性到 TravelPlanDay 實體
-	                travelPlanDay.setTraveltime(dayDto.getTraveltime());
-	                travelPlanDay.setTravelSequenceNumber(dayDto.getTravelSequenceNumber());
-	                travelPlanDay.setTravelDayNumber(dayDto.getTravelDayNumber()); // 確保複製天數
-
-	                // 關聯 Scenery (景點) 實體：根據 sceneryId 查詢景點
-	                if (dayDto.getSceneryId() != null) {
-	                    SceneryVO scenery = sceneryRepository.findById(dayDto.getSceneryId())
-	                            .orElseThrow(() -> new IllegalArgumentException("找不到關聯的景點，ID: " + dayDto.getSceneryId()));
-	                    travelPlanDay.setScenery(scenery);
-	                } else {
-	                    // 如果 sceneryId 為空，根據業務邏輯看是允許還是拋異常
-	                    throw new IllegalArgumentException("每日行程景點ID不能為空。");
-	                }
-
-	                travelPlanDayRepository.save(travelPlanDay);
-	            }
-	        }
-	        return savedItinerary; // 返回保存好的梯次
-	    }
+		    return savedItinerary;
+		}
 	@Override
 	public List<TravelItinerary> getItinerariesByTravelPlanId(Integer planId) {
 		 return travelItineraryRepository.findByTravelPlan_TravelPlanId(planId);
+	}
+	@Override
+	public TravelItinerary updateTravelItineraryFromDto(@Valid TravelItineraryDTO dto) {
+		 if (dto.getTravelItineraryId() == null) {
+		        throw new IllegalArgumentException("更新操作必須提供行程梯次 ID。");
+		    }
+
+		    if (dto.getStartDate().isAfter(dto.getEndDate())) {
+		        throw new IllegalArgumentException("結束日期不能早於開始日期。");
+		    }
+
+		    TravelItinerary itinerary = travelItineraryRepository.findById(dto.getTravelItineraryId())
+		            .orElseThrow(() -> new IllegalArgumentException("找不到要更新的行程梯次，ID: " + dto.getTravelItineraryId()));
+
+		    itinerary.setMaxTourist(dto.getMaxTourist());
+		    itinerary.setTotalPrice(dto.getTotalPrice());
+		    itinerary.setStartDate(dto.getStartDate());
+		    itinerary.setEndDate(dto.getEndDate());
+
+		    TravelItinerary updated = travelItineraryRepository.save(itinerary);
+
+		    // 清除原有的每日行程資料
+		    travelPlanDayRepository.deleteByTravelItinerary_TravelItineraryId(updated.getTravelItineraryId());
+
+		    // 重新儲存每日行程
+		    saveTravelPlanDays(updated, dto.getDailyItineraries());
+
+		    return updated;
+		}
+	
+		private void saveTravelPlanDays(TravelItinerary itinerary, List<TravelPlanDayDTO> dailyDtos) {
+		    if (dailyDtos == null || dailyDtos.isEmpty()) return;
+
+		    for (TravelPlanDayDTO dayDto : dailyDtos) {
+		        TravelPlanDay travelPlanDay = new TravelPlanDay();
+		        travelPlanDay.setTravelItinerary(itinerary);
+		        travelPlanDay.setTraveltime(dayDto.getTraveltime());
+		        travelPlanDay.setTravelSequenceNumber(dayDto.getTravelSequenceNumber());
+		        travelPlanDay.setTravelDayNumber(dayDto.getTravelDayNumber());
+
+		        if (dayDto.getSceneryId() != null) {
+		            SceneryVO scenery = sceneryRepository.findById(dayDto.getSceneryId())
+		                    .orElseThrow(() -> new IllegalArgumentException("找不到關聯的景點，ID: " + dayDto.getSceneryId()));
+		            travelPlanDay.setScenery(scenery);
+		        } else {
+		            throw new IllegalArgumentException("每日行程景點ID不能為空。");
+		        }
+
+		        travelPlanDayRepository.save(travelPlanDay);
+		    }
+	
 	}
 	
 }

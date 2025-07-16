@@ -14,7 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 import com.manager.model.DTO.ManagerRegisterDTO;
-import com.manager.service.InManagerService;
+import com.manager.service.ManagerService;
 
 import jakarta.validation.Valid;
 
@@ -22,7 +22,7 @@ import jakarta.validation.Valid;
 @RequestMapping("/manager")
 public class ManagerController {
 	@Autowired
-	private InManagerService inManagerService;
+	private ManagerService inManagerService;
 
 	// 1. 顯示註冊表單頁面 (GET 請求)
 	@GetMapping("/register")

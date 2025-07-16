@@ -39,4 +39,8 @@ public interface TravelPlanDayService {
 
 	void deleteTravelPlanDayById(Integer travelPlanDayId, Integer itineraryId);
 
+
+
+	List<Integer> findSequenceNumbersByItineraryIdAndDate(Integer itineraryId, LocalDate date);
+
 }

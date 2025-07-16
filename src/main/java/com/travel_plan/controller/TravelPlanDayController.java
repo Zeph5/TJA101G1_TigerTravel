@@ -3,10 +3,13 @@ package com.travel_plan.controller;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -62,52 +65,49 @@ public class TravelPlanDayController {
 		this.travelPlanDayRepository = travelPlanDayRepository;
 		this.travelPlanDayService = travelPlanDayService;
 		this.travelItineraryService = travelItineraryService;
-		
+
 	}
 
 	@GetMapping
-	public String showDailyItineraryView(
-	    @PathVariable Integer planId,
-	    @PathVariable Integer itineraryId,
-	    @RequestParam(value = "date", required = false)
-	    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-	    Model model,
-	    RedirectAttributes redirectAttributes) {
-		
+	public String showDailyItineraryView(@PathVariable Integer planId, @PathVariable Integer itineraryId,
+			@RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+			Model model, RedirectAttributes redirectAttributes) {
+
 		// 取得梯次資料
-	    TravelItinerary itinerary = travelPlanService.getTravelItineraryById(itineraryId)
-	        .orElseThrow(() -> new IllegalArgumentException("找不到行程梯次"));
-	    
-	    // 如果沒帶日期，預設第一天
-	    LocalDate currentEditDate = (date != null) ? date : itinerary.getStartDate();
-	    
-	    // 取得該日期的每日行程資料
-	    List<TravelPlanDay> travelPlanDays = travelPlanDayService.getDaysByItineraryIdAndDateSortedBySequence(itineraryId, currentEditDate);
-	    //計算可選日期區間
-	    List<LocalDate> itineraryDates = travelPlanService.generateItineraryDates(itinerary.getStartDate(), itinerary.getEndDate());
-	    //計算第幾天
-	    int travelDayNumber = travelPlanDayService.calculateTravelDayNumber(itineraryId, currentEditDate);
-	    //取得當日DTO
-	    DailyItineraryFormDTO dailyDTO = travelPlanService.getDailyItineraryFormDTO(itineraryId, currentEditDate, travelDayNumber);
-	   
-	    
+		TravelItinerary itinerary = travelPlanService.getTravelItineraryById(itineraryId)
+				.orElseThrow(() -> new IllegalArgumentException("找不到行程梯次"));
 
-	    List<SceneryVO> allSceneriesList = travelPlanDayService.findAllScenery();
-	    Map<Integer, String> allSceneriesMap = allSceneriesList.stream()
-	        .collect(Collectors.toMap(SceneryVO::getSceneryId, SceneryVO::getSceneryName));
+		// 如果沒帶日期，預設第一天
+		LocalDate currentEditDate = (date != null) ? date : itinerary.getStartDate();
 
-	    model.addAttribute("startDate", itinerary.getStartDate());
-	    model.addAttribute("endDate", itinerary.getEndDate());
-	    model.addAttribute("itineraryDates", itineraryDates);
-	    model.addAttribute("currentEditDate", currentEditDate);
-	    model.addAttribute("travelPlanDays", travelPlanDays);
-	    model.addAttribute("dailyItineraryFormDTO", dailyDTO);
-	    model.addAttribute("travelPlanId", planId);
-	    model.addAttribute("travelItineraryId", itineraryId);
+		// 取得該日期的每日行程資料
+		List<TravelPlanDay> travelPlanDays = travelPlanDayService
+				.getDaysByItineraryIdAndDateSortedBySequence(itineraryId, currentEditDate);
+		// 計算可選日期區間
+		List<LocalDate> itineraryDates = travelPlanService.generateItineraryDates(itinerary.getStartDate(),
+				itinerary.getEndDate());
+		// 計算第幾天
+		int travelDayNumber = travelPlanDayService.calculateTravelDayNumber(itineraryId, currentEditDate);
+		// 取得當日DTO
+		DailyItineraryFormDTO dailyDTO = travelPlanService.getDailyItineraryFormDTO(itineraryId, currentEditDate,
+				travelDayNumber);
 
-	    return "admin/travelplans/listTravelPlanDay";
+		List<SceneryVO> allSceneriesList = travelPlanDayService.findAllScenery();
+		Map<Integer, String> allSceneriesMap = allSceneriesList.stream()
+				.collect(Collectors.toMap(SceneryVO::getSceneryId, SceneryVO::getSceneryName));
+
+		model.addAttribute("startDate", itinerary.getStartDate());
+		model.addAttribute("endDate", itinerary.getEndDate());
+		model.addAttribute("itineraryDates", itineraryDates);
+		model.addAttribute("currentEditDate", currentEditDate);
+		model.addAttribute("travelPlanDays", travelPlanDays);
+		model.addAttribute("dailyItineraryFormDTO", dailyDTO);
+		model.addAttribute("travelPlanId", planId);
+		model.addAttribute("travelItineraryId", itineraryId);
+		model.addAttribute("duplicateSequenceSet", model.asMap().get("duplicateSequenceSet"));
+
+		return "admin/travelplans/listTravelPlanDay";
 	}
-
 
 	// 透過 AJAX 獲取特定日期的每日行程資料
 	// URL: GET
@@ -173,6 +173,7 @@ public class TravelPlanDayController {
 		Map<Integer, String> allSceneriesMap = allSceneriesList.stream()
 				.collect(Collectors.toMap(SceneryVO::getSceneryId, SceneryVO::getSceneryName));
 		model.addAttribute("allSceneries", allSceneriesMap);
+		
 
 		// 將所需數據添加到 Model
 		model.addAttribute("travelPlanId", planId);
@@ -206,27 +207,61 @@ public class TravelPlanDayController {
 				.orElseThrow(() -> new IllegalArgumentException("找不到行程梯次"));
 		model.addAttribute("startDate", itinerary.getStartDate());
 		model.addAttribute("endDate", itinerary.getEndDate());
-		
+
 		try {
 			LocalDate date = dailyItineraryFormDTO.getTraveltime(); // 請確定 DTO 有此欄位與 getter/setter
 			LocalDate startDate = itinerary.getStartDate();
 			LocalDate endDate = itinerary.getEndDate();
+			
+			List<Integer> inputSequences = dailyItineraryFormDTO.getDailyItems()
+				    .stream()
+				    .map(TravelPlanDayDTO::getTravelSequenceNumber)
+				    .filter(Objects::nonNull)
+				    .collect(Collectors.toList());
+			// 檢查表單內行程順序是否有重複
+			Set<Integer> inputSequenceSet = new HashSet<>(inputSequences);
+			if (inputSequenceSet.size() < inputSequences.size()) {
+			    Set<Integer> duplicatesInForm = inputSequences.stream()
+			        .filter(i -> Collections.frequency(inputSequences, i) > 1)
+			        .collect(Collectors.toSet());
+			    redirectAttributes.addFlashAttribute("errorMessage", "表單內有重複的行程順序！");
+			    redirectAttributes.addFlashAttribute("duplicateSequenceSet", duplicatesInForm);
+			    return "redirect:/admin/travelplans/" + planId + "/itinerary/" + itineraryId + "/days?date=" + date;
+			}
+			
+			// 檢查資料庫中是否有重複的行程順序
+			List<Integer> existingSequences = travelPlanDayService.findSequenceNumbersByItineraryIdAndDate(itineraryId, date);
+			boolean hasDuplicateWithDatabase = inputSequences.stream()
+				    .anyMatch(existingSequences::contains);
+
+				if (hasDuplicateWithDatabase) {
+					Set<Integer> duplicatedSequenceNumbers = inputSequences.stream()
+					        .filter(existingSequences::contains)
+					        .collect(Collectors.toSet());
+				    redirectAttributes.addFlashAttribute("errorMessage", "行程順序與該日已存在的行程重複！");
+				    redirectAttributes.addFlashAttribute("duplicateSequenceSet", duplicatedSequenceNumbers);
+				    return "redirect:/admin/travelplans/" + planId + "/itinerary/" + itineraryId + "/days?date=" + date;
+				}
+			
+			// 檢查日期是否在行程期間內
 			if (date.isBefore(startDate) || date.isAfter(endDate)) {
-			    redirectAttributes.addFlashAttribute("errorMessage", "旅行日期不在行程期間內！");
-			    return "redirect:/admin/travelplans/" + planId + "/itinerary/" + itineraryId + "/days/new";
+				redirectAttributes.addFlashAttribute("errorMessage", "旅行日期不在行程期間內！");
+				return "redirect:/admin/travelplans/" + planId + "/itinerary/" + itineraryId + "/days/new";
 			}
 			int travelDayNumber = travelPlanDayService.calculateTravelDayNumber(itineraryId, date);
 			for (TravelPlanDayDTO item : dailyItineraryFormDTO.getDailyItems()) {
 				item.setTravelDayNumber(travelDayNumber);
 			}
+			
 			travelPlanDayService.saveDailyItems(itineraryId, date, dailyItineraryFormDTO.getDailyItems());
-
 			redirectAttributes.addFlashAttribute("successMessage", "當天行程已成功儲存！");
-		} 
-		catch (IllegalArgumentException e) {
-		    redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-		    return "redirect:/admin/travelplans/" + planId + "/itinerary/" + itineraryId + "/days?date=" + dailyItineraryFormDTO.getTraveltime();
-		}catch (Exception e) {
+			
+			
+		} catch (IllegalArgumentException e) {
+			redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+			return "redirect:/admin/travelplans/" + planId + "/itinerary/" + itineraryId + "/days?date="
+					+ dailyItineraryFormDTO.getTraveltime();
+		} catch (Exception e) {
 			e.printStackTrace(); // <== 把錯誤印出來
 			redirectAttributes.addFlashAttribute("errorMessage", "儲存失敗：" + e.getMessage());
 		}
@@ -270,15 +305,18 @@ public class TravelPlanDayController {
 				.orElseThrow(() -> new IllegalArgumentException("找不到行程梯次"));
 		model.addAttribute("startDate", itinerary.getStartDate());
 		model.addAttribute("endDate", itinerary.getEndDate());
-		
-		
 
 		List<LocalDate> itineraryDates = travelPlanService.generateItineraryDates(itinerary.getStartDate(),
 				itinerary.getEndDate());
 		LocalDate currentEditDate = itinerary.getStartDate(); // 預設為第一天
 		int travelDayNumber = travelPlanDayService.calculateTravelDayNumber(itineraryId, currentEditDate);
-
-		DailyItineraryFormDTO dailyItineraryFormDTO = new DailyItineraryFormDTO(); // 空表單
+		
+		// 空表單
+		DailyItineraryFormDTO dailyItineraryFormDTO = new DailyItineraryFormDTO();
+		 TravelPlanDayDTO emptyItem = new TravelPlanDayDTO();
+		    emptyItem.setTraveltime(currentEditDate);
+		    dailyItineraryFormDTO.setDailyItems(List.of(emptyItem));
+		
 		List<SceneryVO> allSceneriesList = travelPlanDayService.findAllScenery();
 		Map<Integer, String> allSceneriesMap = allSceneriesList.stream()
 				.collect(Collectors.toMap(SceneryVO::getSceneryId, SceneryVO::getSceneryName));
@@ -308,21 +346,22 @@ public class TravelPlanDayController {
 		}
 		return "redirect:/admin/travelplans/" + planId + "/itinerary/" + itineraryId + "/days";
 	}
+
 	@GetMapping("/{travelPlanDayId}/delete")
-	public String deleteTravelPlanDay(@PathVariable Integer planId
-			, @PathVariable Integer itineraryId
-			,@PathVariable Integer travelPlanDayId
-			,@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
-			, RedirectAttributes redirectAttributes) {
-			
+	public String deleteTravelPlanDay(@PathVariable Integer planId, @PathVariable Integer itineraryId,
+			@PathVariable Integer travelPlanDayId,
+			@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+			RedirectAttributes redirectAttributes) {
+
 		try {
 			travelPlanDayService.deleteTravelPlanDayById(travelPlanDayId, itineraryId);
-			redirectAttributes.addFlashAttribute("successMessage", "行程已成功刪除！");			
-		
+			redirectAttributes.addFlashAttribute("successMessage", "行程已成功刪除！");
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			redirectAttributes.addFlashAttribute("errorMessage", "刪除失敗：" + e.getMessage());
 		}
-		return "redirect:/admin/travelplans/" + planId + "/itinerary/" + itineraryId + "/days?date=" + date;}
+		return "redirect:/admin/travelplans/" + planId + "/itinerary/" + itineraryId + "/days?date=" + date;
+	}
 
 }
