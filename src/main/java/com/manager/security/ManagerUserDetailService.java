@@ -18,12 +18,14 @@ public class ManagerUserDetailService implements UserDetailsService {
 
 	@Override
 	public UserDetails loadUserByUsername(String account) throws UsernameNotFoundException {
-		Manager manager = managerRepository.findByAccount(account)
-				.orElseThrow(() -> new UsernameNotFoundException("找不到使用者: " + account));
-		return User.withUsername(manager.getAccount())
-				.password(manager.getPassword())
-				.roles("ADMIN") 
-				.build();
+	    Manager manager = managerRepository.findByAccount(account)
+	        .orElseThrow(() -> new UsernameNotFoundException("找不到使用者: " + account));
+
+	    return User.withUsername(manager.getAccount())
+	            .password(manager.getPassword())
+	            .roles("ADMIN") // 自動加上 ROLE_ 前綴
+	            .build();
 	}
+
 	
 }

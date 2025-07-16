@@ -34,8 +34,11 @@
   th:object 綁定 TravelItineraryDTO
 -->
 
-      <form th:action="@{'/admin/travelplans/' + ${travelPlanId} + '/itinerary/save'}" 
-      th:object="${travelItineraryDTO}" method="post" enctype="multipart/form-data">
+      <form th:action="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/update(planId=*{travelPlanId},itineraryId=*{travelItineraryId})}"
+      th:object="${travelItineraryDTO}" 
+      method="post">
+
+     
 
     <div class="form-row">
         <label>行程梯次ID:</label>
