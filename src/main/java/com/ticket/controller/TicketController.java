@@ -66,14 +66,14 @@ public class TicketController {
 		});
 	}
 
-	@GetMapping("/ticketcreate")
+	@GetMapping("/admin/ticketcreate")
 	public String showCreateTicketForm(Model model) {
 		model.addAttribute("ticket", new Ticket()); // 可用於預設值
 		return "ticket/ticketcreate";
 	}
 
 	/** 處理新增票券表單 */
-	@PostMapping("/ticketcreate")
+	@PostMapping("/admin/ticket/create")
 	public String createTicket(@RequestParam("ticketName") String ticketName,
 			@RequestParam("ticketDescription") String ticketDescription,
 			@RequestParam("ticketPrice") BigDecimal ticketPrice, @RequestParam("ticketStock") Integer ticketStock,
@@ -97,7 +97,7 @@ public class TicketController {
 
 			ticketService.save(ticket);
 			redirectAttributes.addFlashAttribute("successMessage", "票券新增成功！");
-			return "redirect:/admin/mticketlist";
+			return "redirect:/admin/ticket/list";
 		} catch (IOException e) {
 			redirectAttributes.addFlashAttribute("errorMessage", "圖片上傳失敗：" + e.getMessage());
 			return "redirect:/admin/mticketlist";

@@ -14,7 +14,7 @@
             <i class="fas fa-ticket-alt"></i>
             新增票券
         </h2>
-        <form th:action="@{/ticketcreate}" method="post" enctype="multipart/form-data">
+        <form th:action="@{/admin/ticket/create}" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label class="form-label" for="ticketName">
                     <i class="fas fa-tag"></i> 票券名稱
@@ -67,7 +67,7 @@
                 <button type="submit" class="btn btn-success">
                     <i class="fas fa-plus-circle"></i> 新增票券
                 </button>
-                <a th:href="@{/admin/mticketlist}" class="btn btn-secondary">
+                <a th:href="@{/admin/ticket/list}" class="btn btn-secondary">
     <i class="fas fa-arrow-left"></i> 返回列表
 </a>
             </div>
