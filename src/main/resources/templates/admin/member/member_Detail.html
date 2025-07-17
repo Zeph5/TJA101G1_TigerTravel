@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>會員詳情</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+    <h2>會員詳情</h2>
+    <table class="table">
+        <tr><th>ID</th><td th:text="${member.memberId}"></td></tr>
+        <tr><th>帳號</th><td th:text="${member.memberAccount}"></td></tr>
+        <tr><th>姓名</th><td th:text="${member.memberName}"></td></tr>
+        <tr><th>Email</th><td th:text="${member.memberEmail}"></td></tr>
+        <tr><th>電話</th><td th:text="${member.memberPhone}"></td></tr>
+        <tr><th>狀態</th><td th:text="${member.memberStatus == 1 ? '啟用' : '停用'}"></td></tr>
+        <tr><th>建立時間</th><td th:text="${#dates.format(member.createTime, 'yyyy-MM-dd HH:mm')}"></td></tr>
+    </table>
+
+    <a th:href="@{'/admin/members/edit/' + ${member.memberId}}" class="btn btn-primary">編輯</a>
+    <form th:action="@{'/admin/members/disable/' + ${member.memberId}}" method="post" style="display:inline;" onsubmit="return confirm('確定要切換狀態嗎？')">
+        <button type="submit" class="btn btn-warning" th:text="${member.memberStatus == 1 ? '停權' : '啟用'}"></button>
+    </form>
+    <a href="/list" class="btn btn-secondary">返回清單</a>
+</div>
+</body>
+</html>
