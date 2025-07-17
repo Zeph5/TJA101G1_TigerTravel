@@ -22,6 +22,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "scenery")
+
 public class SceneryVO implements java.io.Serializable {
 
     @Id

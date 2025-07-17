@@ -15,7 +15,7 @@ public class DailyItineraryFormDTO {
 	 private Integer travelDayNumber;
 	 // 方便回傳給前端渲染
 	 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-	 private LocalDate date;
+	 private LocalDate traveltime;
 	 
 	 public DailyItineraryFormDTO() {
 	        this.dailyItems = new ArrayList<>(); // 關鍵修改：初始化為空的 ArrayList
@@ -40,11 +40,12 @@ public class DailyItineraryFormDTO {
 	} // 方便回傳給前端渲染
 	
 	
-	public LocalDate getDate() {
-		return date;
+
+	public LocalDate getTraveltime() {
+		return traveltime;
 	}
-	public void setDate(LocalDate date) {
-		this.date = date;
+	public void setTraveltime(LocalDate traveltime) {
+		this.traveltime = traveltime;
 	}
 	@Override
 	public String toString() {

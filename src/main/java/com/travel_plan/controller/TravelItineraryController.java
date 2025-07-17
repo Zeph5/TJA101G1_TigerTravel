@@ -1,8 +1,7 @@
 package com.travel_plan.controller;
 
-
-
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -31,172 +30,154 @@ import jakarta.validation.Valid;
 
 public class TravelItineraryController {
 
-    private final TravelItineraryService travelItineraryService;
-    private final TravelPlanService travelPlanService;
-    private final TravelPlanDayService travelPlanDayService; // 確保有這個 Service 用於處理每日行程
+	private final TravelItineraryService travelItineraryService;
+	private final TravelPlanService travelPlanService;
+	private final TravelPlanDayService travelPlanDayService; // 確保有這個 Service 用於處理每日行程
 
-    @Autowired
-    public TravelItineraryController(TravelItineraryService travelItineraryService,
-            TravelPlanService travelPlanService,TravelPlanDayService travelPlanDayService) {
-        this.travelItineraryService = travelItineraryService;
-        this.travelPlanService = travelPlanService;
-        this.travelPlanDayService = travelPlanDayService; // 初始化每日行程服務
-    }
-    
-//    @GetMapping("/{itineraryId}/days")
-//    public String listTravelPlanDays(@PathVariable("planId") Integer planId,
-//                                    @PathVariable("itineraryId") Integer itineraryId,
-//                                    Model model) {
-//
-//        // 1. 確認這個行程梯次屬於該計畫
-//        TravelItinerary itinerary = travelItineraryService.getTravelItineraryEntityById(itineraryId)
-//            .orElseThrow(() -> new IllegalArgumentException("找不到 ID 為 " + itineraryId + " 的行程梯次"));
-//
-//        if (!itinerary.getTravelPlan().getTravelPlanId().equals(planId)) {
-//            throw new IllegalArgumentException("行程梯次不屬於指定的旅行計畫");
-//        }
-//
-//        // 2. 從 service 拿每日行程列表（你要確保 service 裡有這個方法）
-//        List<TravelPlanDay> travelPlanDays = travelPlanDayService.getDaysByItineraryId(itineraryId);
-//        model.addAttribute("travelPlanDays", travelPlanDays);
-//
-//        // 3. 傳送其他你需要給前端的資料（選填）
-//        model.addAttribute("travelPlanId", planId);
-//        model.addAttribute("travelItineraryId", itineraryId);
-//       
-//
-//        // 4. 返回你想要呈現每日行程的 Thymeleaf 頁面名稱
-//        return "admin/travelplans/listTravelPlanDays";  // 你每日行程列表的 HTML 名稱
-//    }
-    // 顯示新增旅行行程第二步的表單
-    @GetMapping // 映射到 Controller 的根路徑，但必須接收 planId
-    public String listItinerariesForTravelPlan(@PathVariable("planId") Integer planId, Model model) {
-        // 確保 TravelPlan 存在並取得基本資訊
-        TravelPlan travelPlan = travelPlanService.getTravelPlanEntityById(planId)
-                .orElseThrow(() -> new IllegalArgumentException("找不到 ID 為 " + planId + " 的旅行計畫。"));
+	@Autowired
+	public TravelItineraryController(TravelItineraryService travelItineraryService, TravelPlanService travelPlanService,
+			TravelPlanDayService travelPlanDayService) {
+		this.travelItineraryService = travelItineraryService;
+		this.travelPlanService = travelPlanService;
+		this.travelPlanDayService = travelPlanDayService; // 初始化每日行程服務
+	}
 
-        // 從 Service 獲取特定 TravelPlan 下的所有 TravelItinerary 梯次
-        // 注意：這裡應該呼叫類似 getItinerariesByTravelPlanId(planId) 的服務方法
-        List<TravelItinerary> itineraries = travelItineraryService.getItinerariesByTravelPlanId(planId);
-        System.out.println("目前查詢到的行程梯次數量為: " + itineraries.size()); // <--- 加這行
-        model.addAttribute("itineraries", itineraries);
+	// 顯示新增旅行行程第二步的表單
+	@GetMapping
+	public String listItinerariesForTravelPlan(@PathVariable("planId") Integer planId, Model model) {
+		// 確保 TravelPlan 存在並取得基本資訊
+		TravelPlan travelPlan = travelPlanService.getTravelPlanEntityById(planId)
+				.orElseThrow(() -> new IllegalArgumentException("找不到 ID 為 " + planId + " 的旅行計畫。"));
 
-        model.addAttribute("travelPlanId", planId); // 傳遞 planId
-        model.addAttribute("travelPlanTitle", travelPlan.getTravelTitle()); // 傳遞計畫名稱給前端顯示
+		// 從 Service 獲取特定 TravelPlan 下的所有 TravelItinerary 梯次
+		// 注意：這裡應該呼叫類似 getItinerariesByTravelPlanId(planId) 的服務方法
+		List<TravelItinerary> itineraries = travelItineraryService.getItinerariesByTravelPlanId(planId);
+		System.out.println("目前查詢到的行程梯次數量為: " + itineraries.size()); // <--- 加這行
+		model.addAttribute("itineraries", itineraries);
 
-        return "admin/travelplans/listItinerary"; // 返回顯示行程梯次列表的視圖
-    }
-    
-    @GetMapping("/add")
-    public String showAddItineraryForm(@PathVariable("planId") Integer planId, Model model) {
+		model.addAttribute("travelPlanId", planId); // 傳遞 planId
+		model.addAttribute("travelPlanTitle", travelPlan.getTravelTitle()); // 傳遞計畫名稱給前端顯示
 
-        TravelPlan travelPlan = travelPlanService.getTravelPlanEntityById(planId)
-                .orElseThrow(() -> new IllegalArgumentException("找不到 ID 為 " + planId + " 的旅行計畫。"));
+		return "admin/travelplans/listItinerary"; // 返回顯示行程梯次列表的視圖
+	}
 
-        // 初始化一個新的 TravelItineraryDTO，用於表單的輸入，只預設 planId
-        TravelItineraryDTO travelItineraryDTO = new TravelItineraryDTO();
-        travelItineraryDTO.setTravelPlanId(planId); // 預設關聯的 TravelPlan ID
-        
-        model.addAttribute("travelItineraryDTO", travelItineraryDTO);
-        model.addAttribute("travelPlanId", planId); // 傳遞 planId 給前端
-        model.addAttribute("travelPlanTitle", travelPlan.getTravelTitle()); // 傳遞計畫名稱給前端顯示
+	@GetMapping("/new")
+	public String showAddItineraryForm(@PathVariable("planId") Integer planId, Model model) {
 
-        return "admin/travelplans/form_step2_itinerary_details";
-    }
+		TravelPlan travelPlan = travelPlanService.getTravelPlanEntityById(planId)
+				.orElseThrow(() -> new IllegalArgumentException("找不到 ID 為 " + planId + " 的旅行計畫。"));
 
-    // 處理編輯旅行行程第二步的表單提交
-    // 路徑: POST /admin/travelplans/{planId}/itinerary/save
-    @PostMapping("/save")
-    public String saveItinerary(@PathVariable("planId") Integer planId,
-                                @ModelAttribute("travelItineraryDTO") @Valid TravelItineraryDTO travelItineraryDto,
-                                BindingResult result,
-                                Model model,
-                                HttpSession session,
-                                RedirectAttributes redirectAttributes) {
+		// 初始化一個新的 TravelItineraryDTO，用於表單的輸入，只預設 planId
+		TravelItineraryDTO travelItineraryDTO = new TravelItineraryDTO();
+		travelItineraryDTO.setTravelPlanId(planId); // 預設關聯的 TravelPlan ID
 
-        
-        if (!planId.equals(travelItineraryDto.getTravelPlanId())) {
-            redirectAttributes.addFlashAttribute("errorMessage", "提交的計畫 ID 與 URL 不符，請檢查。");
-            return "redirect:/admin/travelplans"; // 重定向回計畫列表或錯誤頁面
-        }
+		model.addAttribute("travelItineraryDTO", travelItineraryDTO);
+		model.addAttribute("travelPlanId", planId); // 傳遞 planId 給前端
+		model.addAttribute("travelPlanTitle", travelPlan.getTravelTitle()); // 傳遞計畫名稱給前端顯示
 
-        // 如果驗證失敗，則返回錯誤訊息並顯示錯誤
-        if (result.hasErrors()) {
-            // 為了重新渲染表單時能正確顯示計畫名稱
-            travelPlanService.getTravelPlanEntityById(planId).ifPresent(plan -> {
-                model.addAttribute("travelPlanTitle", plan.getTravelTitle());
-            });
-            model.addAttribute("travelPlanId", planId); // 再次傳遞 planId
-            model.addAttribute("errorMessage", "資料驗證失敗，請檢查輸入。");
-            return "admin/travelplans/updateItinerary"; // 返回當前頁面顯示錯誤
-        }
+		return "admin/travelplans/form_step2_itinerary_details";
+	}
 
-        try {
-            // 【修正】調用 TravelItineraryService 保存或更新 TravelItineraryDTO
-            TravelItinerary savedItinerary = travelItineraryService.saveTravelItineraryFromDto(travelItineraryDto);
+	// 處理編輯旅行行程第二步的表單提交
+	// 路徑: POST /admin/travelplans/{planId}/itinerary/save
+	@PostMapping("/save")
+	public String saveItinerary(@PathVariable("planId") Integer planId,
+			@ModelAttribute("travelItineraryDTO") @Valid TravelItineraryDTO travelItineraryDto, BindingResult result,
+			Model model, HttpSession session, RedirectAttributes redirectAttributes) {
 
-            // 設定 session 屬性
-            session.setAttribute("currentTravelItineraryId", savedItinerary.getTravelItineraryId());
+		// 新增行程的邏輯，不用判斷是否有 ID，因為是新增
+		if (travelItineraryDto.getTravelItineraryId() != null) {
+			redirectAttributes.addFlashAttribute("errorMessage", "新增時不應包含 ID！");
+			return "redirect:/admin/travelplans/" + planId + "/itinerary/new";
+		}
 
-            // 添加成功訊息
-            redirectAttributes.addFlashAttribute("successMessage", "行程梯次資訊保存成功！現在請編輯每日行程細節。");
+		if (result.hasErrors()) {
+			travelPlanService.getTravelPlanEntityById(planId).ifPresent(plan -> {
+				model.addAttribute("travelPlanTitle", plan.getTravelTitle());
+			});
+			model.addAttribute("travelPlanId", planId);
+			model.addAttribute("errorMessage", "資料驗證失敗，請檢查輸入。");
+			return "admin/travelplans/createItinerary"; // 假設這是新增畫面
+		}
 
-            // 重定向到下一步驟的行程細節編輯頁面 (使用 TravelPlanDayController 的 overview 頁面)
-            // 請確保 TravelPlanDayController 有 /admin/travelplans/{planId}/itinerary/{itineraryId}/overview 這個端點
-            return "redirect:/admin/travelplans/" + planId + "/itinerary";
+		try {
+			TravelItinerary saved = travelItineraryService.saveTravelItineraryFromDto(travelItineraryDto);
+			session.setAttribute("currentTravelItineraryId", saved.getTravelItineraryId());
+			redirectAttributes.addFlashAttribute("successMessage", "行程梯次新增成功！");
+			return "redirect:/admin/travelplans/" + planId + "/itinerary";
+		} catch (Exception e) {
+			redirectAttributes.addFlashAttribute("errorMessage", "新增失敗：" + e.getMessage());
+			return "redirect:/admin/travelplans/" + planId + "/itinerary/new";
+		}
+	}
 
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("errorMessage", "儲存行程梯次失敗: " + e.getMessage());
-            // 為了重新渲染表單時能正確顯示計畫名稱
-            travelPlanService.getTravelPlanEntityById(planId).ifPresent(plan -> {
-                model.addAttribute("travelPlanTitle", plan.getTravelTitle());
-            });
-            model.addAttribute("travelPlanId", planId);
-            return "admin/travelplans/updateItinerary"; // 返回當前頁面顯示錯誤
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "儲存行程梯次失敗: 發生未知錯誤。");
-            return "redirect:/admin/travelplans/list"; // 或者其他適當的錯誤處理
-        }
-    }
-    
+	// 編輯現有梯次基本資訊的入口點
+	// 路徑: GET /admin/travelplans/{planId}/itinerary/{itineraryId}/edit
+	@GetMapping("/{itineraryId}/edit")
+	public String showEditItineraryForm(@PathVariable("planId") Integer planId,
+			@PathVariable("itineraryId") Integer itineraryId, Model model, HttpSession session) {
 
-    // 編輯現有梯次基本資訊的入口點
-    // 路徑: GET /admin/travelplans/{planId}/itinerary/{itineraryId}/edit
-    @GetMapping("/{itineraryId}/edit")
-    public String showEditItineraryForm(@PathVariable("planId") Integer planId,
-                                        @PathVariable("itineraryId") Integer itineraryId,
-                                        Model model,
-                                        HttpSession session) {
+		// 1. 確保 TravelPlan 存在並取得基本資訊，用於前端顯示計畫名稱
+		TravelPlan travelPlan = travelPlanService.getTravelPlanEntityById(planId)
+				.orElseThrow(() -> new IllegalArgumentException("找不到 ID 為 " + planId + " 的旅行計畫。"));
+		model.addAttribute("travelPlanTitle", travelPlan.getTravelTitle()); // 傳遞計畫名稱
 
-        // 1. 確保 TravelPlan 存在並取得基本資訊，用於前端顯示計畫名稱
-        TravelPlan travelPlan = travelPlanService.getTravelPlanEntityById(planId)
-                .orElseThrow(() -> new IllegalArgumentException("找不到 ID 為 " + planId + " 的旅行計畫。"));
-        model.addAttribute("travelPlanTitle", travelPlan.getTravelTitle()); // 傳遞計畫名稱
+		// 2. 從 Service 獲取 TravelItinerary Entity
+		TravelItinerary existingItinerary = travelItineraryService.getTravelItineraryEntityById(itineraryId)
+				.orElseThrow(() -> new IllegalArgumentException("找不到 ID 為 " + itineraryId + " 的旅行行程。"));
 
-        // 2. 從 Service 獲取 TravelItinerary Entity
-        TravelItinerary existingItinerary = travelItineraryService.getTravelItineraryEntityById(itineraryId)
-                .orElseThrow(() -> new IllegalArgumentException("找不到 ID 為 " + itineraryId + " 的旅行行程。"));
+		// 3. 【重要】驗證 TravelItinerary 是否真的屬於該 TravelPlan (安全性與數據一致性)
+		if (!existingItinerary.getTravelPlan().getTravelPlanId().equals(planId)) {
+			// ex: 你正在編輯「日本北海道五日遊」的行程細節，但網址裡的行程ID卻是「泰國曼谷三天兩夜」的，這明顯是錯誤或惡意操作。
+			throw new IllegalArgumentException("行程 ID " + itineraryId + " 不屬於計畫 ID " + planId + "。");
+		}
 
-        // 3. 【重要】驗證 TravelItinerary 是否真的屬於該 TravelPlan (安全性與數據一致性)
-        if (!existingItinerary.getTravelPlan().getTravelPlanId().equals(planId)) {
-            // ex: 你正在編輯「日本北海道五日遊」的行程細節，但網址裡的行程ID卻是「泰國曼谷三天兩夜」的，這明顯是錯誤或惡意操作。
-            throw new IllegalArgumentException("行程 ID " + itineraryId + " 不屬於計畫 ID " + planId + "。");
-        }
+		// 4. 【重要】將 Entity 轉換為 DTO，傳遞給前端表單 (解決 Type Mismatch 錯誤)
+		TravelItineraryDTO dto = travelItineraryService.convertToItineraryDto(existingItinerary);
+		dto.setTravelPlanId(planId);
+		model.addAttribute("travelItineraryDTO", dto); // 將轉換後的 DTO 傳遞到表單
 
-        // 4. 【重要】將 Entity 轉換為 DTO，傳遞給前端表單 (解決 Type Mismatch 錯誤)
-        TravelItineraryDTO dto = travelItineraryService.convertToItineraryDto(existingItinerary);
-        dto.setTravelPlanId(planId);
-        model.addAttribute("travelItineraryDTO", dto); // 將轉換後的 DTO 傳遞到表單
+		// 5. 【重要】更新 Session 中的 ID，確保一致性
+		session.setAttribute("currentTravelPlanId", planId);
+		session.setAttribute("currentTravelItineraryId", itineraryId);
 
-        // 5. 【重要】更新 Session 中的 ID，確保一致性
-        session.setAttribute("currentTravelPlanId", planId);
-        session.setAttribute("currentTravelItineraryId", itineraryId);
+		// 6. 傳遞訊息給前端 (可選)
+		model.addAttribute("message", "正在編輯現有梯次基本細節。");
+		model.addAttribute("travelPlanId", planId); // 傳遞 planId 給前端用於表單提交路徑等
 
-        // 6. 傳遞訊息給前端 (可選)
-        model.addAttribute("message", "正在編輯現有梯次基本細節。");
-        model.addAttribute("travelPlanId", planId); // 傳遞 planId 給前端用於表單提交路徑等
+		// 7. 返回視圖名稱
+		return "admin/travelplans/updateItinerary";
+	}
 
-        // 7. 返回視圖名稱
-        return "admin/travelplans/updateItinerary";
-    }
+	@PostMapping("/{itineraryId}/update")
+	public String updateItinerary(@PathVariable("planId") Integer planId,
+			@PathVariable("itineraryId") Integer itineraryId,
+			@ModelAttribute("travelItineraryDTO") @Valid TravelItineraryDTO travelItineraryDto, BindingResult result,
+			Model model, RedirectAttributes redirectAttributes) {
+
+		// 驗證 URL id 和 DTO 一致
+		if (!Objects.equals(itineraryId, travelItineraryDto.getTravelItineraryId())) {
+			redirectAttributes.addFlashAttribute("errorMessage", "行程 ID 不一致！");
+			return "redirect:/admin/travelplans/" + planId + "/itinerary/" + itineraryId + "/edit";
+		}
+
+		if (result.hasErrors()) {
+			travelPlanService.getTravelPlanEntityById(planId).ifPresent(plan -> {
+				model.addAttribute("travelPlanTitle", plan.getTravelTitle());
+			});
+			model.addAttribute("travelPlanId", planId);
+			model.addAttribute("travelItineraryId", itineraryId);
+			model.addAttribute("errorMessage", "資料驗證失敗，請檢查輸入。");
+			return "admin/travelplans/updateItinerary";
+		}
+
+		try {
+			travelItineraryService.updateTravelItineraryFromDto(travelItineraryDto);
+			redirectAttributes.addFlashAttribute("successMessage", "行程梯次更新成功！");
+			return "redirect:/admin/travelplans/" + planId + "/itinerary" ;
+		} catch (Exception e) {
+			redirectAttributes.addFlashAttribute("errorMessage", "更新失敗：" + e.getMessage());
+			return "redirect:/admin/travelplans/" + planId + "/itinerary/" + itineraryId + "/edit";
+		}
+	}
 }

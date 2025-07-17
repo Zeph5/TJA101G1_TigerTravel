@@ -2,87 +2,94 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>所有行程資料 - itinerary_list.html</title>
 
+
 <a
-	th:href="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/new(planId=${planId}, itineraryId=${itineraryId})}"
+	th:href="@{/admin/travelplans/{planId}/itinerary/new(planId=${planId})}"
 	class="btn-link" style="font-weight: bold; font-size: 1.1em;"> ➕
 	新增行程 </a>
 
 <!-- jQuery + DataTables -->
 <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/dataTables.jqueryui.min.css" />
+<script
+	src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet"
+	href="https://cdn.datatables.net/1.13.5/css/dataTables.jqueryui.min.css" />
 
 <script>
-    $(document).ready(function () {
-        $('#itineraryTable').DataTable({
-            "lengthMenu": [5, 10, 20, 50],
-            "language": {
-                "processing": "處理中...",
-                "loadingRecords": "載入中...",
-                "lengthMenu": "顯示 _MENU_ 筆結果",
-                "zeroRecords": "沒有符合的結果",
-                "info": "顯示第 _START_ 至 _END_ 筆結果，共 _TOTAL_ 筆",
-                "infoEmpty": "顯示第 0 至 0 筆結果，共 0 筆",
-                "infoFiltered": "(從 _MAX_ 筆結果中過濾)",
-                "search": "搜尋:",
-                "paginate": {
-                    "first": "第一頁",
-                    "previous": "上一頁",
-                    "next": "下一頁",
-                    "last": "最後一頁"
-                }
-            }
-        });
-    });
+	$(document).ready(function() {
+		$('#itineraryTable').DataTable({
+			"lengthMenu" : [ 5, 10, 20, 50 ],
+			"language" : {
+				"processing" : "處理中...",
+				"loadingRecords" : "載入中...",
+				"lengthMenu" : "顯示 _MENU_ 筆結果",
+				"zeroRecords" : "沒有符合的結果",
+				"info" : "顯示第 _START_ 至 _END_ 筆結果，共 _TOTAL_ 筆",
+				"infoEmpty" : "顯示第 0 至 0 筆結果，共 0 筆",
+				"infoFiltered" : "(從 _MAX_ 筆結果中過濾)",
+				"search" : "搜尋:",
+				"paginate" : {
+					"first" : "第一頁",
+					"previous" : "上一頁",
+					"next" : "下一頁",
+					"last" : "最後一頁"
+				}
+			}
+		});
+	});
 </script>
 
 <style>
 body {
-    margin: 2rem 10%;
+	margin: 2rem 10%;
 }
 </style>
 </head>
 
 <body>
-<h2 align="center">所有行程資料 (TravelItinerary)</h2>
+	<h2 align="center">所有行程資料 (TravelItinerary)</h2>
 
-<table id="itineraryTable" class="display" style="width: 100%">
-    <thead>
-        <tr style="background-color:#CCCCFF">
-            <th>行程編號</th>
-            <th>所屬計畫ID</th>
-            <th>開始日期</th>
-            <th>結束日期</th>
-            <th>最大旅客</th>
-            <th>總價</th>
-            <th>發布日期</th>
-            <th>最後修改</th>
-            <th>操作</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr th:each="itinerary : ${itineraries}">
-            <td th:text="${itinerary.travelItineraryId}">1</td>
-            <td th:text="${itinerary.travelPlan.travelPlanId}">10</td>
-            <td th:text="${itinerary.startDate}">2025-01-01</td>
-            <td th:text="${itinerary.endDate}">2025-01-07</td>
-            <td th:text="${itinerary.maxTourist}">30</td>
-            <td th:text="${itinerary.totalPrice}">19999.00</td>
-            <td th:text="${#temporals.format(itinerary.publishedDate, 'yyyy-MM-dd HH:mm')}">2025-06-01</td>
-            <td th:text="${#temporals.format(itinerary.lastModifiedDate, 'yyyy-MM-dd HH:mm')}">2025-06-05</td>
-            <td>
-                <a th:href="@{'/admin/travelplans/' + ${itinerary.travelPlan.travelPlanId} + '/itinerary/' + ${itinerary.travelItineraryId} + '/edit'}">編輯</a>
-                <a th:href="@{'/admin/travelplans/' + ${itinerary.travelPlan.travelPlanId} + '/itinerary/' + ${itinerary.travelItineraryId} + '/days'}">詳情</a>
-   
-                <a th:href="@{'/admin/itinerary/delete/' + ${itinerary.travelItineraryId}}"
-                   onclick="return confirm('確定刪除嗎？')">刪除</a>
-            </td>
-        </tr>
-    </tbody>
-</table>
+	<table id="itineraryTable" class="display" style="width: 100%">
+		<thead>
+			<tr style="background-color: #CCCCFF">
+				<th>行程編號</th>
+				<th>所屬計畫ID</th>
+				<th>開始日期</th>
+				<th>結束日期</th>
+				<th>最大旅客</th>
+				<th>總價</th>
+				<th>發布日期</th>
+				<th>最後修改</th>
+				<th>操作</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="itinerary : ${itineraries}">
+				<td th:text="${itinerary.travelItineraryId}">1</td>
+				<td th:text="${itinerary.travelPlan.travelPlanId}">10</td>
+				<td th:text="${itinerary.startDate}">2025-01-01</td>
+				<td th:text="${itinerary.endDate}">2025-01-07</td>
+				<td th:text="${itinerary.maxTourist}">30</td>
+				<td th:text="${itinerary.totalPrice}">19999.00</td>
+				<td
+					th:text="${#temporals.format(itinerary.publishedDate, 'yyyy-MM-dd HH:mm')}">2025-06-01</td>
+				<td
+					th:text="${#temporals.format(itinerary.lastModifiedDate, 'yyyy-MM-dd HH:mm')}">2025-06-05</td>
+				<td><a
+					th:href="@{'/admin/travelplans/' + ${itinerary.travelPlan.travelPlanId} + '/itinerary/' + ${itinerary.travelItineraryId} + '/edit'}">編輯</a>
+					<a
+					th:href="@{'/admin/travelplans/' + ${itinerary.travelPlan.travelPlanId} + '/itinerary/' + ${itinerary.travelItineraryId} + '/days'}">詳情</a>
+
+					<a
+					th:href="@{'/admin/itinerary/delete/' + ${itinerary.travelItineraryId}}"
+					onclick="return confirm('確定刪除嗎？')">刪除</a></td>
+			</tr>
+		</tbody>
+	</table>
 
 </body>
 </html>
