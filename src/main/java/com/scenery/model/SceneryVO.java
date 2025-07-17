@@ -26,6 +26,7 @@ public class SceneryVO implements java.io.Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "scenery_id")
     private Integer sceneryId;
 
     @Column(name = "sce_name", nullable = false, unique = true)

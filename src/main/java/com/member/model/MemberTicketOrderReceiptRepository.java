@@ -15,10 +15,12 @@ public interface MemberTicketOrderReceiptRepository extends JpaRepository<Ticket
     // 查詢某張訂單的發票
     Optional<TicketOrderReceipt> findByTicketOrder(TicketOrder order);
     
-
-
-
     @Query("SELECT r FROM TicketOrderReceipt r WHERE r.ticketOrder = :order")
     List<TicketOrderReceipt> findByOrder(@Param("order") TicketOrder order);
 
+//    List<TicketOrder> findByMember(memVO member);
+    
+//    List<TicketOrderReceipt> findByMemberId(Integer memberId);
+    
+    
 }

@@ -38,65 +38,60 @@ public class SecurityConfig {
 
     // Bean: 用於會員的 SecurityFilterChain (優先順序較低，排在後面處理)
     @Bean
-
     @Order(2)
     public SecurityFilterChain memberFilterChain(HttpSecurity http,
             AuthenticationProvider memberAuthenticationProvider) throws Exception {
 
         http
-            // ❗ 關閉 CSRF（如果沒有表單驗證需求）
+            // ❗ 關閉 CSRF（除非你使用表單 POST 上傳，否則可以先關）
             .csrf(csrf -> csrf.disable())
 
-            // ✅ 路徑授權設定
+            // ✅ 授權路徑規則
             .authorizeHttpRequests(auth -> auth
 
-                // ✅ 放行靜態資源與基本頁面
+                // ✅ 靜態資源 & 基本公開頁面
                 .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
-                .requestMatchers("/", "/index", "/login", "/register", "/login?error", "/error").permitAll()
-
+                .requestMatchers("/", "/index", "/login", "/register", "/error", "/login?error").permitAll()
                 .requestMatchers("/ticketlist").permitAll()
-                
-                .requestMatchers(HttpMethod.POST, "/member/resetPassword").permitAll()
 
-                
-                // ✅ 密碼重設成功/失敗畫面 (SweetAlert)
-                .requestMatchers(
-                    "/member/reset-password-success",
-                    "/member/reset-password-fail"
-                ).permitAll()
-
-                // ✅ 忘記密碼 + 重設密碼流程（全開放）
+                // ✅ 忘記密碼與註冊流程（開放）
                 .requestMatchers(
                     "/member/register", "/member/verify",
                     "/member/forgot", "/member/forgotPassword",
                     "/member/reset", "/member/resetPassword",
-                    "/member/reset-password", // 顯示 resetPassword 畫面
+                    "/member/reset-password", 
                     "/member/password/forgotPassword",
                     "/member/password/resetPassword",
                     "/member/password/reset-password-success",
                     "/member/password/reset-password-fail"
                 ).permitAll()
 
-                // ✅ 管理員專屬功能
+                // ✅ 密碼重設畫面（特殊開放）
+                .requestMatchers(HttpMethod.POST, "/member/resetPassword").permitAll()
+
+                // ✅ 管理員功能
                 .requestMatchers("/member/list").hasRole("MANAGER")
 
-                // ✅ 一般會員需登入功能
+                // ✅ 一般會員功能（需要登入）
                 .requestMatchers(
                     "/member/edit", "/member/home", "/member/favorites",
                     "/member/receipt/**",
                     "/member/ticketOrders", "/member/ticket/orders",
                     "/member/order/**", "/member/ticketOrderDetail",
-                    "/member/detail/**"
+                    "/member/detail/**",
+                    "/member/orders", // ✅ ⬅️ 加這行，允許登入會員看訂單整合頁
+                    "/member/travel/orders", // 若有這路徑建議也加
+                    "/member/tour-order/detail/**"
                 ).authenticated()
 
-                // ✅ 票券功能需登入
+                // ✅ 票券功能（也要登入）
                 .requestMatchers("/ticket/**", "/ticketOrders").authenticated()
 
-                // ❗ 最後的兜底規則：你可以選擇預設放行或拒絕其他未設定的 /member 路徑
+                // ❗ 最後兜底規則（不建議用 denyAll 除非你真的想封鎖）
                 // .requestMatchers("/member/**").denyAll()
             )
 
-            // ✅ 登入流程設定
+            // ✅ 登入設定
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/member/login")
@@ -112,7 +107,7 @@ public class SecurityConfig {
                 .permitAll()
             );
 
-        // ✅ 加入自定義認證機制（Member）
+        // ✅ 加入自定義會員登入機制
         http.authenticationProvider(memberAuthenticationProvider);
 
         return http.build();

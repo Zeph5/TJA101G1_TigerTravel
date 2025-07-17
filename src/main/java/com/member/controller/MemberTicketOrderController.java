@@ -3,6 +3,7 @@ package com.member.controller;
 import java.time.LocalDate;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,61 +44,6 @@ public class MemberTicketOrderController {
         this.memberTicketOrderRepo = memberTicketOrderRepo;
         this.ticketRepo = ticketRepo;
     }
-
-    @GetMapping("/ticket/orders")
-    public String showMyTicketOrders(@AuthenticationPrincipal MemberUserDetails loginUser, Model model) {
-        memVO member = loginUser.getMember();
-
-        Integer memberId = loginUser.getMember().getMemberId();
-        List<TicketOrder> orders = orderService.getOrdersByMemberId(memberId);
-
-
-	     // 存放明細資料與圖片
-	     Map<Integer, List<TicketOrderReceipt>> receiptMap = new HashMap<>();
-	     Map<Integer, String> receiptImageMap = new HashMap<>();
-	     Map<Integer, Ticket> ticketMap = new HashMap<>();
-
-	     for (TicketOrder order : orders) {
-	         List<TicketOrderReceipt> receipts = receiptService.getReceiptsByOrder(order);
-
-	         for (TicketOrderReceipt receipt : receipts) {
-	             Integer ticketId = receipt.getTicketId();
-
-	             if (ticketId != null) {
-	                 try {
-	                     ticketRepo.findById(ticketId).ifPresent(ticket -> {
-	                         // ✅ 圖片處理
-	                         byte[] imageBytes = ticket.getTicketImage();
-	                         if (imageBytes != null && imageBytes.length > 0) {
-	                             String base64 = Base64.getEncoder().encodeToString(imageBytes);
-	                             receiptImageMap.put(receipt.getTicketOrderReceiptId(), base64);
-	                         }
-
-	                         // ✅ 加入 ticketMap（對應 receiptId）
-	                         ticketMap.put(receipt.getTicketOrderReceiptId(), ticket);
-	                     });
-	                 } catch (Exception e) {
-	                     System.out.println("❌ ticket 讀取失敗，receiptId: " + receipt.getTicketOrderReceiptId());
-	                     e.printStackTrace();
-	                 }
-	             }
-	         }
-
-	         receiptMap.put(order.getTicketOrderId(), receipts);
-	     }
-
-
-
-
-        model.addAttribute("now", LocalDate.now());
-        model.addAttribute("ticketOrders", orders);
-        model.addAttribute("receiptMap", receiptMap);
-        model.addAttribute("receiptImageMap", receiptImageMap);
-        model.addAttribute("ticketMap", ticketMap);
-
-
-        return "member/ticketOrders";
-    }
     
     @GetMapping("/order/{orderId}")
     public String showOrderDetails(@AuthenticationPrincipal MemberUserDetails loginUser,
@@ -114,24 +60,31 @@ public class MemberTicketOrderController {
 
         Map<Integer, Ticket> ticketMap = new HashMap<>();
         Map<Integer, String> ticketImageMap = new HashMap<>();
+        Map<Ticket, Integer> ticketCountMap = new LinkedHashMap<>();
+
 
         for (TicketOrderReceipt receipt : receipts) {
             Integer ticketId = receipt.getTicketId();
 
             if (ticketId != null) {
                 ticketRepo.findById(ticketId).ifPresent(ticket -> {
+                	
+                	ticketCountMap.put(ticket, ticketCountMap.getOrDefault(ticket, 0) + 1);
                     ticketMap.put(receipt.getTicketOrderReceiptId(), ticket);
                     byte[] img = ticket.getTicketImage();
+                    
                     if (img != null) {
                         String base64 = Base64.getEncoder().encodeToString(img);
                         ticketImageMap.put(receipt.getTicketOrderReceiptId(), base64);
                     }
+                    
                 });
             }
         }
         
         System.out.println("✅ loginUser = " + loginUser);
 
+        model.addAttribute("ticketCountMap", ticketCountMap);
         model.addAttribute("order", order);
         model.addAttribute("receipts", receipts);
         model.addAttribute("ticketMap", ticketMap);

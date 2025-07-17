@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>旅遊行程詳情</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"> <!-- 加 Bootstrap icon -->
+    <style>
+        body { background-color: #f8f9fa; } /* 淺灰背景，讓頁面清爽 */
+        .detail-header { background-color: #e3f2fd; border-radius: 10px; padding: 20px; } /* 簡介區藍色背景 */
+        .day-card { border-color: #4caf50; } /* 綠色邊框，代表旅行自然 */
+        .img-thumbnail { max-height: 200px; object-fit: cover; } /* 圖片固定高度，自動調整 */
+        .empty-message { color: #dc3545; font-weight: bold; } /* 空訊息紅色警示 */
+    </style>
+</head>
+<body class="container mt-5">
+
+    <h2 class="mb-4 text-primary"><i class="bi bi-map"></i> 旅遊行程詳情</h2> <!-- 加藍色文字和 icon -->
+
+    <div class="detail-header mb-4 shadow-sm">
+        <h4 class="fw-bold"><i class="bi bi-journal-text"></i> 旅程標題： <span th:text="${plan.travelTitle}">旅程標題</span></h4>
+        <p><i class="bi bi-info-circle"></i> 旅程簡介： <span th:text="${plan.travelPlanDescription}">旅程簡介</span></p>
+    </div>
+
+    <hr class="my-4">
+
+    <div th:if="${dayList.isEmpty()}" class="alert alert-warning empty-message">
+        <i class="bi bi-exclamation-triangle"></i> <span th:text="${message}">目前無可用的行程時間表</span>
+    </div>
+    
+		<!-- 如果有itinerary，就顯示下單按鈕 -->
+		<div th:if="${itinerary != null and itinerary.travelItineraryId != null}">
+		    <a th:href="@{/member/tour-order/create(planId=${plan.travelPlanId})}" class="btn btn-primary">馬上下單！</a>
+		</div>
+		<div th:if="${itinerary == null or itinerary.travelItineraryId == null}">
+		    <p class="text-danger">無可用行程ID，無法下單！請確認資料。</p>
+		</div>
+
+    <h4 class="mb-3 text-success"><i class="bi bi-calendar-event"></i> 多天行程表</h4> <!-- 加綠色文字和 icon -->
+    <div th:each="day : ${dayList}" class="mb-4 p-3 border rounded shadow-sm day-card">
+        <h5 th:text="'第 ' + ${day.travelDayNumber} + ' 天'" class="fw-bold text-secondary"></h5>
+        <p><i class="bi bi-calendar-check"></i> 旅遊日期：<span th:text="${#temporals.format(day.traveltime, 'yyyy-MM-dd')}"></span></p>
+
+        <div class="row">
+            <div class="col-md-4">
+                <img th:if="${day.scenery.sceneryBanner != null}"
+                     th:src="'data:image/jpeg;base64,' + ${T(org.apache.tomcat.util.codec.binary.Base64).encodeBase64String(day.scenery.sceneryBanner)}"
+                     class="img-fluid rounded img-thumbnail"
+                     alt="景點圖片">
+                     
+                <img th:if="${day.scenery.sceneryBanner == null}"
+                     th:src="@{/images/bannerSample.jpg}"
+                     class="img-fluid rounded img-thumbnail"
+                     alt="預設圖片">
+            </div>
+
+            <div class="col-md-8">
+                <p><strong><i class="bi bi-pin-map-fill"></i> 景點名稱：</strong><span th:text="${day.scenery.sceneryName}"></span></p>
+                <p><strong><i class="bi bi-geo-alt-fill"></i> 景點地址：</strong><span th:text="${day.scenery.sceneryAddress}"></span></p>
+                <p><strong><i class="bi bi-tags-fill"></i> 景點編號：</strong><span th:text="${day.scenery.sceneryId}"></span></p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

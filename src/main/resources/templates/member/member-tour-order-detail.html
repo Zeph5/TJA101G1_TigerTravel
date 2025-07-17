@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>旅程訂單明細</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"> <!-- 加 Bootstrap icon -->
+    <style>
+        body { background-color: #f8f9fa; } /* 淺灰背景，讓頁面清爽 */
+        .order-header { background-color: #e3f2fd; border-radius: 10px; padding: 20px; } /* 藍色卡片背景 */
+        .day-card { border-color: #4caf50; margin-bottom: 20px; padding: 15px; border-radius: 8px; background-color: #f9fff9; } /* 綠色邊框區塊，代表一天 */
+        .img-thumbnail { max-height: 200px; object-fit: cover; } /* 圖片固定高度，自動調整 */
+        .scenery-row { margin-bottom: 15px; } /* 每個景點row間距 */
+    </style>
+</head>
+<body class="container mt-5">
+
+    <h2 class="mb-4 text-primary">🧳 旅程訂單明細</h2> <!-- 加藍色文字 -->
+
+    <div class="order-header mb-4 shadow-sm">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong><i class="bi bi-ticket-perforated"></i> 訂單編號：</strong> <span th:text="${order.tourOrderId}"></span></li>
+            <li class="list-group-item"><strong><i class="bi bi-map"></i> 旅程標題：</strong> <span th:text="${order.travelItinerary.travelPlan.travelTitle}"></span></li>
+            <li class="list-group-item"><strong><i class="bi bi-calendar-event"></i> 出發日期：</strong> <span th:text="${order.travelItinerary.startDate != null ? #temporals.format(order.travelItinerary.startDate, 'yyyy-MM-dd') : '-'}"></span></li>
+            <li class="list-group-item"><strong><i class="bi bi-calendar-check"></i> 結束日期：</strong> <span th:text="${order.travelItinerary.endDate != null ? #temporals.format(order.travelItinerary.endDate, 'yyyy-MM-dd') : '-'}"></span></li> <!-- 加結束日期 -->
+            <li class="list-group-item"><strong><i class="bi bi-currency-dollar"></i> 總金額：</strong> <span th:text="${order.totalAmount + ' 元'}"></span></li>
+            <li class="list-group-item"><strong><i class="bi bi-people"></i> 人數：</strong> <span th:text="${order.peopleCount + ' 人'}"></span></li>
+        </ul>
+    </div>
+
+    <hr class="my-4">
+
+    <h4 class="mb-3 text-success">📅 多天行程表</h4> <!-- 加綠色文字 -->
+
+    <!-- 按天分組顯示行程，每天一個區塊 -->
+    <div th:each="day, stat : ${travelPlanDays}">
+        <!-- 如果是新的一天或第一筆，顯示天數標題和日期，並開新區塊 -->
+        <div th:if="${stat.first or day.travelDayNumber != travelPlanDays[stat.index - 1].travelDayNumber}" class="day-card shadow-sm">
+            <h5 th:text="'第 ' + ${day.travelDayNumber} + ' 天'" class="fw-bold text-secondary mb-3"></h5>
+            <p class="mb-3"><i class="bi bi-calendar-check"></i> 旅遊日期：<span th:text="${#temporals.format(day.traveltime, 'yyyy-MM-dd')}"></span></p>
+        </div>
+
+        <!-- 每個景點的row，放在同一天區塊內 -->
+        <div class="row scenery-row">
+            <div class="col-md-4">
+                <img th:if="${day.scenery.sceneryBanner != null}"
+                     th:src="'data:image/jpeg;base64,' + ${T(org.apache.tomcat.util.codec.binary.Base64).encodeBase64String(day.scenery.sceneryBanner)}"
+                     class="img-fluid rounded img-thumbnail"
+                     alt="景點圖片">
+                     
+                <img th:if="${day.scenery.sceneryBanner == null}"
+                     th:src="@{/images/bannerSample.jpg}"
+                     class="img-fluid rounded img-thumbnail"
+                     alt="預設圖片">
+            </div>
+
+            <div class="col-md-8">
+                <p><strong><i class="bi bi-pin-map-fill"></i> 景點名稱：</strong><span th:text="${day.scenery.sceneryName}"></span></p>
+                <p><strong><i class="bi bi-geo-alt-fill"></i> 景點地址：</strong><span th:text="${day.scenery.sceneryAddress}"></span></p>
+                <p><strong><i class="bi bi-tags-fill"></i> 景點編號：</strong><span th:text="${day.scenery.sceneryId}"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between mt-4">
+        <a th:href="@{/member/orders}" class="btn btn-secondary"><i class="bi bi-arrow-left-circle"></i> 返回訂單列表</a>
+    </div>
+
+</body>
+</html>

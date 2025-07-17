@@ -39,6 +39,12 @@ public interface TravelItineraryService {
 
 
 	List<TravelItinerary> getItinerariesByTravelPlanId(Integer planId);
+	
+	
+	
+	//01新增
+	Optional<TravelItinerary> findById(Integer id);
+	TravelItinerary save(TravelItinerary itinerary);
 
 
 	

@@ -70,4 +70,7 @@ public interface TravelPlanService {
 
 	TravelPlanPreviewDTO getTravelPlanPreview(Integer planId, Integer itineraryId);
 	
+	List<TravelPlan> searchByTitle(String keyword);
+
+	
 }

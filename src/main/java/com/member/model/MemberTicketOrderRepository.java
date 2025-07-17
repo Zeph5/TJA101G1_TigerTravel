@@ -11,6 +11,5 @@ public interface MemberTicketOrderRepository extends JpaRepository<TicketOrder, 
 
     
     List<TicketOrder> findByMemberId(Integer memberId);
-
     
 }

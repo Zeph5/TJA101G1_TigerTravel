@@ -1,0 +1,37 @@
+package com.member.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.member.model.TouristVO;
+import com.member.model.TourOrderVO;
+import com.member.model.TouristRepository; // 假設你的 repository
+
+@Service
+public class TouristServiceImpl implements TouristService {
+
+    private final TouristRepository touristRepo;
+    
+    public TouristServiceImpl(TouristRepository touristRepo) {
+    	this.touristRepo = touristRepo;
+    }
+
+    public TouristVO save(TouristVO tourist) {
+        return touristRepo.save(tourist); // JPA save，自動處理 insert/update
+    }
+
+    public Optional<TouristVO> findById(Integer touristId) {
+        return touristRepo.findById(touristId);
+    }
+
+    public List<TouristVO> findByTourOrder(TourOrderVO tourOrder) {
+        return touristRepo.findByTourOrder(tourOrder); // 假設 repository 有這個方法
+    }
+
+    public void deleteById(Integer touristId) {
+        touristRepo.deleteById(touristId);
+    }
+}
