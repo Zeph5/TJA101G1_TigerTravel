@@ -38,6 +38,7 @@ import com.member.service.favorite.FavoriteTravelPlanService;
 import com.scenery.model.SceneryService;
 import com.scenery.model.SceneryVO;
 import com.travel_plan.model.TravelPlan;
+import com.travel_plan.service.TravelPlanDayService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -54,6 +55,8 @@ public class MemberController {
 	private MailService mailService;
 	@Autowired
 	private SceneryService sceneryService;
+	@Autowired
+	private TravelPlanDayService travelPlanDayService;
 	
 	private final PasswordEncoder passwordEncoder;
 	
@@ -246,7 +249,8 @@ public class MemberController {
 	
 	@GetMapping("/member/home")
 	public String showMemberHome(Model model) {
-		List<SceneryVO> allScenery = sceneryService.findAllScenery();
+
+		List<SceneryVO> allScenery = travelPlanDayService.findAllScenery();
 		
 		List<SceneryVO> topScenery = allScenery.stream().limit(6).toList();
 		

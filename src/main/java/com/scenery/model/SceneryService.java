@@ -129,4 +129,5 @@ public class SceneryService {
     public List<SceneryVO> getAllAvailableSceneries() {
         return sceneryRepository.findBySceneryStatus(1);
     }
+
 }

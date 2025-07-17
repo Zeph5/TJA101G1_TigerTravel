@@ -97,10 +97,10 @@ public class TicketController {
 
 			ticketService.save(ticket);
 			redirectAttributes.addFlashAttribute("successMessage", "票券新增成功！");
-			return "redirect:/ticketlist";
+			return "redirect:/admin/mticketlist";
 		} catch (IOException e) {
 			redirectAttributes.addFlashAttribute("errorMessage", "圖片上傳失敗：" + e.getMessage());
-			return "redirect:/ticket/create";
+			return "redirect:/admin/mticketlist";
 		}
 
 	}

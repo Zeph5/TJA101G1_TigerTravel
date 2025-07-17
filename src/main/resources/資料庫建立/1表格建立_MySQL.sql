@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS scenery (
     sce_longitude DECIMAL(9,6) COMMENT '景點經度',
     sce_latitude DECIMAL(9,6) COMMENT '景點緯度',
     sce_banner LONGBLOB COMMENT '景點背景',
+    sce_status TINYINT COMMENT '景點狀態',
     create_time TIMESTAMP COMMENT '創建時間',
     PRIMARY KEY (scenery_id)
 ) AUTO_INCREMENT = 1;
