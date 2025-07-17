@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<title>搜尋結果</title>
+<style>
+/* 主色系設定 */
+/* 主色系設定 */
+:root {
+  --sky-blue: #B3E5FC;
+  --egg-shell: #FDF6EC;
+  --earth-yellow: #D9A441;
+  --white: #ffffff;
+  --light-gray: #f0f0f0;
+  --border-color: #ccc;
+}
+
+/* Global styles */
+body {
+  background-color: var(--egg-shell);
+  font-family: 'Segoe UI', 'Noto Sans TC', sans-serif;
+  color: #333;
+  margin: 0;
+  padding: 20px;
+}
+
+h2 {
+  color: var(--earth-yellow);
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+}
+
+/* Card styles */
+.card-link {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.03);
+  padding: 15px;
+  margin-bottom: 15px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  overflow: hidden; /* prevent content overflow */
+}
+
+.card-link:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  color: inherit;
+}
+
+/* Thumbnail image */
+.thumbnail-img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Flex grow container for text */
+.flex-grow-1 {
+  flex-grow: 1;
+}
+
+/* Heading with scenery name and rating aligned */
+h5 {
+  margin: 0 0 6px 0;
+  color: var(--earth-yellow);
+  font-weight: bold;
+  font-size: 1.25rem;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Scenery name styling with ellipsis */
+.scenery-name {
+  flex-shrink: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
+}
+
+/* Rating container on the right */
+.rating-container {
+  color: gold;
+  font-size: 1rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Stars styling */
+.rating-stars {
+  margin-left: 4px;
+  font-size: 1.2rem;
+  vertical-align: middle;
+  white-space: nowrap;
+  color: gold;
+}
+
+/* Intro text - limit to approx 2 lines, hide overflow */
+.intro-text {
+  max-height: 3.6em;       /* 2 lines × 1.8em line-height */
+  line-height: 1.8em;
+  overflow: hidden;
+  text-overflow: ellipsis; /* note: no multiline ellipsis but hides overflow */
+  max-width: 100%;
+  margin-bottom: 0;
+  color: #555;
+  word-break: break-word;
+}
+
+/* Responsive styles */
+@media (max-width: 600px) {
+  .card-link {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .thumbnail-img {
+    width: 100%;
+    height: 180px;
+    border-radius: 10px;
+  }
+  .intro-text {
+    white-space: normal;
+    max-height: none; /* allow full intro text on small screens */
+  }
+}
+
+</style>
+</head>
+<body>
+
+	<div class="container">
+
+		<h2>
+			🔍 搜尋結果: <span th:text="${keyword}"></span>（共 <span
+				th:text="${sceneryPage.totalElements}"></span> 筆）
+		</h2>
+
+		<p th:if="${#lists.isEmpty(sceneryPage.content)}">沒有找到符合的景點。</p>
+
+		<!-- Whole card clickable -->
+		<a th:each="scenery : ${sceneryPage.content}"
+			th:href="@{/frontend/scenery/detail/{id}(id=${scenery.sceneryId})}"
+			class="card-link"> <img th:if="${scenery.imageUrl != null}"
+			th:src="@{${scenery.imageUrl}}" alt="景點圖片" class="thumbnail-img" />
+			<img th:if="${scenery.imageUrl == null}"
+			th:src="@{/images/sample.png}" alt="預設圖片" class="thumbnail-img" />
+
+			<div class="flex-grow-1">
+				<h5>
+					<span class="scenery-name" th:text="${scenery.sceneryName}"></span>
+					<span class="rating-container"> Rating: <span
+						class="rating-stars" th:utext="${scenery.ratingStars}"></span>
+					</span>
+				</h5>
+				<p class="intro-text" th:text="${scenery.sceneryIntro}"></p>
+			</div>
+		</a>
+
+		<div class="pagination" style="text-align: center; margin-top: 20px;">
+			<ul
+				style="list-style: none; padding: 0; display: inline-flex; gap: 8px;">
+				<li th:if="${sceneryPage.hasPrevious()}"><a
+					th:href="@{/search(keyword=${keyword}, page=${sceneryPage.number})}"
+					style="padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px; text-decoration: none;">&laquo;
+						Prev</a></li>
+				<li th:unless="${sceneryPage.hasPrevious()}"><span
+					style="padding: 6px 12px; color: #999;">&laquo; Prev</span></li>
+
+				<li th:each="i : ${#numbers.sequence(1, sceneryPage.totalPages)}">
+					<a th:if="${i != sceneryPage.number + 1}"
+					th:href="@{/search(keyword=${keyword}, page=${i})}" th:text="${i}"
+					style="padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px; text-decoration: none;"></a>
+					<span th:if="${i == sceneryPage.number + 1}" th:text="${i}"
+					style="padding: 6px 12px; border: 1px solid var(--earth-yellow); border-radius: 4px; font-weight: bold; color: var(--earth-yellow);"></span>
+				</li>
+
+				<li th:if="${sceneryPage.hasNext()}"><a
+					th:href="@{/search(keyword=${keyword}, page=${sceneryPage.number + 2})}"
+					style="padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px; text-decoration: none;">Next
+						&raquo;</a></li>
+				<li th:unless="${sceneryPage.hasNext()}"><span
+					style="padding: 6px 12px; color: #999;">Next &raquo;</span></li>
+			</ul>
+		</div>
+
+
+
+		<a th:href="@{/index}" class="btn btn-secondary"
+			style="margin-top: 20px;">回首頁</a>
+
+	</div>
+
+</body>
+</html>

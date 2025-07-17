@@ -218,4 +218,5 @@ public class SceneryController {
 	        return "redirect:/scenery/listallscenery";
 	    }
 	}
+	
 }
