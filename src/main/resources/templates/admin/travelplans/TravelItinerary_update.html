@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新增梯次</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container py-5">
+  <h2 class="mb-4 text-center">➕ 新增梯次</h2>
+
+  <form th:action="@{'/admin/travelplans/' + ${travelPlanId} + '/itinerary/save'}" method="post">
+    <input type="hidden" name="travelPlanId" th:value="${travelPlanId}"/>
+
+    <div class="mb-3">
+      <label for="startDate" class="form-label">出發日期</label>
+      <input type="date" class="form-control" id="startDate" name="startDate" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="endDate" class="form-label">結束日期</label>
+      <input type="date" class="form-control" id="endDate" name="endDate" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="maxTourist" class="form-label">人數上限</label>
+      <input type="number" class="form-control" id="maxTourist" name="maxTourist" min="1" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="totalPrice" class="form-label">總金額</label>
+      <input type="number" class="form-control" id="totalPrice" name="totalPrice" min="0" step="100" required>
+    </div>
+
+    <div class="text-center">
+      <button type="submit" class="btn btn-primary">儲存梯次</button>
+      <a th:href="@{'/admin/travelplans/' + ${travelPlanId} + '/itinerary'}" class="btn btn-secondary ms-2">取消</a>
+    </div>
+  </form>
+</div>
+</body>
+</html>
