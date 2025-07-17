@@ -35,6 +35,16 @@ public interface SceneryRepository extends JpaRepository<SceneryVO, Integer> {
 		                               @Param("address") String address,
 		                               @Param("status") Integer status,
 		                               Pageable pageable);
+	
+	List<SceneryVO> findBySceneryNameContainingAndSceneryStatus(String name, Integer status);
+    List<SceneryVO> findBySceneryStatus(Integer status);
+    
+    Page<SceneryVO> findBySceneryStatus(Integer status, Pageable pageable);
+    
+    @Query("SELECT s FROM SceneryVO s WHERE " +
+    	       "(:keyword IS NULL OR LOWER(s.sceneryName) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+    	       "AND s.sceneryStatus = 1")
+    	Page<SceneryVO> searchByKeywordAndStatus(@Param("keyword") String keyword, Pageable pageable);
 
 
 }

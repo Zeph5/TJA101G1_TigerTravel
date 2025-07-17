@@ -1,108 +1,264 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <title>首頁</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<title>首頁</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+<style>
+/* 主色系設定 */
+:root {
+	--sky-blue: #B3E5FC;
+	--egg-shell: #FDF6EC;
+	--earth-yellow: #D9A441;
+	--white: #ffffff;
+	--light-gray: #f0f0f0;
+	--border-color: #ccc;
+}
+
+/* 整體背景與字體 */
+body {
+	background-color: var(--egg-shell);
+	font-family: 'Segoe UI', 'Noto Sans TC', sans-serif;
+	color: #333;
+}
+
+/* 標題樣式 */
+h1, h2, h4, h5 {
+	color: var(--earth-yellow);
+	font-weight: bold;
+}
+
+/* 容器與分隔 */
+.container {
+	background-color: var(--white);
+	border-radius: 10px;
+	padding: 30px;
+	box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+}
+
+/* 精選景點卡片 */
+.border.rounded {
+	background-color: var(--light-gray);
+	border-color: var(--border-color);
+}
+
+/* 票券卡片樣式 */
+.card {
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	background-color: var(--white);
+	transition: transform 0.2s;
+}
+
+.card:hover {
+	transform: scale(1.02);
+}
+
+.card-body {
+	background-color: var(--egg-shell);
+}
+
+/* 按鈕樣式 */
+.btn-outline-primary {
+	color: var(--earth-yellow);
+	border-color: var(--earth-yellow);
+}
+
+.btn-outline-primary:hover {
+	background-color: var(--earth-yellow);
+	color: white;
+}
+
+.btn-outline-success {
+	color: var(--sky-blue);
+	border-color: var(--sky-blue);
+}
+
+.btn-outline-success:hover {
+	background-color: var(--sky-blue);
+	color: white;
+}
+
+.btn-outline-danger {
+	color: #e57373;
+	border-color: #e57373;
+}
+
+.btn-outline-danger:hover {
+	background-color: #e57373;
+	color: white;
+}
+
+.btn-outline-info {
+	color: #4fc3f7;
+	border-color: #4fc3f7;
+}
+
+.btn-outline-info:hover {
+	background-color: #4fc3f7;
+	color: white;
+}
+
+/* 搜尋框樣式 */
+input[type="search"] {
+	border-radius: 8px;
+	border: 1px solid var(--border-color);
+	padding: 10px;
+}
+
+/* footer 樣式 */
+footer {
+	background-color: var(--sky-blue);
+	padding: 20px 0;
+	color: #555;
+	border-top: 1px solid #ccc;
+}
+
+.banner-img {
+	max-height: 400px;
+	object-fit: cover;
+	transition: opacity 1s ease-in-out;
+}
+</style>
 </head>
 <body>
 
-<div class="container mt-4">
-    <h1 class="text-center">🌏 歡迎來到 Tiger Travel 旅遊網站</h1>
+	<div class="container mt-4">
+		<h1 class="text-center">🌏 歡迎來到 Tiger Travel 旅遊網站</h1>
 
-    <!-- 👤 已登入使用者 -->
-    <div sec:authorize="isAuthenticated()" class="mt-4 text-center">
-        <p>您好，<span sec:authentication="principal.member.memberName"></span>！您已登入。</p>
+		<!-- 👤 已登入使用者 -->
+		<div sec:authorize="isAuthenticated()" class="mt-4 text-center">
+			<p>
+				您好，<span sec:authentication="principal.member.memberName"></span>！您已登入。
+			</p>
 
-        <div th:if="${avatarBase64 != null}" class="mb-3">
-            <img th:src="'data:image/png;base64,' + ${avatarBase64}" alt="大頭貼" width="100" height="100" class="rounded-circle border">
-        </div>
+			<div th:if="${avatarBase64 != null}" class="mb-3">
+				<img th:src="'data:image/png;base64,' + ${avatarBase64}" alt="大頭貼"
+					width="100" height="100" class="rounded-circle border">
+			</div>
 
-        <div class="d-flex justify-content-center gap-3">
-            <form th:action="@{/logout}" method="post">
-                <button type="submit" class="btn btn-outline-danger">登出</button>
-            </form>
-            <a th:href="@{/member/home}" class="btn btn-outline-primary">會員中心</a>
-            <a th:href="@{/member/favorites}" class="btn btn-outline-success">⭐ 我的收藏</a>
-            <a th:href="@{/member/detail/ticket/orders}" class="btn btn-outline-info">🎫 我的票券訂單</a>
-        </div>
-    </div>
+			<div class="d-flex justify-content-center gap-3">
+				<form th:action="@{/logout}" method="post">
+					<button type="submit" class="btn btn-outline-danger">登出</button>
+				</form>
+				<a th:href="@{/member/home}" class="btn btn-outline-primary">會員中心</a>
+				<a th:href="@{/member/favorites}" class="btn btn-outline-success">⭐
+					我的收藏</a> <a th:href="@{/member/detail/ticket/orders}"
+					class="btn btn-outline-info">🎫 我的票券訂單</a>
+			</div>
+		</div>
 
-    <!-- ❗ 未登入使用者 -->
-    <div sec:authorize="isAnonymous()" class="text-center mt-4">
-        <p>您尚未登入，請先 <a th:href="@{/login}">登入</a> 或 <a th:href="@{/member/register}">註冊</a>。</p>
-    </div>
+		<!-- ❗ 未登入使用者 -->
+		<div sec:authorize="isAnonymous()" class="text-center mt-4">
+			<p>
+				您尚未登入，請先 <a th:href="@{/login}">登入</a> 或 <a
+					th:href="@{/member/register}">註冊</a>。
+			</p>
+		</div>
 
-    <!-- 📍 景點清單 -->
-    <div th:if="${sceneryList != null}" class="mt-5">
-        <h2>📍 精選景點</h2>
-        <p>共有 <span th:text="${#lists.size(sceneryList)}">0</span> 筆景點資料</p>
+		<!-- 📍 景點查詢 -->
+		<form th:action="@{/scenery/search}" method="post"
+			class="d-flex justify-content-center my-4" role="search">
+			<input class="form-control me-2 w-50" type="search" name="keyword"
+				placeholder="搜尋景點名稱或標籤" aria-label="Search scenery" required>
+			<button class="btn btn-outline-primary" type="submit">搜尋景點</button>
+		</form>
 
-        <div th:each="scenery : ${sceneryList}" class="border rounded p-3 my-3 shadow-sm">
-            <h4 th:text="${scenery.sceneryName}">景點名稱</h4>
-            <p th:text="${scenery.sceneryIntro}">景點介紹</p>
-            <img th:if="${scenery.imageUrl != null}" th:src="@{${scenery.imageUrl}}" alt="景點圖片" class="img-fluid rounded mb-2" />
-            <img th:if="${scenery.imageUrl == null}" th:src="@{/images/sample.png}" alt="預設景點圖" class="img-fluid rounded mb-2" />
-        </div>
-    </div>
-    
-    <form th:action="@{/ticketlist}" method="get" class="d-flex justify-content-center my-4" role="search">
-	    <input class="form-control me-2 w-50" type="search" name="keyword" placeholder="搜尋票券名稱" aria-label="Search">
-	    <button class="btn btn-outline-success" type="submit">搜尋</button>
-	</form>
-    
+		<div th:if="${homepageImages != null and #lists.size(homepageImages) > 0}" class="my-4">
+			<div id="bannerSlider" class="position-relative">
+				<img th:each="img, stat : ${homepageImages}" th:src="@{${img}}"
+					th:classappend="${stat.index == 0} ? 'd-block' : 'd-none'"
+					class="img-fluid w-100 rounded banner-img" />
+			</div>
+		</div>
 
-    <!-- 🎫 熱門票券 -->
-    <section class="mt-5">
-        <h2 class="mb-3">🔥 熱門票券</h2>
-        <div class="position-relative">
-            <button class="btn btn-outline-secondary position-absolute top-50 start-0 translate-middle-y z-3"
-			        onclick="scrollTicketLeft()">⬅</button>
-			<button class="btn btn-outline-secondary position-absolute top-50 end-0 translate-middle-y z-3"
-			        onclick="scrollTicketRight()">➡</button>
+		<form th:action="@{/ticketlist}" method="get"
+			class="d-flex justify-content-center my-4" role="search">
+			<input class="form-control me-2 w-50" type="search" name="keyword"
+				placeholder="搜尋票券名稱" aria-label="Search">
+			<button class="btn btn-outline-success" type="submit">搜尋</button>
+		</form>
 
-            <div id="ticketScroll" class="d-flex overflow-auto gap-3 px-4 py-2" style="scroll-behavior: smooth;">
-                <div th:each="ticket : ${ticketList}" class="card" style="min-width: 250px;">
-                    <img th:if="${ticket['ticketImageBase64'] != null}"
-                         th:src="'data:image/png;base64,' + ${ticket['ticketImageBase64']}"
-                         class="card-img-top" style="height: 150px; object-fit: cover;" alt="票券圖片">
-                    <img th:if="${ticket['ticketImageBase64'] == null}" th:src="@{/images/sample.png}"
-                         class="card-img-top" style="height: 150px; object-fit: cover;" alt="預設圖片">
-                    <div class="card-body">
-                        <h5 class="card-title" th:text="${ticket['ticketName']}">票券名稱</h5>
-                        <p class="card-text text-muted mb-0">
-                            <span th:text="${#numbers.formatDecimal(ticket['ticketPrice'], 0, 'POINT', 2, 'COMMA')}"></span> 元
-                        </p>
-                    </div>
-                </div>
 
-                <!-- 查看更多 -->
-                <div class="card bg-light d-flex align-items-center justify-content-center" style="min-width: 250px;">
-                    <a th:href="@{/ticketlist}" class="stretched-link text-decoration-none text-dark text-center">
-                        <div class="p-4">
-                            <h5>查看更多票券</h5>
-                            <span style="font-size: 2rem;">➕</span>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-</div>
+		<!-- 🎫 熱門票券 -->
+		<section class="mt-5">
+			<h2 class="mb-3">🔥 熱門票券</h2>
+			<div class="position-relative">
+				<button
+					class="btn btn-outline-secondary position-absolute top-50 start-0 translate-middle-y z-3"
+					onclick="scrollTicketLeft()">⬅</button>
+				<button
+					class="btn btn-outline-secondary position-absolute top-50 end-0 translate-middle-y z-3"
+					onclick="scrollTicketRight()">➡</button>
 
-<footer class="text-center mt-5 mb-3 text-muted">
-    &copy; 2025 台鴿旅遊 Tiger Travel. All rights reserved.
-</footer>
+				<div id="ticketScroll" class="d-flex overflow-auto gap-3 px-4 py-2"
+					style="scroll-behavior: smooth;">
+					<div th:each="ticket : ${ticketList}" class="card"
+						style="min-width: 250px;">
+						<img th:if="${ticket['ticketImageBase64'] != null}"
+							th:src="'data:image/png;base64,' + ${ticket['ticketImageBase64']}"
+							class="card-img-top" style="height: 150px; object-fit: cover;"
+							alt="票券圖片"> <img
+							th:if="${ticket['ticketImageBase64'] == null}"
+							th:src="@{/images/sample.png}" class="card-img-top"
+							style="height: 150px; object-fit: cover;" alt="預設圖片">
+						<div class="card-body">
+							<h5 class="card-title" th:text="${ticket['ticketName']}">票券名稱</h5>
+							<p class="card-text text-muted mb-0">
+								<span
+									th:text="${#numbers.formatDecimal(ticket['ticketPrice'], 0, 'POINT', 2, 'COMMA')}"></span>
+								元
+							</p>
+						</div>
+					</div>
 
-<script>
-    function scrollTicketLeft() {
-        document.getElementById('ticketScroll').scrollLeft -= 300;
-    }
-    function scrollTicketRight() {
-        document.getElementById('ticketScroll').scrollLeft += 300;
-    }
-</script>
+					<!-- 查看更多 -->
+					<div
+						class="card bg-light d-flex align-items-center justify-content-center"
+						style="min-width: 250px;">
+						<a th:href="@{/ticketlist}"
+							class="stretched-link text-decoration-none text-dark text-center">
+							<div class="p-4">
+								<h5>查看更多票券</h5>
+								<span style="font-size: 2rem;">➕</span>
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+		</section>
+	</div>
 
+	<footer class="text-center mt-5 mb-3 text-muted"> &copy; 2025
+		台鴿旅遊 Tiger Travel. All rights reserved. </footer>
+
+	<script>
+		function scrollTicketLeft() {
+			document.getElementById('ticketScroll').scrollLeft -= 300;
+		}
+		function scrollTicketRight() {
+			document.getElementById('ticketScroll').scrollLeft += 300;
+		}
+		
+		document.addEventListener('DOMContentLoaded', () => {
+		    const images = document.querySelectorAll('#bannerSlider .banner-img');
+		    if (images.length <= 1) return; // Don't cycle if only 1 image
+
+		    let currentIndex = 0;
+
+		    setInterval(() => {
+		        images[currentIndex].classList.remove('d-block');
+		        images[currentIndex].classList.add('d-none');
+
+		        currentIndex = (currentIndex + 1) % images.length;
+
+		        images[currentIndex].classList.remove('d-none');
+		        images[currentIndex].classList.add('d-block');
+		    }, 20000); // 20 seconds
+		});
+	</script>
 </body>
 </html>

@@ -71,6 +71,9 @@ public class SceneryVO implements java.io.Serializable {
     
     @OneToMany(mappedBy = "scenery", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<SceneryImageVO> sceneryImages = new HashSet<>();
+    
+    @Transient
+    private String imageUrl;
 
     public Set<SceneryImageVO> getSceneryImages() {
         return sceneryImages;
@@ -208,5 +211,18 @@ public class SceneryVO implements java.io.Serializable {
     public void setSceneryStatus(Integer sceneryStatus) {
         this.sceneryStatus = sceneryStatus;
     }
+    
+    public String getImageUrl() {
+        return imageUrl;
+    }
 
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+    
+    @Transient
+    private String ratingStars;
+
+    public String getRatingStars() { return ratingStars; }
+    public void setRatingStars(String ratingStars) { this.ratingStars = ratingStars; }
 }
