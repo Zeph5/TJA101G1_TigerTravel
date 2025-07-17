@@ -365,6 +365,12 @@ public class TravelPlanServiceImpl implements TravelPlanService {
         return previewDTO;
     }
 
+    @Override
+    public List<TravelPlan> searchByTitle(String keyword) {
+        return travelPlanRepository.findByTravelTitleContaining(keyword);
+    }
+
+
 
 
 }

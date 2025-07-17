@@ -27,4 +27,8 @@ public class MemberTicketOrderService {
         return ticketOrderRepo.findByMemberId(memberId);
     }
     
+//    public List<TicketOrder> findByMember(memVO member) {
+//        return ticketOrderRepo.findByMember(member);
+//    }
+    
 }

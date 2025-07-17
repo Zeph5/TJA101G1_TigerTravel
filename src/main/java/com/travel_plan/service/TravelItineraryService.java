@@ -38,6 +38,10 @@ public interface TravelItineraryService {
 	List<TravelItinerary> getItinerariesByTravelPlanId(Integer planId);
 	
 	
+	//01新增
+	Optional<TravelItinerary> findById(Integer id);
+	TravelItinerary save(TravelItinerary itinerary);
+
 	//保存和更新行程梯次
 	TravelItinerary saveTravelItineraryFromDto(@Valid TravelItineraryDTO travelItineraryDto);
 	TravelItinerary updateTravelItineraryFromDto(@Valid TravelItineraryDTO travelItineraryDto);

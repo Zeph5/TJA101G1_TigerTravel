@@ -21,4 +21,7 @@ public class MemberTicketOrderReceiptService {
     public List<TicketOrderReceipt> getReceiptsByOrder(TicketOrder order) {
         return ticketOrderReceiptRepository.findByOrder(order);
     }
+    
+    
+    
 }

@@ -155,6 +155,17 @@ public class TravelItineraryServiceImpl implements TravelItineraryService {
 	
 	}
 	
+	
+	//01新增
+	@Override
+	public Optional<TravelItinerary> findById(Integer id) {
+		return travelItineraryRepository.findById(id);
+	}
+	@Override 
+	public TravelItinerary save(TravelItinerary itinerary) {
+	    return travelItineraryRepository.save(itinerary); // 正確傳TravelItinerary
+	}
+	
 }
 	
 

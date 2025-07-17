@@ -20,7 +20,6 @@
                 <span th:case="*">未知</span>
             </span>
         </p>
-        <p>【DEBUG】下單時間原始值：<span th:text="${order.orderDatetime}">時間</span></p>
         <p th:if="${order.orderDatetime != null}">
 		    下單時間：
 		    <span th:text="${#temporals.format(order.orderDatetime, 'yyyy/MM/dd HH:mm')}"></span>
@@ -41,29 +40,39 @@
         <p class="text-muted">此訂單尚無票券明細。</p>
     </div>
 
-    <div th:each="receipt : ${receipts}" class="mb-4 border p-3 rounded">
-        <h5>票券資訊</h5>
+    <div th:each="receipt : ${receipts}" class="mb-4 border p-3 rounded shadow-sm">
+	    <h5 class="mb-3">🎫 票券資訊</h5>
+	
+	    <!-- 圖片 -->
+	    <div class="mb-2">
+	        <img th:if="${ticketImageMap[receipt.ticketOrderReceiptId] != null}"
+	             th:src="'data:image/jpeg;base64,' + ${ticketImageMap[receipt.ticketOrderReceiptId]}"
+	             style="max-width: 200px; border: 1px solid #ccc; border-radius: 5px;"
+	             alt="票券圖片" />
+	
+	        <p th:if="${ticketImageMap[receipt.ticketOrderReceiptId]} == null" class="text-muted">尚無圖片</p>
+	    </div>
+	
+	    <!-- 名稱與數量 -->
+	    <p class="mb-1">
+	        <strong>票券名稱：</strong>
+	        <span th:if="${ticketMap[receipt.ticketOrderReceiptId] != null}"
+	              th:text="${ticketMap[receipt.ticketOrderReceiptId].ticketName}"></span>
+	    </p>
+	
+	    <p>
+		    <strong>數量：</strong>
+		    <span th:text="${receipt.ticketCount} + ' 張'">1 張</span>
+		</p>
 
-        <!-- 圖片 -->
-        <div th:if="${ticketImageMap[receipt.ticketOrderReceiptId] != null}">
-            <img th:src="'data:image/jpeg;base64,' + ${ticketImageMap[receipt.ticketOrderReceiptId]}" style="max-width: 200px;" alt="票券圖片" />
-        </div>
-        <div th:if="${ticketImageMap[receipt.ticketOrderReceiptId]} == null">
-            <p class="text-muted">尚無圖片</p>
-        </div>
 
-        <!-- 票券名稱 -->
-        <p>
-            票券名稱：
-            <span th:if="${ticketMap[receipt.ticketOrderReceiptId] != null}"
-			      th:text="${ticketMap[receipt.ticketOrderReceiptId].ticketName}">
-			    票券名稱
-			</span>
+	</div>
 
-        </p>
-    </div>
 
-    <a th:href="@{/member/detail/ticket/orders}" class="btn btn-secondary">← 返回訂單列表</a>
+    <div class="text-end">
+	    <a th:href="@{/member/orders}" class="btn btn-secondary">← 返回訂單列表</a>
+	</div>
+
 
 </body>
 </html>
