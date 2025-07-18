@@ -15,7 +15,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import com.manager.config.LoginSuccessHandler;
 import com.manager.security.ManagerUserDetailService;
+import com.manager.service.CustomManagerDetailsService;
 import com.member.security.CustomAuthenticationFailureHandler; // 如果您還需要這個
 import com.member.security.MemberUserDetailsService;
 
@@ -24,16 +26,19 @@ import com.member.security.MemberUserDetailsService;
 public class SecurityConfig {
 
     private final MemberUserDetailsService memberUserDetailsService;
-    private final ManagerUserDetailService managerUserDetailService;
-    private final CustomAuthenticationFailureHandler failureHandler; // 假設您還需要它
+    private final CustomManagerDetailsService managerUserDetailService;
+    private final CustomAuthenticationFailureHandler failureHandler;
+    private final LoginSuccessHandler loginSuccessHandler; // 假設您有這個處理器
 
     // 建構子注入所有依賴
     public SecurityConfig(MemberUserDetailsService memberUserDetailsService,
-                          ManagerUserDetailService managerUserDetailService,
-                          CustomAuthenticationFailureHandler failureHandler) { // 注入 failureHandler
+    		CustomManagerDetailsService managerUserDetailService,
+                          CustomAuthenticationFailureHandler failureHandler,
+                          LoginSuccessHandler loginSuccessHandler) { // 注入 failureHandler
         this.memberUserDetailsService = memberUserDetailsService;
-        this.managerUserDetailService = managerUserDetailService;
+        this.managerUserDetailService = managerUserDetailService;        
         this.failureHandler = failureHandler;
+        this.loginSuccessHandler = loginSuccessHandler; // 注入 loginSuccessHandler
     }
     
     @Bean
@@ -47,7 +52,7 @@ public class SecurityConfig {
                 ).formLogin(form -> form // 定義「怎麼登入」
                         .loginPage("/manager/login") // Manager 的登入頁面 URL
                         .loginProcessingUrl("/manager/login") // Manager 表單提交的 URL
-                        .defaultSuccessUrl("/manager/home", true) // 登入成功導向的 URL
+                        .successHandler(loginSuccessHandler)
                         .failureUrl("/manager/login?error") // 登入失敗導向的 URL
                         .permitAll())
                 .logout(logout -> logout
