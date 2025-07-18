@@ -1,8 +1,10 @@
 package com.member.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.member.model.FavoriteSceneryRepository;
@@ -12,6 +14,9 @@ import com.scenery.model.SceneryVO;
 
 @Service
 public class FavoriteSceneryService {
+	
+	@Autowired
+    private FavoriteSceneryRepository favoriteSceneryRepository;
 
 	private final FavoriteSceneryRepository favoriteSceneryRepo;
 	
@@ -24,5 +29,34 @@ public class FavoriteSceneryService {
         return favorites.stream()
                         .map(FavoriteSceneryVO::getScenery)
                         .collect(Collectors.toList());
+    }
+	
+	public boolean isFavorited(Integer memberId, Integer sceneryId) {
+        return favoriteSceneryRepository.existsByMember_MemberIdAndScenery_SceneryId(memberId, sceneryId);
+    }
+    
+    public void addFavorite(Integer memberId, Integer sceneryId) {
+        if (!isFavorited(memberId, sceneryId)) {
+            FavoriteSceneryVO favorite = new FavoriteSceneryVO();
+            
+            // Set member
+            memVO member = new memVO();
+            member.setMemberId(memberId);
+            favorite.setMember(member);
+            
+            // Set scenery
+            SceneryVO scenery = new SceneryVO();
+            scenery.setSceneryId(sceneryId);
+            favorite.setScenery(scenery);
+            
+            // Set create time
+            favorite.setCreateTime(LocalDateTime.now());
+            
+            favoriteSceneryRepository.save(favorite);
+        }
+    }
+    
+    public void removeFavorite(Integer memberId, Integer sceneryId) {
+        favoriteSceneryRepository.deleteByMember_MemberIdAndScenery_SceneryId(memberId, sceneryId);
     }
 }

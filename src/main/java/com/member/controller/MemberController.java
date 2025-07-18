@@ -3,12 +3,15 @@ package com.member.controller;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -423,12 +426,49 @@ public class MemberController {
     public String showFavorites(@AuthenticationPrincipal MemberUserDetails loginUser, Model model) {
         memVO member = loginUser.getMember();
 
+        // Get favorite travel plans
         List<TravelPlan> plans = favoriteTravelPlanSvc.getTravelPlansByMember(member);
+        
+        // Get favorite sceneries
         List<SceneryVO> sceneryFavorites = favortieScenerySvc.getFavoritesByMember(member);
+        
+        // Encode banner images for sceneries
+        for (SceneryVO scenery : sceneryFavorites) {
+            if (scenery.getSceneryBanner() != null) {
+                String base64Image = Base64.getEncoder().encodeToString(scenery.getSceneryBanner());
+                scenery.setImageUrl("data:image/png;base64," + base64Image);
+            }
+        }
         
         model.addAttribute("sceneryFavorites", sceneryFavorites);
         model.addAttribute("tourFavorites", plans);
         return "member/favorites";
+    }
+
+    // Add unfavorite endpoint
+    @PostMapping("/favorites/scenery/remove/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> removeFavoriteScenery(@PathVariable Integer id, 
+                                                                   @AuthenticationPrincipal MemberUserDetails loginUser) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            memVO member = loginUser.getMember();
+            
+            // Remove from favorites
+            favortieScenerySvc.removeFavorite(member.getMemberId(), id);
+            
+            response.put("success", true);
+            response.put("message", "已從收藏中移除");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            System.err.println("Error removing favorite scenery: " + e.getMessage());
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "操作失敗");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
     
 }
