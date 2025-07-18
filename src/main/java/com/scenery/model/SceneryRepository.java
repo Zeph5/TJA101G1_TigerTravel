@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -45,6 +46,24 @@ public interface SceneryRepository extends JpaRepository<SceneryVO, Integer> {
     	       "(:keyword IS NULL OR LOWER(s.sceneryName) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
     	       "AND s.sceneryStatus = 1")
     	Page<SceneryVO> searchByKeywordAndStatus(@Param("keyword") String keyword, Pageable pageable);
+    
+    @Query("SELECT s FROM SceneryVO s " +
+    	       "WHERE s.sceneryStatus = 1 " +
+    	       "ORDER BY " +
+    	       "CASE " +
+    	       "  WHEN s.sceneryTotalScoreCount IS NOT NULL AND s.sceneryTotalScoreCount > 0 AND s.sceneryTotalScore IS NOT NULL " +
+    	       "  THEN (CAST(s.sceneryTotalScore AS double) / CAST(s.sceneryTotalScoreCount AS double)) " +
+    	       "  ELSE 0.0 " +
+    	       "END DESC, " +
+    	       "s.sceneryId ASC")
+    	List<SceneryVO> findTop4ByHighestRating(Pageable pageable);
 
+    	// Helper method to update cached rating when scores change
+    	@Modifying
+    	@Query("UPDATE SceneryVO s SET s.sceneryTotalScore = :totalScore, s.sceneryTotalScoreCount = :totalCount WHERE s.sceneryId = :sceneryId")
+    	void updateCachedRating(@Param("sceneryId") Integer sceneryId, 
+    	                       @Param("totalScore") Integer totalScore, 
+    	                       @Param("totalCount") Integer totalCount);
+    	
 
 }
