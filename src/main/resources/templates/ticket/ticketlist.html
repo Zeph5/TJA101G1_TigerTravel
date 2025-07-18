@@ -156,6 +156,15 @@ window.onload = function() {
     updateCartView();
     restoreCheckboxState();
 }
+//防止未選票券直接送出表單
+document.getElementById('cartForm').addEventListener('submit', function(e) {
+    // selectedTickets 來自你的現有 JS (localStorage)
+    const selected = Object.keys(selectedTickets);
+    if (selected.length === 0) {
+        e.preventDefault();
+        alert('請先選擇票券後再放入購物車！');
+    }
+});
 </script>
 </body>
 </html>
