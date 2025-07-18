@@ -31,6 +31,7 @@ import com.scenery.model.SceneryImageRepository;
 import com.scenery.model.SceneryImageVO;
 import com.scenery.model.SceneryService;
 import com.member.model.memVO;
+import com.member.service.FavoriteSceneryService;
 import com.member.service.MemberService; // Fixed import path
 
 @Controller
@@ -48,6 +49,7 @@ public class SceneryController {
 
 	@Autowired
 	private MemberService memberService;
+	
 
 	// ===== ADMIN/BACKEND SCENERY MANAGEMENT =====
 
@@ -305,4 +307,6 @@ public class SceneryController {
 			return "ERROR: " + e.getMessage() + "<br>Check console for full stack trace";
 		}
 	}
+	
+	
 }

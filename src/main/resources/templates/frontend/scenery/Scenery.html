@@ -3,6 +3,8 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
 <meta charset="UTF-8" />
+<meta name="_csrf" th:content="${_csrf?.token}" th:if="${_csrf}"/>
+<meta name="_csrf_header" th:content="${_csrf?.headerName}" th:if="${_csrf}"/>
 <title th:text="${scenery.sceneryName}">Scenery Details</title>
 <style>
   /* 主色系設定 */
@@ -52,9 +54,59 @@
   .header-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .title-favorite-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+  }
+
+  .scenery-title {
+    margin: 0;
+    flex: 1;
+  }
+
+  .favorite-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #ddd;
+    transition: all 0.3s ease;
+    padding: 5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+  }
+
+  .favorite-btn:hover {
+    background-color: rgba(255, 182, 193, 0.2);
+    transform: scale(1.1);
+  }
+
+  .favorite-btn.favorited {
+    color: #ff6b6b;
+  }
+
+  .favorite-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .rating-container {
+    display: flex;
+    align-items: center;
     gap: 10px;
+    margin-top: 10px;
   }
 
   .stars {
@@ -63,7 +115,6 @@
   }
 
   .rating-number {
-    margin-left: 8px;
     font-weight: bold;
     color: #666;
   }
@@ -279,11 +330,44 @@
     text-decoration: underline;
   }
 
+  /* Notification styles */
+  .notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    z-index: 10000;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+  }
+
+  .notification.show {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .notification.success {
+    background-color: #4CAF50;
+  }
+
+  .notification.error {
+    background-color: #f44336;
+  }
+
   /* Responsive adjustments */
   @media (max-width: 600px) {
     .header-row {
       flex-direction: column;
       align-items: flex-start;
+    }
+
+    .title-favorite-container {
+      width: 100%;
+      justify-content: space-between;
     }
 
     .gallery img {
@@ -299,6 +383,12 @@
     .star-rating {
       justify-content: center;
     }
+
+    .favorite-btn {
+      font-size: 1.5rem;
+      width: 40px;
+      height: 40px;
+    }
   }
 </style>
 </head>
@@ -310,18 +400,43 @@
 
   <div class="details">
     <div class="header-row">
-      <h2 th:text="${scenery.sceneryName}">Scenery Name</h2>
-      <div>
-        <strong>Rating:</strong> 
-        <span class="stars"> 
-          <span th:each="i : ${#numbers.sequence(1,5)}">
-            <span th:if="${scenery.rating >= i}">&#9733;</span>
-            <span th:if="${scenery.rating < i and scenery.rating >= i - 0.5}" style="color: gold;">&#9733;</span> 
-            <span th:if="${scenery.rating < i - 0.5}" style="color: #ddd;">&#9733;</span>
-          </span>
-        </span> 
-        <span class="rating-number" th:text="${#numbers.formatDecimal(scenery.rating, 1, 1, 'POINT')}"></span>
+      <div class="title-favorite-container">
+        <h2 class="scenery-title" th:text="${scenery.sceneryName}">Scenery Name</h2>
+        
+        <!-- Favorite Button for Authenticated Users -->
+        <div sec:authorize="isAuthenticated()">
+          <button class="favorite-btn" 
+                  th:classappend="${isFavorited} ? 'favorited' : ''"
+                  th:attr="data-scenery-id=${scenery.sceneryId}"
+                  onclick="toggleFavorite(this)"
+                  title="加入收藏">
+            <span th:if="${isFavorited}">♥</span>
+            <span th:unless="${isFavorited}">♡</span>
+          </button>
+        </div>
+        
+        <!-- Favorite Button for Anonymous Users (disabled) -->
+        <div sec:authorize="isAnonymous()">
+          <button class="favorite-btn" 
+                  disabled
+                  title="請先登入以使用收藏功能">
+            ♡
+          </button>
+        </div>
       </div>
+    </div>
+
+    <!-- Rating moved below title -->
+    <div class="rating-container">
+      <strong>Rating:</strong> 
+      <span class="stars"> 
+        <span th:each="i : ${#numbers.sequence(1,5)}">
+          <span th:if="${scenery.rating >= i}">&#9733;</span>
+          <span th:if="${scenery.rating < i and scenery.rating >= i - 0.5}" style="color: gold;">&#9733;</span> 
+          <span th:if="${scenery.rating < i - 0.5}" style="color: #ddd;">&#9733;</span>
+        </span>
+      </span> 
+      <span class="rating-number" th:text="${#numbers.formatDecimal(scenery.rating, 1, 1, 'POINT')}"></span>
     </div>
 
     <div class="info-item">
@@ -495,6 +610,9 @@
   <img id="modalImage" src="" alt="Full Size Image" />
 </div>
 
+<!-- Notification -->
+<div id="notification" class="notification"></div>
+
 <script>
 function openModal(imgElement) {
   const modal = document.getElementById('modalOverlay');
@@ -586,6 +704,88 @@ function toggleMoreComments() {
     showMoreText.textContent = `顯示更多評論 (${remainingCount})`;
     showMoreBtn.style.backgroundColor = 'var(--sky-blue)';
   }
+}
+
+// Favorite functionality
+function toggleFavorite(button) {
+  const sceneryId = button.getAttribute('data-scenery-id');
+  const isFavorited = button.classList.contains('favorited');
+  
+  // Disable button during request
+  button.disabled = true;
+  
+  // Get CSRF token
+  const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || 
+                    document.querySelector('input[name="_token"]')?.value ||
+                    document.querySelector('input[name="_csrf"]')?.value;
+  const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
+  
+  // Determine action and endpoint
+  const action = isFavorited ? 'remove' : 'add';
+  const url = `/frontend/scenery/detail/${sceneryId}/favorite/${action}`;  // Original path for IndexController
+  
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest'
+  };
+  
+  // Add CSRF token if available
+  if (csrfToken) {
+    headers[csrfHeader] = csrfToken;
+  }
+  
+  fetch(url, {
+    method: 'POST',
+    headers: headers,
+    credentials: 'same-origin'
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (data.success) {
+      // Update button appearance
+      const heartIcon = button.querySelector('span');
+      if (isFavorited) {
+        // Remove from favorites
+        button.classList.remove('favorited');
+        heartIcon.textContent = '♡';
+        button.title = '加入收藏';
+        showNotification('已從收藏中移除', 'success');
+      } else {
+        // Add to favorites
+        button.classList.add('favorited');
+        heartIcon.textContent = '♥';
+        button.title = '移除收藏';
+        showNotification('已加入收藏', 'success');
+      }
+    } else {
+      showNotification(data.message || '操作失敗', 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showNotification('操作失敗，請稍後再試', 'error');
+  })
+  .finally(() => {
+    // Re-enable button
+    button.disabled = false;
+  });
+}
+
+function showNotification(message, type) {
+  const notification = document.getElementById('notification');
+  notification.textContent = message;
+  notification.className = `notification ${type}`;
+  notification.classList.add('show');
+  
+  // Auto-hide after 3 seconds
+  setTimeout(() => {
+    notification.classList.remove('show');
+  }, 3000);
 }
 </script>
 
