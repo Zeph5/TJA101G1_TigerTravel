@@ -18,6 +18,7 @@
                 <th>電話</th>
                 <th>狀態</th>
                 <th>註冊時間</th>
+                <th>操作</th>
             </tr>
         </thead>
         <tbody>
@@ -29,6 +30,10 @@
                 <td th:text="${member.memberPhone}">0912345678</td>
                 <td th:text="${member.memberStatus == 1 ? '啟用' : '停用'}">啟用</td>
                 <td th:text="${#dates.format(member.createTime, 'yyyy-MM-dd HH:mm')}">2025-07-17</td>
+                <td>
+                    <a th:href="@{'/admin/members/' + ${member.memberId}}" class="btn btn-sm btn-info">詳情</a>
+                    <a th:href="@{'/admin/members/edit/' + ${member.memberId}}" class="btn btn-sm btn-info">編輯</a>
+                </td>
             </tr>
         </tbody>
     </table>

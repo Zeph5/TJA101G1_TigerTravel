@@ -59,6 +59,7 @@ public class SecurityConfig {
         http.authenticationProvider(managerAuthenticationProvider);
         return http.build();
     }
+    @Bean
     @Order(2) // 放在 manager/member 後面處理
     public SecurityFilterChain adminFilterChain(HttpSecurity http,
                                                 AuthenticationProvider managerAuthenticationProvider) throws Exception {

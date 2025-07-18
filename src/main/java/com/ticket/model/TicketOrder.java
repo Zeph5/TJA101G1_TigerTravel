@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.hibernate.annotations.UpdateTimestamp;
+
 @Entity
 @Table(name = "ticket_order")
 public class TicketOrder {
@@ -28,6 +30,8 @@ public class TicketOrder {
 
     @Column(name = "manager_id")
     private Integer managerId;
+    
+
 
     // 關聯明細（多對一）
     @OneToMany(mappedBy = "ticketOrder", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

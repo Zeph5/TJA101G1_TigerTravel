@@ -7,7 +7,7 @@ import org.springframework.beans.BeanUtils;
 
 import org.springframework.stereotype.Service;
 
-import com.manager.model.DTO.memberListDTO;
+import com.manager.model.DTO.MemberListDTO;
 import com.manager.service.AdminMemberService;
 import com.member.model.MemberRepository;
 import com.member.model.memVO;
@@ -20,13 +20,20 @@ public class AdminMemberServiceImpl implements AdminMemberService {
 	public AdminMemberServiceImpl(MemberRepository memberRepository) {
 		this.memberRepository = memberRepository;
 	}
-
+	
 	@Override
-	public List<memberListDTO> findAllMembers() {
+	public MemberListDTO convertToDTO(memVO member) {
+		MemberListDTO dto = new MemberListDTO();
+		BeanUtils.copyProperties(member, dto);
+		return dto;
+	}
+	
+	@Override
+	public List<MemberListDTO> findAllMembers() {
 		List<memVO> members = memberRepository.findAll();
 		// 將 List 轉為 Stream，然後進行映射
 		return members.stream().map(member -> {
-			memberListDTO dto = new memberListDTO();
+			MemberListDTO dto = new MemberListDTO();
 			BeanUtils.copyProperties(member, dto);
 			return dto;
 		}).toList();
@@ -34,13 +41,33 @@ public class AdminMemberServiceImpl implements AdminMemberService {
 	}
 
 	@Override
-	public Optional<memberListDTO> findMemberById(Integer id) {
+	public MemberListDTO findMemberById(Integer id) {		
+		memVO member = memberRepository.findById(id) // <--回傳Optional<memVO>
+				.orElseThrow(() -> new RuntimeException("Member not found with id: " + id));
+		return convertToDTO(member);		
+	}
 
-		return memberRepository.findById(id) // <-- 這裡返回的就是 Optional<memVO>
-				.map(member -> { // Optional 自己就有 map() 方法
-					memberListDTO dto = new memberListDTO();
-					BeanUtils.copyProperties(member, dto);
-					return dto; // 返回 Optional<memberListDTO>
-				});
+	@Override
+	public void updateMember(Integer id, MemberListDTO updatedMember) {
+		Optional<memVO> optionalMember = memberRepository.findById(id);
+		if (optionalMember.isPresent()) {
+			memVO existingMember = optionalMember.get();
+			existingMember.setMemberName(updatedMember.getMemberName());
+			existingMember.setMemberEmail(updatedMember.getMemberEmail());
+			existingMember.setMemberPhone(updatedMember.getMemberPhone());
+			memberRepository.save(existingMember); // 保存更新後的會員資料
+		} else {
+			throw new RuntimeException("Member not found with id: " + id);
+		}		
+	}
+
+	@Override
+	public void toggleMemberStatus(Integer id) {
+		memberRepository.findById(id).ifPresent(member -> {
+			byte currentStatus = member.getMemberStatus();
+			member.setMemberStatus(currentStatus == 1 ?(byte) 0 :(byte) 1); // 切換會員狀態
+			memberRepository.save(member); // 保存更新後的會員資料
+		});
+		
 	}
 }

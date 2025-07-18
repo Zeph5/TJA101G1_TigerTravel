@@ -44,6 +44,13 @@ public class TourOrderVO {
     @Column(name = "create_time", nullable = false, updatable = false)
     @CreatedDate
     private LocalDateTime createTime;
+    
+    
+    @Column(name = "card_last_four")
+    private String cardLastFour;
+
+    @Column(name = "card_expiry_date")
+    private String cardExpiryDate;
 
     // ✅ 關聯到 TravelItinerary
     @ManyToOne(fetch = FetchType.LAZY)
@@ -57,7 +64,7 @@ public class TourOrderVO {
     
     public TourOrderVO(Integer tourOrderId, memVO member, Integer travelItineraryId, Integer tourPrice,
 			Integer totalAmount, Integer totalAfterCoupon, String tourOrderStatus, LocalDateTime createTime,
-			TravelItinerary travelItinerary , Set<TouristVO> tourists) {
+			TravelItinerary travelItinerary , Set<TouristVO> tourists,String cardExpiryDate,String cardLastFour) {
 		super();
 		this.tourOrderId = tourOrderId;
 		this.member = member;
@@ -69,9 +76,27 @@ public class TourOrderVO {
 		this.createTime = createTime;
 		this.travelItinerary = travelItinerary;
 		this.tourists = tourists;
+		this.cardExpiryDate = cardExpiryDate;
+		this.cardLastFour = cardLastFour;
 	}
     
-    public Integer getPeopleCount() {
+    public String getCardLastFour() {
+		return cardLastFour;
+	}
+
+	public void setCardLastFour(String cardLastFour) {
+		this.cardLastFour = cardLastFour;
+	}
+
+	public String getCardExpiryDate() {
+		return cardExpiryDate;
+	}
+
+	public void setCardExpiryDate(String cardExpiryDate) {
+		this.cardExpiryDate = cardExpiryDate;
+	}
+
+	public Integer getPeopleCount() {
         return peopleCount;
     }
     

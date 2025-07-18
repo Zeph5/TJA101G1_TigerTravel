@@ -1,0 +1,241 @@
+body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f0f2f5; /* 淺灰色背景 */
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px; /* 限制內容寬度 */
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+
+        h1 {
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 .order-id {
+            color: #007bff;
+        }
+
+        /* 訂單狀態標籤 */
+        .order-status-badge {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* 不同狀態的顏色 */
+        .status-pending { background-color: #ffc107; } /* 橙色 */
+        .status-paid { background-color: #28a745; } /* 綠色 */
+        .status-shipped { background-color: #17a2b8; } /* 藍綠色 */
+        .status-completed { background-color: #6f42c1; } /* 紫色 */
+        .status-cancelled { background-color: #dc3545; } /* 紅色 */
+        .status-default { background-color: #6c757d; } /* 灰色 */
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 資訊卡片 */
+        .info-card {
+            background-color: #fdfdfd;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-card h3 {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #34495e;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #e9ecef;
+        }
+
+        .info-group {
+            display: flex;
+            flex-wrap: wrap; /* 讓內容換行 */
+            gap: 15px 30px; /* 列與行之間的間距 */
+        }
+
+        .info-item {
+            flex: 1 1 calc(50% - 15px); /* 兩欄佈局，考慮 gap */
+            min-width: 250px; /* 最小寬度避免內容過擠 */
+        }
+
+        .info-item strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        .info-item span {
+            font-size: 1.1em;
+            color: #2c3e50;
+            word-break: break-all; /* 防止長文字溢出 */
+        }
+
+        /* 表格樣式 */
+        .table-responsive {
+            overflow-x: auto; /* 在小螢幕上允許水平滾動 */
+            margin-top: 20px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: #fdfdfd;
+            border-radius: 6px;
+            overflow: hidden; /* 確保圓角生效 */
+        }
+
+        .table thead th {
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .table tbody td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+            font-size: 0.95em;
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* 總金額特殊樣式 */
+        .total-amount-row td {
+            font-weight: bold;
+            font-size: 1.1em;
+            background-color: #eaf0f6; /* 輕微的背景色區別 */
+            border-top: 2px solid #ced4da;
+        }
+        .total-amount-row td:last-child {
+            color: #e74c3c; /* 紅色強調金額 */
+            font-size: 1.2em;
+        }
+
+        /* 操作按鈕 */
+        .actions {
+            display: flex;
+            gap: 15px; /* 按鈕間距 */
+            justify-content: flex-end; /* 右對齊 */
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 25px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: #fff;
+            border: 1px solid #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: #fff;
+            border: 1px solid #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #5a6268;
+        }
+
+        .btn-outline-secondary {
+            background-color: transparent;
+            color: #6c757d;
+            border: 1px solid #6c757d;
+        }
+        .btn-outline-secondary:hover {
+            background-color: #e2e6ea;
+            color: #333;
+        }
+
+        /* 細節中的小圖示（如果需要） */
+        .icon {
+            margin-right: 8px;
+            color: #888;
+        }
+        /* 實際使用時，你需要引入 font-awesome 等圖示庫 */
+
+        /* 響應式調整 */
+        @media (max-width: 768px) {
+            .info-item {
+                flex: 1 1 100%; /* 小螢幕下變為單欄 */
+            }
+            .info-group {
+                flex-direction: column;
+            }
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            h1 .order-id {
+                margin-top: 10px;
+            }
+            .actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }

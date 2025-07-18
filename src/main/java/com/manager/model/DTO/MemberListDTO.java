@@ -2,7 +2,7 @@ package com.manager.model.DTO;
 
 import java.sql.Timestamp;
 
-public class memberListDTO {
+public class MemberListDTO {
 	private Integer memberId;
 	private String memberAccount;
 	private String memberName;

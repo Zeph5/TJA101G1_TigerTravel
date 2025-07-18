@@ -3,13 +3,20 @@ package com.manager.service;
 import java.util.List;
 import java.util.Optional;
 
-import com.manager.model.DTO.memberListDTO;
+import com.manager.model.DTO.MemberListDTO;
+import com.member.model.memVO;
 
 public interface AdminMemberService {
 
-	List<memberListDTO> findAllMembers();
+	List<MemberListDTO> findAllMembers();
 
-	Optional<memberListDTO> findMemberById(Integer id);
+	MemberListDTO findMemberById(Integer id);
+
+	void updateMember(Integer id, MemberListDTO updatedMember);
+
+	void toggleMemberStatus(Integer id);
+
+	MemberListDTO convertToDTO(memVO member);
 	
 
 }

@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.*;
 
@@ -37,6 +38,8 @@ public class memVO implements Serializable {
 
 	@Column(name = "mem_address")
 	private String memberAddress;
+	
+
 
 	@Lob
 	@Basic(fetch = FetchType.EAGER)

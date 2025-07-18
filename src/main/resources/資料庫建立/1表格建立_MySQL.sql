@@ -35,6 +35,7 @@ CREATE TABLE member (
     mem_status TINYINT NOT NULL,
     avatar LONGBLOB,
     create_time TIMESTAMP,
+   
     PRIMARY KEY (member_id)
 ) AUTO_INCREMENT = 1;
 
@@ -129,7 +130,7 @@ CREATE TABLE favorite_tour (
 
 CREATE TABLE travel_itinerary (
     travel_itinerary_id INTEGER NOT NULL AUTO_INCREMENT,
-    travel_plan_id INTEGER NOT NULL,
+    travel_plan_id INTEGER NOT NULL,last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     max_tourist INTEGER NOT NULL,
     total_price INTEGER NOT NULL,
     start_date DATE NOT NULL, 
@@ -173,7 +174,7 @@ CREATE TABLE tour_order (
     coupon_id INTEGER,
     total_after_coupon INTEGER NOT NULL,
     manager_id INTEGER,
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,    
     PRIMARY KEY (tour_order_id),
     FOREIGN KEY (travel_itinerary_id) REFERENCES travel_itinerary(travel_itinerary_id),
     FOREIGN KEY (coupon_id) REFERENCES coupon(coupon_id),
@@ -200,6 +201,7 @@ CREATE TABLE ticket_order (
     order_price DECIMAL(10,2) NOT NULL COMMENT '訂單總金額',
     order_status TINYINT DEFAULT 0 COMMENT '訂單狀態（0=未付款, 1=已付款, 2=已取消）',
     order_datetime DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '下單時間',
+    
     manager_id INT COMMENT '負責處理訂單的管理員ID',
     FOREIGN KEY (member_id) REFERENCES member(member_id),
     FOREIGN KEY (manager_id) REFERENCES manager(manager_id)
