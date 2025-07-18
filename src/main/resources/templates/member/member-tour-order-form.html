@@ -4,50 +4,84 @@
     <meta charset="UTF-8">
     <title>訂購旅程</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 加個Bootstrap Icons，免費又好用，給emoji替代或圖標 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-<body class="container mt-5">
-    <h2 class="mb-4 text-primary">訂購旅程</h2>
+<body class="bg-light"> <!-- 淺灰背景，讓頁面不那麼白 -->
 
-    <form action="/member/tour-order/create" method="post">
-        <!-- 隱藏旅行ID -->
-        <input type="hidden" name="travelItineraryId" th:value="${itinerary.travelItineraryId}" />
 
-        <div class="mb-3">
-            <label for="peopleCount" class="form-label">人數：</label>
-            <input type="number" name="peopleCount" id="peopleCount" class="form-control" min="1" max="10" required />
-            <small class="form-text text-muted">請輸入 1-10 人</small>
+    <div class="container mt-5"> <!-- 包container，內容居中，頂部留白 -->
+        <h2 class="text-center mb-4 text-primary"><i class="bi bi-airplane-fill"></i> 訂購旅程 - 確認行程細節</h2> <!-- 加圖標和顏色 -->
+
+        <!-- 顯示行程資訊，包成card -->
+        <div th:if="${itinerary != null}" class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h3 class="card-title text-success">行程標題： <span th:text="${itinerary.travelPlan.travelTitle}"></span></h3>
+                <p class="card-text"><strong>出發日期：</strong> <span th:text="${itinerary.startDate}"></span></p>
+                <p class="card-text"><strong>結束日期：</strong> <span th:text="${itinerary.endDate}"></span></p>
+                <p class="card-text"><strong>總價格（單人）：</strong> <span th:text="${itinerary.totalPrice}"></span> 元</p>
+                <p class="card-text"><strong>最大人數上限：</strong> <span th:text="${itinerary.maxTourist}"></span> 人</p>
+                <!-- 如果想加描述： <p class="card-text"><strong>行程描述：</strong> <span th:text="${itinerary.travelPlan.travelDescription}"></span></p> -->
+            </div>
+        </div>
+        <div th:if="${itinerary == null}" class="alert alert-warning text-center mb-4">
+            <i class="bi bi-exclamation-triangle-fill"></i> ⚠️ 無法載入行程資訊，請檢查 planId 或聯絡管理員！
+        </div>
+		
+        <!-- 表單區，也包成card -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form action="/member/tour-order/create" method="post">
+                    <!-- 隱藏旅行ID -->
+                    <input type="hidden" name="travelItineraryId" th:value="${itinerary.travelItineraryId}" />
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                    <div class="mb-3">
+					    <label for="peopleCount" class="form-label"><i class="bi bi-people-fill"></i> 參團人數：</label>
+					    <select name="peopleCount" id="peopleCount" class="form-select" required th:disabled="${itinerary == null}">
+					        <option value="">請選擇人數 (上限 <span th:text="${itinerary.maxTourist ?: '未知'}"></span> 人)</option> <!-- 小調：加提示文字 -->
+					        <th:block th:each="i : ${#numbers.sequence(1, itinerary.maxTourist)}">
+					            <option th:value="${i}" th:text="${i} + ' 人'"></option>
+					        </th:block>
+					    </select>
+					</div>
+
+                    <!-- 動態旅客容器 -->
+                    <div id="touristsContainer" class="mb-3"></div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100"><i class="bi bi-check-circle-fill"></i> 提交訂單</button> <!-- 加大全寬按鈕 -->
+                </form>
+            </div>
         </div>
 
-        <!-- 動態旅客容器 -->
-        <div id="touristsContainer" class="mb-3"></div>
-
-        <button type="submit" class="btn btn-primary">提交訂單</button>
-    </form>
-
-    <div class="mt-4">
-        <a href="/member/travel/list" class="btn btn-secondary">返回訂單列表</a>
+        <div class="text-center mt-4">
+            <a href="/member/travel/list" class="btn btn-secondary"><i class="bi bi-arrow-left-circle"></i> 返回行程列表</a> <!-- 改成返回列表，符合上下文 -->
+        </div>
     </div>
 
     <script>
-        const peopleCountInput = document.getElementById('peopleCount');
-        const touristsContainer = document.getElementById('touristsContainer');
+	    const peopleCountSelect = document.getElementById('peopleCount');
+	    const touristsContainer = document.getElementById('touristsContainer');
+	
+	    peopleCountSelect.addEventListener('change', function () {
+	        const count = parseInt(this.value) || 0;
+	        touristsContainer.innerHTML = '';
+	
+	        for (let i = 0; i < count; i++) {
+	            const touristDiv = document.createElement('div');
+	            touristDiv.className = 'border-bottom pb-3 mb-3';
+	            touristDiv.innerHTML = `
+	                <h5 class="text-muted">旅客 ${i + 1}</h5>
+	                <input type="text" name="touristName${i}" placeholder="姓名" class="form-control mb-2" required />
+	                <input type="text" name="touristPersonalId${i}" placeholder="身分證" class="form-control mb-2" required />
+	                <input type="text" name="contactNumber${i}" placeholder="連絡電話" class="form-control" required />
+	            `;
+	            touristsContainer.appendChild(touristDiv);
+	        }
+	    });
+	</script>
 
-        peopleCountInput.addEventListener('input', function() {
-            const count = parseInt(this.value) || 0;
-            touristsContainer.innerHTML = ''; // 清空舊欄位
-
-            for (let i = 0; i < count; i++) {
-                const touristDiv = document.createElement('div');
-                touristDiv.className = 'mb-3';
-                touristDiv.innerHTML = `
-                    <h5>旅客 ${i + 1}</h5>
-                    <input type="text" name="touristName${i}" placeholder="姓名" class="form-control mb-2" required />
-                    <input type="text" name="touristPersonalId${i}" placeholder="身分證" class="form-control mb-2" required />
-                    <input type="text" name="contactNumber${i}" placeholder="連絡電話" class="form-control" required />
-                `;
-                touristsContainer.appendChild(touristDiv);
-            }
-        });
-    </script>
+    <!-- 你提供的script，保持原樣 -->
+    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96092877ad51a367',t:'MTc1Mjc0OTIxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
