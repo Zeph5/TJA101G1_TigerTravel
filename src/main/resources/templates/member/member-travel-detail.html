@@ -37,30 +37,30 @@
 		</div>
 
     <h4 class="mb-3 text-success"><i class="bi bi-calendar-event"></i> 多天行程表</h4> <!-- 加綠色文字和 icon -->
-    <div th:each="day : ${dayList}" class="mb-4 p-3 border rounded shadow-sm day-card">
-        <h5 th:text="'第 ' + ${day.travelDayNumber} + ' 天'" class="fw-bold text-secondary"></h5>
-        <p><i class="bi bi-calendar-check"></i> 旅遊日期：<span th:text="${#temporals.format(day.traveltime, 'yyyy-MM-dd')}"></span></p>
+    <div th:each="entry : ${groupedDays}">
+	    <div class="bg-white p-4 mb-4 border rounded shadow-sm">
+	        <h4 class="text-success mb-3">
+	            <i class="bi bi-calendar-event-fill"></i> 第 
+	            <span th:text="${entry.key}"></span> 天行程
+	        </h4>
+	
+	        <div th:each="day : ${entry.value}" class="row mb-3">
+	            <div class="col-md-4">
+	                <img th:if="${day.scenery != null && day.scenery.sceneryBanner != null}"
+	                     th:src="'data:image/jpeg;base64,' + ${T(org.apache.tomcat.util.codec.binary.Base64).encodeBase64String(day.scenery.sceneryBanner)}"
+	                     class="img-fluid rounded" alt="景點圖" />
+	                <img th:if="${day.scenery == null || day.scenery.sceneryBanner == null}"
+	                     th:src="@{/images/bannerSample.jpg}" class="img-fluid rounded" alt="預設圖" />
+	            </div>
+	            <div class="col-md-8">
+	                <p><strong>景點名稱：</strong> <span th:text="${day.scenery.sceneryName}">名稱</span></p>
+	                <p><strong>景點地址：</strong> <span th:text="${day.scenery.sceneryAddress}">地址</span></p>
+	                <p><strong>時間安排：</strong> <span th:text="${day.traveltime}">時間</span></p>
+	            </div>
+	        </div>
+	    </div>
+	</div>
 
-        <div class="row">
-            <div class="col-md-4">
-                <img th:if="${day.scenery.sceneryBanner != null}"
-                     th:src="'data:image/jpeg;base64,' + ${T(org.apache.tomcat.util.codec.binary.Base64).encodeBase64String(day.scenery.sceneryBanner)}"
-                     class="img-fluid rounded img-thumbnail"
-                     alt="景點圖片">
-                     
-                <img th:if="${day.scenery.sceneryBanner == null}"
-                     th:src="@{/images/bannerSample.jpg}"
-                     class="img-fluid rounded img-thumbnail"
-                     alt="預設圖片">
-            </div>
-
-            <div class="col-md-8">
-                <p><strong><i class="bi bi-pin-map-fill"></i> 景點名稱：</strong><span th:text="${day.scenery.sceneryName}"></span></p>
-                <p><strong><i class="bi bi-geo-alt-fill"></i> 景點地址：</strong><span th:text="${day.scenery.sceneryAddress}"></span></p>
-                <p><strong><i class="bi bi-tags-fill"></i> 景點編號：</strong><span th:text="${day.scenery.sceneryId}"></span></p>
-            </div>
-        </div>
-    </div>
 
 </body>
 </html>

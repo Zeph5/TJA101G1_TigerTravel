@@ -1,12 +1,16 @@
 package com.member.controller;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 
@@ -193,6 +197,7 @@ public class MemberTourOrderController {
 
 	}
 	
+	//觀看整個旅程清單
 	@GetMapping("/travel/list")
 	public String showPagedPlans(@RequestParam(defaultValue = "0") int page,
 	                             @RequestParam(defaultValue = "12") int size,
@@ -225,6 +230,7 @@ public class MemberTourOrderController {
 	    return "member/member-travel-list";
 	}
 
+	//查看指定旅程清單
 	@GetMapping("/travel/detail/{id}")
 	public String showTravelPlanDetail(@PathVariable("id") Integer planId, Model model) {
 	    Optional<TravelPlan> optionalPlan = travelPlanSvc.getTravelPlanEntityById(planId);
@@ -257,6 +263,13 @@ public class MemberTourOrderController {
 	        for (TravelPlanDay day : dayList) {
 	            System.out.println("Day " + day.getTravelDayNumber() + ": " + day.getTraveltime());
 	        }
+	        
+	        Map<Integer, List<TravelPlanDay>> groupedDays = new TreeMap<>();
+	        for (TravelPlanDay day : dayList) {
+	            groupedDays.computeIfAbsent(day.getTravelDayNumber(), k -> new ArrayList<>()).add(day);
+	        }
+	        
+	        model.addAttribute("groupedDays", groupedDays);
 	        model.addAttribute("dayList", dayList);
 	    }
 
@@ -281,43 +294,54 @@ public class MemberTourOrderController {
 	    memVO member = loginUser.getMember();
 	    order.setMember(member);
 	    order.setPeopleCount(peopleCount);
-	    order.setTourOrderStatus("待付款"); 
+	    order.setTourOrderStatus("待付款");
 
-	    // 驗證Itinerary（從Service找，基於CSV/DB）
+	    // 驗證Itinerary
 	    Optional<TravelItinerary> optItinerary = travelItinerarySvc.findById(order.getTravelItineraryId());
 	    if (optItinerary.isEmpty() || peopleCount > optItinerary.get().getMaxTourist()) {
 	        model.addAttribute("error", "行程不存在或人數超過上限！");
-	        return "member/member-tour-order-form"; // 導回表單
+	        return "member/member-tour-order-form";
 	    }
 	    TravelItinerary itinerary = optItinerary.get();
 
-	    // 計算（移到驗證後，避免重複和未定義）
-	    order.setTourPrice(itinerary.getTotalPrice().intValue()); // 假設單價
+	    // 訂單基本資料
+	    order.setTourPrice(itinerary.getTotalPrice().intValue());
 	    order.setTotalAmount(order.getTourPrice() * peopleCount);
-	    order.setTotalAfterCoupon(order.getTotalAmount()); // 無券時等總額，避null
-	    order.setTravelItinerary(itinerary); // 加這行存關聯entity
-	    order.setTravelItineraryId(itinerary.getTravelItineraryId()); // 已 OK
+	    order.setTotalAfterCoupon(order.getTotalAmount());
+	    order.setTravelItinerary(itinerary);
+	    order.setTravelItineraryId(itinerary.getTravelItineraryId());
 
-	    // 保存訂單
-	    TourOrderVO savedOrder = tourOrderSvc.save(order);
-
-	    // 保存旅客
+	    // 建立旅客集合
+	    Set<TouristVO> touristSet = new HashSet<>();
 	    for (int i = 0; i < peopleCount; i++) {
+	        String name = params.get("touristName" + i);
+	        String pid = params.get("touristPersonalId" + i);
+	        String phone = params.get("contactNumber" + i);
+
+	        System.out.println("🧾 收到旅客資訊: " + name + ", " + pid + ", " + phone);
+
 	        TouristVO tourist = new TouristVO();
-	        tourist.setTourOrder(savedOrder);
-	        tourist.setTouristName(params.get("touristName" + i));
-	        tourist.setTouristPersonalId(params.get("touristPersonalId" + i));
-	        tourist.setContactNumber(params.get("contactNumber" + i));
-	        touristSvc.save(tourist);
+	        tourist.setTourOrder(order); // 綁尚未儲存的 order 對象
+	        tourist.setTouristName(name);
+	        tourist.setTouristPersonalId(pid);
+	        tourist.setContactNumber(phone);
+
+	        touristSet.add(tourist); // 放進集合
 	    }
 
-	    model.addAttribute("orderId", savedOrder.getTourOrderId());
-	    // 更新Itinerary max_tourist（選加）
+	    // 綁進訂單物件
+	    order.setTourists(touristSet);
+
+	    // 儲存訂單與旅客一起寫入
+	    TourOrderVO savedOrder = tourOrderSvc.save(order);
+
+	    // 更新 maxTourist（選擇性）
 	    itinerary.setMaxTourist(itinerary.getMaxTourist() - peopleCount);
 	    travelItinerarySvc.save(itinerary);
 
-	    return "redirect:/member/orders";
+	    return "redirect:/member/simulate-payment?orderId=" + savedOrder.getTourOrderId();
 	}
+
 
 	@GetMapping("/tour-order/create")
 	public String showTourOrderForm(@RequestParam(value = "planId", required = false) Integer planId, Model model){
@@ -347,24 +371,89 @@ public class MemberTourOrderController {
 	                              @RequestParam("expiryDate") String expiryDate,
 	                              Model model) {
 
-	    // 模擬驗證規格（固定測試值）
-	    if ("4111111111111111".equals(cardNumber) && "123".equals(cvv) && "12/25".equals(expiryDate)) {
+	    System.out.println("✅ 進入 simulatePayment POST");
+	    System.out.println("➡️ 傳入卡號: " + cardNumber + ", CVV: " + cvv + ", 到期日: " + expiryDate);
+
+	    // ✅ 格式驗證：卡號（開頭為3~6，共16位數）
+	    if (!cardNumber.matches("^[3-6]\\d{15}$")) {
+	        model.addAttribute("error", "卡號格式錯誤，請輸入16位數字開頭為3~6的卡號！");
+	    } 
+	    // ✅ 格式驗證：CVV（三位數）
+	    else if (!cvv.matches("^\\d{3}$")) {
+	        model.addAttribute("error", "CVV 格式錯誤，請輸入3位數！");
+	    }
+	    // ✅ 格式驗證：到期日（MM/YY）
+	    else if (!expiryDate.matches("^(0[1-9]|1[0-2])/\\d{2}$")) {
+	        model.addAttribute("error", "到期日格式錯誤，請輸入 MM/YY 格式！");
+	    } 
+	    else {
+	        // 通過格式驗證，找訂單並更新狀態
 	        Optional<TourOrderVO> optionalOrder = tourOrderSvc.findById(orderId);
 	        if (optionalOrder.isPresent()) {
 	            TourOrderVO order = optionalOrder.get();
 	            order.setTourOrderStatus("已付款");
+
+	            // 儲存後四碼與到期日（遮罩）
+	            String lastFour = cardNumber.substring(cardNumber.length() - 4);
+	            order.setCardLastFour(lastFour);
+	            order.setCardExpiryDate(expiryDate);
+
 	            tourOrderSvc.save(order);
-	            return "redirect:/member/orders"; // 導回訂單列表看已付款
+	            return "redirect:/member/payment-success?orderId=" + orderId;
+	        } else {
+	            model.addAttribute("error", "找不到訂單！");
 	        }
 	    }
 
-	    model.addAttribute("error", "信用卡規格錯誤，請用測試值重試！");
-	    model.addAttribute("orderId", orderId); // 傳回重試
-	    return "member/simulate-payment"; // 錯回付費頁
+	    // ⛔ 失敗處理：回傳錯誤與訂單資訊
+	    model.addAttribute("orderId", orderId);
+	    tourOrderSvc.findById(orderId).ifPresent(order -> model.addAttribute("order", order));
+	    return "member/simulate-payment";
+	}
+
+	
+	@GetMapping("/simulate-payment")
+	public String showSimulatePayment(@RequestParam("orderId") Integer orderId, Model model) {
+	    
+		Optional<TourOrderVO> optionalOrder = tourOrderSvc.findById(orderId);
+		if (optionalOrder.isPresent()) {
+			model.addAttribute("order", optionalOrder.get());
+	        model.addAttribute("orderId", orderId);
+		} else {
+			model.addAttribute("error", "找不到訂單，請檢查！");
+	        return "redirect:/member/orders"; // 錯導回列表
+		}
+		
+		// 簡單傳 orderId 給 Thymeleaf（如果想加訂單細節，從 service 查 optionalOrder = tourOrderSvc.findById(orderId)，加到 model）
+	    model.addAttribute("orderId", orderId);
+	    return "member/simulate-payment"; // 返回你的支付 HTML
 	}
 
 
+	//付款成功頁面導向
+	@GetMapping("/payment-success")
+	public String showPaymentSuccess(@RequestParam("orderId") Integer orderId, Model model) {
+		System.out.println("✅ 到達 payment-success，訂單ID：\" + orderId");
+		
+	    Optional<TourOrderVO> optionalOrder = tourOrderSvc.findById(orderId);
+	    if (optionalOrder.isEmpty()) {
+	        model.addAttribute("error", "找不到訂單編號！");
+	        return "error-page"; // 或自訂錯誤頁
+	    }
+	    
+	    
+	    
 
+	    TourOrderVO order = optionalOrder.get();
+	    model.addAttribute("order", order);
+	    
+	    System.out.println("💡 付款成功畫面：order=" + order);
+	    System.out.println("💡 itinerary=" + order.getTravelItinerary());
+	    System.out.println("💡 plan=" + order.getTravelItinerary().getTravelPlan());
+
+	    
+	    return "member/payment-success"; // 要建立對應的 HTML 頁面
+	}
 
 
 
