@@ -10,21 +10,28 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.*;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Base64;
 
 import com.scenery.model.SceneryVO;
+import com.scenery.model.SceneryScoreVO;
+import com.scenery.model.SceneryScoreRepository;
 import com.scenery.model.DTO.SceneryDTO;
 import com.scenery.model.SceneryImageRepository;
 import com.scenery.model.SceneryImageVO;
 import com.scenery.model.SceneryService;
+import com.member.model.memVO;
+import com.member.service.MemberService; // Fixed import path
 
 @Controller
 @RequestMapping("/scenery")
@@ -35,6 +42,14 @@ public class SceneryController {
 
 	@Autowired
 	private SceneryImageRepository sceneryImageRepository;
+
+	@Autowired
+	private SceneryScoreRepository sceneryScoreRepository;
+
+	@Autowired
+	private MemberService memberService;
+
+	// ===== ADMIN/BACKEND SCENERY MANAGEMENT =====
 
 	@GetMapping("/listallscenery")
 	public String listAllScenery(@RequestParam(value = "sceneryName", required = false) String sceneryName,
@@ -62,18 +77,6 @@ public class SceneryController {
 		return "scenery/listallscenery";
 	}
 
-	@GetMapping("/banner/{sceneryId}")
-	public ResponseEntity<byte[]> getSceneryBanner(@PathVariable Integer sceneryId) {
-		SceneryVO scenery = sceneryService.getById(sceneryId);
-		if (scenery == null || scenery.getSceneryBanner() == null) {
-			return ResponseEntity.notFound().build();
-		}
-
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.IMAGE_JPEG);
-		return new ResponseEntity<>(scenery.getSceneryBanner(), headers, HttpStatus.OK);
-	}
-
 	@GetMapping("/index")
 	public String sceneryIndex(Model model) {
 		return "scenery/sceneryindex";
@@ -93,6 +96,7 @@ public class SceneryController {
 		vo.setSceneryAddress(dto.getSceneryAddress());
 		vo.setSceneryLongitude(dto.getSceneryLongitude());
 		vo.setSceneryLatitude(dto.getSceneryLatitude());
+		vo.setSceneryStatus(1); // Set default status to active
 
 		MultipartFile file = dto.getSceneryBannerFile();
 		if (file != null && !file.isEmpty()) {
@@ -102,8 +106,6 @@ public class SceneryController {
 		sceneryService.addScenery(vo);
 		return "scenery/addsuccess";
 	}
-	
-	
 
 	@GetMapping("/updatescenery/{id}")
 	public String showUpdateScenery(@PathVariable Integer id, Model model) {
@@ -151,20 +153,6 @@ public class SceneryController {
 		return "redirect:/scenery/" + existing.getSceneryId();
 	}
 
-	@GetMapping("/{id}")
-	public String showSelectedScenery(@PathVariable("id") Integer id, Model model) {
-		SceneryVO scenery = sceneryService.getById(id);
-		if (scenery == null) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenery not found");
-		}
-
-		List<SceneryImageVO> images = sceneryService.getImagesBySceneryId(id);
-		model.addAttribute("scenery", scenery);
-		model.addAttribute("sceneryImages", images);
-
-		return "scenery/selectedscenery";
-	}
-
 	@PostMapping("/updatestatus")
 	public String updateSceneryStatus(@RequestParam("sceneryId") Integer sceneryId,
 			@RequestParam("sceneryStatus") Integer sceStatus) {
@@ -180,6 +168,53 @@ public class SceneryController {
 		}
 		sceneryService.addSceneryImage(sceneryId, imageFile);
 		return "redirect:/scenery/" + sceneryId;
+	}
+
+	@GetMapping("/deleteimage/{imageId}")
+	public String deleteSceneryImage(@PathVariable Integer imageId) {
+	    Optional<SceneryImageVO> imageOpt = sceneryImageRepository.findById(imageId);
+	    if (imageOpt.isPresent()) {
+	        SceneryImageVO image = imageOpt.get();
+	        Integer sceneryId = image.getScenery().getSceneryId();
+	        sceneryImageRepository.delete(image);
+	        return "redirect:/scenery/updatescenery/" + sceneryId;
+	    } else {
+	        return "redirect:/scenery/listallscenery";
+	    }
+	}
+
+	// ===== FRONTEND SCENERY VIEWING =====
+
+	@GetMapping("/{id}")
+	public String showSelectedScenery(@PathVariable("id") Integer id, Model model) {
+		SceneryVO scenery = sceneryService.getById(id);
+		if (scenery == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenery not found");
+		}
+
+		List<SceneryImageVO> images = sceneryService.getImagesBySceneryId(id);
+		model.addAttribute("scenery", scenery);
+		model.addAttribute("sceneryImages", images);
+
+		return "scenery/selectedscenery";
+	}
+
+	// Note: Frontend scenery detail page with comments is now handled by IndexController
+	// Route: /frontend/scenery/detail/{id} → IndexController.showSceneryDetail()
+	// Route: /frontend/scenery/detail/{id}/add-comment → IndexController.addComment()
+
+	// ===== IMAGE SERVING ENDPOINTS =====
+
+	@GetMapping("/banner/{sceneryId}")
+	public ResponseEntity<byte[]> getSceneryBanner(@PathVariable Integer sceneryId) {
+		SceneryVO scenery = sceneryService.getById(sceneryId);
+		if (scenery == null || scenery.getSceneryBanner() == null) {
+			return ResponseEntity.notFound().build();
+		}
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.IMAGE_JPEG);
+		return new ResponseEntity<>(scenery.getSceneryBanner(), headers, HttpStatus.OK);
 	}
 
 	@GetMapping("/image/{id}")
@@ -199,24 +234,75 @@ public class SceneryController {
 		headers.setContentType(MediaType.IMAGE_JPEG);
 		return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
 	}
-	
-	@GetMapping("/deleteimage/{imageId}")
-	public String deleteSceneryImage(@PathVariable Integer imageId) {
-	    // Find the image by id
-	    Optional<SceneryImageVO> imageOpt = sceneryImageRepository.findById(imageId);
-	    if (imageOpt.isPresent()) {
-	        SceneryImageVO image = imageOpt.get();
-	        Integer sceneryId = image.getScenery().getSceneryId(); // Get the associated scenery id
-	        
-	        // Delete the image
-	        sceneryImageRepository.delete(image);
-	        
-	        // Redirect back to the update scenery page
-	        return "redirect:/scenery/updatescenery/" + sceneryId;
-	    } else {
-	        // Image not found - redirect somewhere safe or show error
-	        return "redirect:/scenery/listallscenery";
-	    }
+
+	// ===== DEBUG ENDPOINT =====
+
+	@GetMapping("/debug/scenery/{id}")
+	@ResponseBody
+	public String debugScenery(@PathVariable("id") Integer id) {
+		try {
+			StringBuilder debug = new StringBuilder();
+			debug.append("=== SCENERY DEBUG INFO ===<br>");
+			
+			// Test basic scenery loading
+			SceneryVO scenery = sceneryService.getById(id);
+			if (scenery == null) {
+				return "Scenery not found for ID: " + id;
+			}
+			
+			debug.append("Scenery ID: ").append(scenery.getSceneryId()).append("<br>");
+			debug.append("Scenery Name: ").append(scenery.getSceneryName()).append("<br>");
+			debug.append("Scenery Status: ").append(scenery.getSceneryStatus()).append("<br>");
+			
+			// Test score loading
+			try {
+				List<SceneryScoreVO> scores = sceneryScoreRepository.findByScenery_SceneryIdOrderByCreateTimeDesc(id);
+				debug.append("Scores found: ").append(scores.size()).append("<br>");
+				
+				for (int i = 0; i < Math.min(3, scores.size()); i++) {
+					SceneryScoreVO score = scores.get(i);
+					debug.append("Score ").append(i+1).append(": ");
+					debug.append("Rating=").append(score.getScore());
+					
+					try {
+						memVO member = score.getMember();
+						if (member != null) {
+							debug.append(", Member Account=").append(member.getMemberAccount());
+							debug.append(", Member Name=").append(member.getMemberName() != null ? member.getMemberName() : "NULL");
+						} else {
+							debug.append(", Member=null");
+						}
+					} catch (Exception e) {
+						debug.append(", Member=ERROR: ").append(e.getMessage());
+					}
+					
+					debug.append(", Comment=").append(score.getSceneryComment() != null ? "YES" : "NO");
+					debug.append("<br>");
+				}
+			} catch (Exception e) {
+				debug.append("ERROR loading scores: ").append(e.getMessage()).append("<br>");
+				e.printStackTrace();
+			}
+			
+			// Test rating calculation
+			try {
+				Double rating = scenery.getRating();
+				debug.append("Calculated rating: ").append(rating).append("<br>");
+			} catch (Exception e) {
+				debug.append("ERROR calculating rating: ").append(e.getMessage()).append("<br>");
+				e.printStackTrace();
+			}
+			
+			// Test cached rating fields
+			debug.append("Cached Total Score: ").append(scenery.getSceneryTotalScore()).append("<br>");
+			debug.append("Cached Score Count: ").append(scenery.getSceneryTotalScoreCount()).append("<br>");
+			
+			debug.append("=== END DEBUG ===");
+			return debug.toString();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "ERROR: " + e.getMessage() + "<br>Check console for full stack trace";
+		}
 	}
-	
 }

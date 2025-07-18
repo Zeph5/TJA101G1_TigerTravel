@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.scenery.model.DTO.SceneryDTO;
@@ -130,4 +131,106 @@ public class SceneryService {
         return sceneryRepository.findBySceneryStatus(1);
     }
 
+    // ===== NEW: CACHED RATING METHODS =====
+
+    /**
+     * Updates the cached rating for a scenery when a new score is added/updated
+     * Call this method whenever a SceneryScoreVO is added, updated, or deleted
+     */
+    @Transactional
+    public void updateSceneryCachedRating(Integer sceneryId) {
+        try {
+            // Get the scenery with all its scores
+            SceneryVO scenery = sceneryRepository.findById(sceneryId).orElse(null);
+            if (scenery == null) {
+                System.err.println("Scenery not found for ID: " + sceneryId);
+                return;
+            }
+            
+            // Calculate new totals from all scores
+            List<SceneryScoreVO> scores = scenery.getSceneryScores();
+            if (scores == null || scores.isEmpty()) {
+                // No scores - set to 0
+                sceneryRepository.updateCachedRating(sceneryId, 0, 0);
+                System.out.println("Reset cached rating for " + scenery.getSceneryName() + " (no scores)");
+                return;
+            }
+            
+            // Calculate totals
+            int totalScore = scores.stream()
+                    .filter(score -> score.getScore() != null)
+                    .mapToInt(SceneryScoreVO::getScore)
+                    .sum();
+            int totalCount = (int) scores.stream()
+                    .filter(score -> score.getScore() != null)
+                    .count();
+            
+            // Update cached values
+            sceneryRepository.updateCachedRating(sceneryId, totalScore, totalCount);
+            
+            double avgRating = totalCount > 0 ? (double) totalScore / totalCount : 0.0;
+            System.out.println("Updated cached rating for " + scenery.getSceneryName() + 
+                              ": " + totalScore + "/" + totalCount + 
+                              " = " + String.format("%.1f", avgRating));
+                              
+        } catch (Exception e) {
+            System.err.println("Error updating cached rating for scenery " + sceneryId + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Bulk update all scenery cached ratings (useful for initial setup or maintenance)
+     */
+    @Transactional
+    public void updateAllSceneryCachedRatings() {
+        try {
+            List<SceneryVO> allSceneries = sceneryRepository.findAll();
+            System.out.println("Starting bulk update of cached ratings for " + allSceneries.size() + " sceneries...");
+            
+            int updated = 0;
+            for (SceneryVO scenery : allSceneries) {
+                updateSceneryCachedRating(scenery.getSceneryId());
+                updated++;
+                
+                // Progress indicator for large datasets
+                if (updated % 10 == 0) {
+                    System.out.println("Progress: " + updated + "/" + allSceneries.size() + " sceneries updated");
+                }
+            }
+            
+            System.out.println("Completed bulk update of cached ratings for " + updated + " sceneries");
+        } catch (Exception e) {
+            System.err.println("Error during bulk rating cache update: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Get top rated sceneries using cached values (fast query for homepage)
+     */
+    public List<SceneryVO> getTopRatedSceneries(int limit) {
+        try {
+            org.springframework.data.domain.Pageable pageable = 
+                org.springframework.data.domain.PageRequest.of(0, limit);
+            
+            // Use the cached rating query - this should be fast
+            List<SceneryVO> topSceneries = sceneryRepository.findTop4ByHighestRating(pageable);
+            
+            // Don't load unnecessary relationships for homepage
+            return topSceneries;
+            
+        } catch (Exception e) {
+            System.err.println("Error getting top rated sceneries: " + e.getMessage());
+            // Fallback to any active sceneries - but limit the query
+            try {
+                org.springframework.data.domain.Pageable fallbackPageable = 
+                    org.springframework.data.domain.PageRequest.of(0, limit);
+                return sceneryRepository.findBySceneryStatus(1, fallbackPageable).getContent();
+            } catch (Exception fallbackError) {
+                System.err.println("Fallback query also failed: " + fallbackError.getMessage());
+                return new ArrayList<>(); // Return empty list to prevent homepage crash
+            }
+        }
+    }
 }

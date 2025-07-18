@@ -35,6 +35,7 @@ public class SecurityConfig {
         this.managerUserDetailService = managerUserDetailService;
         this.failureHandler = failureHandler;
     }
+    
     @Bean
     @Order(1) // Manager 的規則優先
     public SecurityFilterChain managerFilterChain(HttpSecurity http,
@@ -59,6 +60,7 @@ public class SecurityConfig {
         http.authenticationProvider(managerAuthenticationProvider);
         return http.build();
     }
+
     @Bean
     @Order(2) // 放在 manager/member 後面處理
     public SecurityFilterChain adminFilterChain(HttpSecurity http,
@@ -85,6 +87,7 @@ public class SecurityConfig {
         http.authenticationProvider(managerAuthenticationProvider);
         return http.build();
     }
+    
     // Bean: 用於會員的 SecurityFilterChain (優先順序較低，排在後面處理)
     @Bean
     @Order(3)
@@ -99,9 +102,24 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
 
                 // ✅ 靜態資源 & 基本公開頁面
-                .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/homepage_images/**", "/logo_image/**").permitAll()
                 .requestMatchers("/", "/index", "/login", "/register", "/error", "/login?error").permitAll()
                 .requestMatchers("/ticketlist").permitAll()
+
+                // ✅ 景點搜尋功能（開放給所有人）
+                .requestMatchers("/search", "/scenery/search").permitAll()
+                
+                // ✅ 前台景點頁面（開放給所有人瀏覽）- 對應 templates/frontend/scenery/
+                .requestMatchers(HttpMethod.GET, "/frontend/**").permitAll()
+                
+                // ✅ 景點評論功能（需要登入）- 對應 templates/frontend/scenery/Scenery.html
+                .requestMatchers(HttpMethod.POST, "/frontend/scenery/detail/*/add-comment").authenticated()
+
+                // ✅ 景點相關資源（圖片等）
+                .requestMatchers("/scenery/banner/**", "/scenery/image/**").permitAll()
+
+                // ✅ 靜態資源（包含 favicon）
+                .requestMatchers("/favicon.ico").permitAll()
 
                 // ✅ 忘記密碼與註冊流程（開放）
                 .requestMatchers(
@@ -136,6 +154,20 @@ public class SecurityConfig {
                 // ✅ 票券功能（也要登入）
                 .requestMatchers("/ticket/**", "/ticketOrders").authenticated()
 
+                // ✅ 景點後台管理功能（需要管理員權限）- 對應 templates/scenery/
+                .requestMatchers(
+                    "/scenery/listallscenery", "/scenery/addscenery", "/scenery/updatescenery/**",
+                    "/scenery/index", "/scenery/deleteimage/**", "/scenery/updatestatus",
+                    "/scenery/{id}", "/scenery/{sceneryId}/addimage"
+                ).hasRole("ADMIN")
+
+                // ✅ 標籤後台管理功能（需要管理員權限）- 對應 templates/tags/
+                .requestMatchers(
+                    "/tags/**", // 所有標籤管理功能
+                    "/tags/addtags", "/tags/listalltags", "/tags/updatetag/**",
+                    "/tags/addtagsdb", "/tags/updatetagsdb", "/tags/searchresult"
+                ).hasRole("ADMIN")
+
                 // ❗ 最後兜底規則（不建議用 denyAll 除非你真的想封鎖）
                 // .requestMatchers("/member/**").denyAll()
             )
@@ -161,11 +193,6 @@ public class SecurityConfig {
 
         return http.build();
     }
-    
-
-
-    
-    
 
     // Bean: 會員的 AuthenticationProvider
     @Bean
@@ -185,4 +212,5 @@ public class SecurityConfig {
         return provider;
     }
 
+    // Note: PasswordEncoder bean is already defined in PasswordEncoderConfig.class
 }

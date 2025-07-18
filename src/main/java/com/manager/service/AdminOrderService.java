@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.manager.model.DTO.OrderListDTO;
+import com.manager.model.DTO.TouristListDTO;
 import com.member.model.TourOrderVO;
+import com.member.model.TouristVO;
 
 @Service
 public interface AdminOrderService {
@@ -14,8 +16,10 @@ public interface AdminOrderService {
 
 	OrderListDTO findOrderById(Integer id);
 
-	void updateOrder(Integer id, TourOrderVO updatedOrder);
+
 
 	OrderListDTO convertToDTO(TourOrderVO order);
 
+	void updateOrder(Integer id, OrderListDTO updatedOrder);
+	
 }

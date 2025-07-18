@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.manager.model.DTO.OrderListDTO;
+import com.manager.model.DTO.TouristListDTO;
 import com.manager.service.AdminOrderService;
 import com.member.model.TourOrderVO;
 
@@ -30,7 +31,9 @@ public class AdminOrderController {
 	@GetMapping("/{id}")
 	public String showOrderDetail(@PathVariable Integer id, Model model) {		
 		OrderListDTO order = adminOrderService.findOrderById(id);
+		
 		model.addAttribute("order", order);
+		
 		return "admin/order/order_Detail"; 
 	}
 	
@@ -41,7 +44,7 @@ public class AdminOrderController {
 		return "admin/order/order_Edit"; // 返回編輯訂單頁面
 	}
 	@PostMapping("/edit/{id}")
-	public String updateOrder(@PathVariable Integer id, @ModelAttribute("order") TourOrderVO updatedOrder) {
+	public String updateOrder(@PathVariable Integer id, @ModelAttribute("order") OrderListDTO updatedOrder) {
 		adminOrderService.updateOrder(id, updatedOrder);
 		return "redirect:/admin/orders/" + id; // 重定向到訂單詳細頁面
 	}

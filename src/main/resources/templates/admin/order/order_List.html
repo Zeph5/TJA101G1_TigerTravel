@@ -41,7 +41,7 @@ body {
 		<h2 class="mb-4">訂單管理</h2>
 
 		<div class="mb-3 d-flex justify-content-between">
-			<a href="/admin/orders/create" class="btn btn-primary">➕ 新增訂單</a>
+			
 			<div class="text-muted" th:if="${!#lists.isEmpty(orders)}">
 				共 <strong th:text="${#lists.size(orders)}">0</strong> 筆訂單資料
 			</div>

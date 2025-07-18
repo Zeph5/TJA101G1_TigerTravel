@@ -47,34 +47,37 @@
     </div>
 
     <!-- 旅客資料表格 -->
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <h5 class="card-title"><i class="fa-solid fa-users"></i> 旅客資訊</h5>
-            <div th:if="${#lists.isEmpty(tourists)}">
-                <p class="text-muted">此訂單尚未填寫旅客資料。</p>
-            </div>
-            <div th:unless="${#lists.isEmpty(tourists)}" class="table-responsive">
-                <table class="table table-bordered table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>旅客姓名</th>
-                            <th>身分證字號</th>
-                            <th>聯絡電話</th>
-                            <th>建立時間</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="tourist : ${tourists}">
-                            <td th:text="${tourist.touristName}">王小明</td>
-                            <td th:text="${tourist.touristPersonalId}">A123456789</td>
-                            <td th:text="${tourist.contactNumber}">0912345678</td>
-                            <td th:text="${#dates.format(tourist.createTime, 'yyyy-MM-dd HH:mm')}">2025-07-15 12:00</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+    <!--
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title"><i class="fa-solid fa-users"></i> 旅客資訊</h5>
+        <div th:if="${#lists.isEmpty(tourists)}">
+            <p class="text-muted">此訂單尚未填寫旅客資料。</p>
+        </div>
+        <div th:unless="${#lists.isEmpty(tourists)}" class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>旅客姓名</th>
+                        <th>身分證字號</th>
+                        <th>聯絡電話</th>
+                        <th>建立時間</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="tourist : ${tourists}">
+                        <td th:text="${tourist.touristName}">王小明</td>
+                        <td th:text="${tourist.touristPersonalId}">A123456789</td>
+                        <td th:text="${tourist.contactNumber}">0912345678</td>
+                        <td th:text="${#dates.format(tourist.createTime, 'yyyy-MM-dd HH:mm')}">2025-07-15 12:00</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
+-->
+
 
     <!-- 返回按鈕 -->
     <div class="mt-4">

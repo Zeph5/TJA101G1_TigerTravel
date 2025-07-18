@@ -33,7 +33,7 @@ public class SceneryVO implements java.io.Serializable {
     @Column(name = "sce_name", nullable = false, unique = true)
     private String sceneryName;
 
-    @Column(name = "sce_intro")
+    @Column(name = "sce_intro", length = 2000)
     private String sceneryIntro;
 
     @Column(name = "sce_total_score")
@@ -185,11 +185,38 @@ public class SceneryVO implements java.io.Serializable {
 
     @Transient
     public Double getRating() {
-        if (sceneryScores == null || sceneryScores.isEmpty()) {
+        try {
+            // First check if we have cached values
+            if (sceneryTotalScoreCount != null && sceneryTotalScoreCount > 0 && sceneryTotalScore != null) {
+                double rating = (double) sceneryTotalScore / sceneryTotalScoreCount;
+                return Math.round(rating * 10.0) / 10.0; // rounded to 1 decimal
+            }
+            
+            // Fallback to individual scores if available
+            if (sceneryScores != null && !sceneryScores.isEmpty()) {
+                int totalScore = 0;
+                int validScores = 0;
+                
+                for (SceneryScoreVO score : sceneryScores) {
+                    if (score != null && score.getScore() != null && score.getScore() > 0) {
+                        totalScore += score.getScore();
+                        validScores++;
+                    }
+                }
+                
+                if (validScores > 0) {
+                    double rating = (double) totalScore / validScores;
+                    return Math.round(rating * 10.0) / 10.0; // rounded to 1 decimal
+                }
+            }
+            
+            // Default to 0.0 if no rating data
+            return 0.0;
+            
+        } catch (Exception e) {
+            System.err.println("Error calculating rating: " + e.getMessage());
             return 0.0;
         }
-        double total = sceneryScores.stream().mapToInt(SceneryScoreVO::getScore).sum();
-        return Math.round((total / sceneryScores.size()) * 10.0) / 10.0; // rounded to 1 decimal
     }
 
     public void setRating(Double rating) {
