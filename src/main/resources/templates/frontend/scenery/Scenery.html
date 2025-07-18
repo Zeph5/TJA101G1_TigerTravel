@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
 <meta charset="UTF-8" />
 <title th:text="${scenery.sceneryName}">Scenery Details</title>
@@ -130,6 +131,154 @@
     user-select: none;
   }
 
+  /* Comments and Rating Section */
+  .comments-section {
+    margin-top: 30px;
+    border-top: 2px solid var(--border-color);
+    padding-top: 25px;
+  }
+
+  .rating-form {
+    background-color: var(--light-gray);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+  }
+
+  .star-rating {
+    display: flex;
+    gap: 5px;
+    margin: 10px 0;
+  }
+
+  .star {
+    font-size: 2rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+    user-select: none;
+  }
+
+  .star:hover,
+  .star.active {
+    color: gold;
+  }
+
+  .form-group {
+    margin: 15px 0;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--earth-yellow);
+  }
+
+  .form-group textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-family: inherit;
+    resize: vertical;
+  }
+
+  .btn {
+    background-color: var(--earth-yellow);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+  }
+
+  .btn:hover {
+    background-color: #c19235;
+  }
+
+  .btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+
+  .comments-list {
+    margin-top: 25px;
+  }
+
+  .comment-card {
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  .comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .comment-author {
+    font-weight: bold;
+    color: var(--earth-yellow);
+  }
+
+  .comment-rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .comment-stars {
+    font-size: 1rem;
+    color: gold;
+  }
+
+  .comment-date {
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .comment-text {
+    line-height: 1.5;
+    color: #444;
+    white-space: pre-wrap;
+  }
+
+  .no-comments {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px;
+  }
+
+  .login-prompt {
+    text-align: center;
+    padding: 20px;
+    background-color: var(--sky-blue);
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
+  .login-prompt a {
+    color: var(--earth-yellow);
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  .login-prompt a:hover {
+    text-decoration: underline;
+  }
+
   /* Responsive adjustments */
   @media (max-width: 600px) {
     .header-row {
@@ -140,6 +289,15 @@
     .gallery img {
       width: 90px;
       height: 60px;
+    }
+
+    .comment-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .star-rating {
+      justify-content: center;
     }
   }
 </style>
@@ -196,6 +354,137 @@
       <strong>Introduction:</strong>
       <p th:utext="${#strings.replace(scenery.sceneryIntro, '\n', '<br/>')}">Intro</p>
     </div>
+
+    <!-- Comments and Rating Section -->
+    <div class="comments-section">
+      <h3>評分與評論</h3>
+      
+      <!-- Rating Form for Authenticated Users -->
+      <div sec:authorize="isAuthenticated()">
+        <div class="rating-form">
+          <h4>分享您的體驗</h4>
+          <form th:action="@{/frontend/scenery/detail/{id}/add-comment(id=${scenery.sceneryId})}" method="post" onsubmit="return validateForm()">
+            <input type="hidden" name="_token" th:if="${_csrf}" th:value="${_csrf.token}"/>
+            <div class="form-group">
+              <label for="rating">評分：</label>
+              <div class="star-rating" id="starRating">
+                <span class="star" data-value="1">★</span>
+                <span class="star" data-value="2">★</span>
+                <span class="star" data-value="3">★</span>
+                <span class="star" data-value="4">★</span>
+                <span class="star" data-value="5">★</span>
+              </div>
+              <input type="hidden" id="ratingValue" name="score" value="0" required>
+              <small id="ratingError" style="color: red; display: none;">請選擇評分</small>
+            </div>
+            
+            <div class="form-group">
+              <label for="comment">評論：</label>
+              <textarea id="comment" name="sceneryComment" placeholder="分享您對這個景點的想法..." maxlength="500"></textarea>
+              <small style="color: #666;">最多500字</small>
+            </div>
+            
+            <button type="submit" class="btn">提交評論</button>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Login Prompt for Anonymous Users -->
+      <div sec:authorize="isAnonymous()" class="login-prompt">
+        <p>想要評分和評論嗎？請先 <a th:href="@{/login}">登入</a> 或 <a th:href="@{/member/register}">註冊</a></p>
+      </div>
+
+      <!-- Comments List -->
+      <div class="comments-list">
+        <h4>所有評論 (<span th:text="${scenery.sceneryScores != null ? #lists.size(scenery.sceneryScores) : 0}">0</span>)</h4>
+        
+        <div th:if="${scenery.sceneryScores != null and !scenery.sceneryScores.isEmpty()}">
+          <!-- First 3 comments (always visible) -->
+          <div th:each="score, iterStat : ${scenery.sceneryScores}" th:if="${iterStat.index < 3}" class="comment-card">
+            <div class="comment-header">
+              <div>
+                <span class="comment-author" th:text="${score.member != null ? (score.member.memberAccount != null ? score.member.memberAccount : '匿名用戶') : '匿名用戶'}">User Name</span>
+                <div class="comment-rating">
+                  <span class="comment-stars">
+                    <th:block th:if="${score.score != null and score.score > 0}">
+                      <span th:each="i : ${#numbers.sequence(1, score.score)}">★</span>
+                      <span th:each="i : ${#numbers.sequence(score.score + 1, 5)}" th:if="${score.score < 5}">☆</span>
+                    </th:block>
+                    <th:block th:if="${score.score == null or score.score <= 0}">
+                      <span th:each="i : ${#numbers.sequence(1, 5)}">☆</span>
+                    </th:block>
+                  </span>
+                  <span th:text="${score.score != null ? score.score : 0} + '/5'">0/5</span>
+                </div>
+              </div>
+              <div class="comment-date">
+                <th:block th:if="${score.createTime != null}">
+                  <span th:text="${#dates.format(score.createTime, 'yyyy-MM-dd HH:mm')}"></span>
+                </th:block>
+                <th:block th:if="${score.createTime == null}">
+                  <span>未知時間</span>
+                </th:block>
+              </div>
+            </div>
+            <div class="comment-text" th:text="${score.sceneryComment}" th:if="${score.sceneryComment != null and !score.sceneryComment.isEmpty()}">
+              Comment text here...
+            </div>
+            <div class="comment-text" th:if="${score.sceneryComment == null or score.sceneryComment.isEmpty()}" style="font-style: italic; color: #666;">
+              使用者未留下評論
+            </div>
+          </div>
+          
+          <!-- Show more button if there are more than 3 comments -->
+          <div th:if="${#lists.size(scenery.sceneryScores) > 3}" class="show-more-container" style="text-align: center; margin: 20px 0;">
+            <button id="showMoreBtn" class="btn" onclick="toggleMoreComments()" style="background-color: var(--sky-blue); color: #333;">
+              <span id="showMoreText">顯示更多評論 (<span th:text="${#lists.size(scenery.sceneryScores) - 3}">0</span>)</span>
+            </button>
+          </div>
+          
+          <!-- Remaining comments (initially hidden) -->
+          <div id="moreComments" style="display: none;">
+            <div th:each="score, iterStat : ${scenery.sceneryScores}" th:if="${iterStat.index >= 3}" class="comment-card">
+              <div class="comment-header">
+                <div>
+                  <span class="comment-author" th:text="${score.member != null ? (score.member.memberAccount != null ? score.member.memberAccount : '匿名用戶') : '匿名用戶'}">User Name</span>
+                  <div class="comment-rating">
+                    <span class="comment-stars">
+                      <th:block th:if="${score.score != null and score.score > 0}">
+                        <span th:each="i : ${#numbers.sequence(1, score.score)}">★</span>
+                        <span th:each="i : ${#numbers.sequence(score.score + 1, 5)}" th:if="${score.score < 5}">☆</span>
+                      </th:block>
+                      <th:block th:if="${score.score == null or score.score <= 0}">
+                        <span th:each="i : ${#numbers.sequence(1, 5)}">☆</span>
+                      </th:block>
+                    </span>
+                    <span th:text="${score.score != null ? score.score : 0} + '/5'">0/5</span>
+                  </div>
+                </div>
+                <div class="comment-date">
+                  <th:block th:if="${score.createTime != null}">
+                    <span th:text="${#dates.format(score.createTime, 'yyyy-MM-dd HH:mm')}"></span>
+                  </th:block>
+                  <th:block th:if="${score.createTime == null}">
+                    <span>未知時間</span>
+                  </th:block>
+                </div>
+              </div>
+              <div class="comment-text" th:text="${score.sceneryComment}" th:if="${score.sceneryComment != null and !score.sceneryComment.isEmpty()}">
+                Comment text here...
+              </div>
+              <div class="comment-text" th:if="${score.sceneryComment == null or score.sceneryComment.isEmpty()}" style="font-style: italic; color: #666;">
+                使用者未留下評論
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div th:if="${scenery.sceneryScores == null or scenery.sceneryScores.isEmpty()}" class="no-comments">
+          <p>還沒有人評論這個景點。成為第一個評論的人吧！</p>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 </div>
@@ -225,6 +514,79 @@ document.addEventListener('keydown', function(event) {
     document.getElementById('modalOverlay').style.display = 'none';
   }
 });
+
+// Star Rating Functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const stars = document.querySelectorAll('.star');
+  const ratingValue = document.getElementById('ratingValue');
+  let selectedRating = 0;
+
+  stars.forEach(star => {
+    star.addEventListener('click', function() {
+      selectedRating = parseInt(this.getAttribute('data-value'));
+      ratingValue.value = selectedRating;
+      updateStars(selectedRating);
+      document.getElementById('ratingError').style.display = 'none';
+    });
+
+    star.addEventListener('mouseover', function() {
+      const hoverValue = parseInt(this.getAttribute('data-value'));
+      updateStars(hoverValue);
+    });
+  });
+
+  document.getElementById('starRating').addEventListener('mouseleave', function() {
+    updateStars(selectedRating);
+  });
+
+  function updateStars(rating) {
+    stars.forEach((star, index) => {
+      if (index < rating) {
+        star.classList.add('active');
+      } else {
+        star.classList.remove('active');
+      }
+    });
+  }
+});
+
+function validateForm() {
+  const rating = document.getElementById('ratingValue').value;
+  if (rating === '0' || rating === '') {
+    document.getElementById('ratingError').style.display = 'block';
+    return false;
+  }
+  
+  // Debug: Log form data before submission
+  const form = document.querySelector('form[action*="add-comment"]');
+  const formData = new FormData(form);
+  console.log('=== FORM SUBMISSION DEBUG ===');
+  console.log('Form action:', form.action);
+  console.log('Form method:', form.method);
+  console.log('Score:', formData.get('score'));
+  console.log('Comment:', formData.get('sceneryComment'));
+  console.log('==============================');
+  
+  return true;
+}
+
+function toggleMoreComments() {
+  const moreComments = document.getElementById('moreComments');
+  const showMoreBtn = document.getElementById('showMoreBtn');
+  const showMoreText = document.getElementById('showMoreText');
+  
+  if (moreComments.style.display === 'none') {
+    moreComments.style.display = 'block';
+    showMoreText.textContent = '收起評論';
+    showMoreBtn.style.backgroundColor = 'var(--light-gray)';
+  } else {
+    moreComments.style.display = 'none';
+    // Reset to original text - we'll keep it simple for now
+    const remainingCount = document.querySelectorAll('#moreComments .comment-card').length;
+    showMoreText.textContent = `顯示更多評論 (${remainingCount})`;
+    showMoreBtn.style.backgroundColor = 'var(--sky-blue)';
+  }
+}
 </script>
 
 </body>

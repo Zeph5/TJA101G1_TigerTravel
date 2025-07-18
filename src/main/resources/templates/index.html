@@ -20,9 +20,9 @@
 
 /* 整體背景與字體 */
 body {
-	background-color: var(--egg-shell);
 	font-family: 'Segoe UI', 'Noto Sans TC', sans-serif;
 	color: #333;
+	padding-top: 140px; /* Adjust for smaller search bar */
 }
 
 /* 標題樣式 */
@@ -37,6 +37,175 @@ h1, h2, h4, h5 {
 	border-radius: 10px;
 	padding: 30px;
 	box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Fixed search bar styling */
+.search-bar-fixed {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	background-color: var(--light-gray);
+	z-index: 1000;
+	padding: 10px 0;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	border-bottom: 1px solid var(--border-color);
+}
+
+.search-bar-fixed .search-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: relative;
+}
+
+.search-form-container {
+	display: flex;
+	align-items: center;
+	gap: 0;
+	max-width: 600px;
+	width: 100%;
+}
+
+.search-form-container input[type="search"] {
+	flex: 1;
+	min-width: 300px;
+	border-right: none;
+	border-radius: 8px 0 0 8px;
+}
+
+.search-dropdown {
+	border-left: none;
+	border-right: none;
+	border-radius: 0;
+	background-color: var(--white);
+	border: 1px solid var(--border-color);
+	padding: 10px 12px;
+	font-size: 14px;
+	min-width: 80px;
+}
+
+.search-button {
+	border-left: none;
+	border-radius: 0 8px 8px 0;
+	white-space: nowrap;
+	padding: 10px 20px;
+}
+
+.user-menu {
+	position: absolute;
+	right: 20px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.user-dropdown {
+	position: relative;
+	display: inline-block;
+}
+
+.user-info {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	padding: 5px 10px;
+	border-radius: 5px;
+	transition: background-color 0.2s;
+}
+
+.user-info:hover {
+	background-color: rgba(0, 0, 0, 0.05);
+}
+
+.user-avatar {
+	width: 35px;
+	height: 35px;
+	border-radius: 50%;
+	border: 2px solid var(--border-color);
+}
+
+.user-name {
+	font-weight: 500;
+	color: #333;
+	font-size: 14px;
+}
+
+.dropdown-menu-custom {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	background-color: var(--white);
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	min-width: 200px;
+	padding: 8px 0;
+	margin-top: 5px;
+	display: none;
+	z-index: 1001;
+}
+
+.dropdown-menu-custom.show {
+	display: block;
+}
+
+.dropdown-item-custom {
+	display: block;
+	padding: 10px 16px;
+	text-decoration: none;
+	color: #333;
+	font-size: 14px;
+	border: none;
+	background: none;
+	width: 100%;
+	text-align: left;
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.dropdown-item-custom:hover {
+	background-color: var(--light-gray);
+	text-decoration: none;
+	color: #333;
+}
+
+.dropdown-divider-custom {
+	height: 1px;
+	background-color: var(--border-color);
+	margin: 5px 0;
+}
+
+/* Fixed logo section styling */
+.logo-section-fixed {
+	position: fixed;
+	top: 60px; /* Position below the smaller search bar */
+	left: 0;
+	right: 0;
+	background-color: var(--sky-blue);
+	z-index: 999;
+	padding: 15px 0;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	border-bottom: 1px solid var(--border-color);
+}
+
+.logo-section-fixed .logo-container {
+	display: flex;
+	align-items: center;
+	padding: 0 20px;
+}
+
+.logo-section-fixed .logo-img {
+	height: 50px;
+	margin-right: 15px;
+}
+
+.logo-section-fixed .logo-text {
+	font-family: 'Noto Sans TC', sans-serif;
+	font-weight: bold;
+	font-size: 32px;
+	color: #333;
 }
 
 /* 精選景點卡片 */
@@ -59,6 +228,385 @@ h1, h2, h4, h5 {
 
 .card-body {
 	background-color: var(--egg-shell);
+}
+
+/* Two column layout styles */
+.two-column-layout {
+	display: flex;
+	gap: 20px;
+	margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+	.two-column-layout {
+		flex-direction: column;
+		gap: 15px;
+	}
+}
+
+.left-column {
+	flex: 0 0 25%;
+	padding-right: 10px;
+	padding-left: 15px;
+	transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+	.left-column {
+		flex: 1;
+		padding-right: 0;
+		padding-left: 0;
+		max-width: 600px;
+		margin: 0 auto;
+	}
+}
+
+.right-column {
+	flex: 1;
+	padding-left: 10px;
+}
+
+@media (max-width: 768px) {
+	.right-column {
+		padding-left: 0;
+	}
+}
+
+/* Scenery section with box outline - Made Taller and More Eye-catching */
+.scenery-section-box {
+	border: 3px solid var(--earth-yellow);
+	border-radius: 15px;
+	padding: 25px 20px;
+	background: linear-gradient(135deg, var(--white) 0%, #fafafa 100%);
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+	min-height: 200px;
+}
+
+.scenery-section-box .ticket-title-desktop h3 {
+	margin-bottom: 20px;
+	text-align: center;
+	font-size: 22px;
+	color: var(--earth-yellow);
+	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Scenery rectangles styles - Made Much Taller */
+.scenery-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+	margin-bottom: 15px;
+}
+
+.scenery-rectangle {
+	aspect-ratio: 2/1; /* Slightly less wide but taller */
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	color: white;
+	font-weight: bold;
+	font-size: 13px;
+	padding: 12px 8px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	transition: all 0.3s ease;
+	cursor: pointer;
+	height: 70px; /* Much taller rectangles */
+	width: 100%;
+	position: relative;
+	overflow: hidden;
+}
+
+.scenery-rectangle::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(255, 255, 255, 0.1);
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.scenery-rectangle:hover {
+	transform: scale(1.05) translateY(-2px);
+	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.scenery-rectangle:hover::before {
+	opacity: 1;
+}
+
+.scenery-rectangle span {
+	line-height: 1.3;
+	word-break: break-word;
+	overflow-wrap: break-word;
+	hyphens: auto;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	z-index: 1;
+	position: relative;
+	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.scenery-rectangle:nth-child(1) {
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.scenery-rectangle:nth-child(2) {
+	background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.scenery-rectangle:nth-child(3) {
+	background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.scenery-rectangle:nth-child(4) {
+	background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+/* Ticket section with centered title */
+.ticket-section-box .ticket-title-desktop {
+	text-align: center;
+	margin-bottom: 15px;
+}
+
+.ticket-section-box .ticket-title-desktop h3 {
+	font-size: 20px;
+	color: var(--earth-yellow);
+}
+
+@media (max-width: 480px) {
+	.scenery-rectangle {
+		font-size: 11px;
+		padding: 8px 6px;
+		height: 60px;
+	}
+	
+	.scenery-section-box {
+		padding: 20px 15px;
+		min-height: 180px;
+	}
+	
+	.scenery-section-box .ticket-title-desktop h3 {
+		font-size: 20px;
+	}
+}
+
+.ticket-section-header {
+	display: none; /* Hidden by default on desktop */
+	align-items: center;
+	justify-content: space-between;
+	cursor: pointer;
+	padding: 12px 15px;
+	background-color: var(--light-gray);
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	margin-bottom: 10px;
+	transition: background-color 0.2s;
+}
+
+.ticket-section-header:hover {
+	background-color: #e8e8e8;
+}
+
+.ticket-section-header h3 {
+	margin: 0;
+	font-size: 18px;
+}
+
+.ticket-toggle-icon {
+	font-size: 16px;
+	transition: transform 0.3s ease;
+	color: var(--earth-yellow);
+}
+
+.ticket-toggle-icon.expanded {
+	transform: rotate(90deg);
+}
+
+.ticket-content {
+	transition: max-height 0.3s ease;
+}
+
+.ticket-title-desktop {
+	display: block;
+	margin-bottom: 15px;
+}
+
+.ticket-title-desktop h3 {
+	margin: 0;
+	font-size: 18px;
+	color: var(--earth-yellow);
+	font-weight: bold;
+}
+
+/* Show collapsible header only on mobile/tablet */
+@media (max-width: 768px) {
+	.ticket-section-header {
+		display: flex;
+	}
+	
+	.ticket-title-desktop {
+		display: none;
+	}
+	
+	.ticket-content {
+		max-height: 0;
+		overflow: hidden;
+	}
+	
+	.ticket-content.expanded {
+		max-height: 500px;
+	}
+	
+	/* Keep scenery content always visible on mobile */
+	.scenery-content {
+		max-height: none !important;
+		overflow: visible !important;
+	}
+}
+
+/* Compact ticket list styles */
+.ticket-bar {
+	display: flex;
+	align-items: center;
+	background-color: var(--white);
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	padding: 12px;
+	margin-bottom: 12px;
+	transition: box-shadow 0.2s;
+}
+
+.ticket-bar:hover {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ticket-bar-image {
+	width: 60px;
+	height: 60px;
+	object-fit: cover;
+	border-radius: 6px;
+	margin-right: 12px;
+	flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+	.ticket-bar-image {
+		width: 50px;
+		height: 50px;
+		margin-right: 10px;
+	}
+}
+
+.ticket-bar-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.ticket-bar-title {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--earth-yellow);
+	margin: 0 0 4px 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+	.ticket-bar-title {
+		font-size: 13px;
+	}
+}
+
+.ticket-bar-price {
+	font-size: 13px;
+	color: #666;
+	margin: 0;
+}
+
+@media (max-width: 480px) {
+	.ticket-bar-price {
+		font-size: 12px;
+	}
+}
+
+/* Responsive banner styles */
+.banner-img {
+	max-height: 400px;
+	object-fit: cover;
+	transition: opacity 1s ease-in-out;
+	width: 100%;
+	height: auto;
+}
+
+@media (max-width: 768px) {
+	.banner-img {
+		max-height: 250px;
+	}
+}
+
+@media (max-width: 480px) {
+	.banner-img {
+		max-height: 200px;
+	}
+}
+
+/* Responsive search bar */
+@media (max-width: 768px) {
+	.search-form-container {
+		max-width: 100%;
+		flex-wrap: wrap;
+	}
+	
+	.search-form-container input[type="search"] {
+		min-width: 200px;
+		flex: 1 1 auto;
+	}
+	
+	.search-dropdown {
+		min-width: 70px;
+	}
+	
+	.user-menu {
+		position: relative;
+		right: auto;
+		margin-top: 10px;
+	}
+	
+	.search-container {
+		flex-direction: column;
+		align-items: stretch;
+	}
+}
+
+@media (max-width: 480px) {
+	.search-form-container {
+		flex-direction: column;
+		gap: 8px;
+	}
+	
+	.search-form-container input[type="search"],
+	.search-dropdown,
+	.search-button {
+		border-radius: 8px !important;
+		border: 1px solid var(--border-color) !important;
+	}
+	
+	.user-name {
+		font-size: 12px;
+	}
+	
+	.user-avatar {
+		width: 30px;
+		height: 30px;
+	}
 }
 
 /* 按鈕樣式 */
@@ -117,58 +665,103 @@ footer {
 	border-top: 1px solid #ccc;
 }
 
-.banner-img {
-	max-height: 400px;
-	object-fit: cover;
-	transition: opacity 1s ease-in-out;
+/* Success/Error message styles */
+.alert {
+	margin: 20px 0;
+	padding: 12px 20px;
+	border-radius: 8px;
+	font-weight: 500;
+}
+
+.alert-success {
+	background-color: #d4edda;
+	border: 1px solid #c3e6cb;
+	color: #155724;
+}
+
+.alert-error {
+	background-color: #f8d7da;
+	border: 1px solid #f5c6cb;
+	color: #721c24;
 }
 </style>
 </head>
 <body>
 
-	<div class="container mt-4">
-		<h1 class="text-center">🌏 歡迎來到 Tiger Travel 旅遊網站</h1>
-
-		<!-- 👤 已登入使用者 -->
-		<div sec:authorize="isAuthenticated()" class="mt-4 text-center">
-			<p>
-				您好，<span sec:authentication="principal.member.memberName"></span>！您已登入。
-			</p>
-
-			<div th:if="${avatarBase64 != null}" class="mb-3">
-				<img th:src="'data:image/png;base64,' + ${avatarBase64}" alt="大頭貼"
-					width="100" height="100" class="rounded-circle border">
-			</div>
-
-			<div class="d-flex justify-content-center gap-3">
-				<form th:action="@{/logout}" method="post">
-					<button type="submit" class="btn btn-outline-danger">登出</button>
+	<!-- Fixed Search Bar at Top -->
+	<div class="search-bar-fixed">
+		<div class="container-fluid">
+			<div class="search-container">
+				<form id="searchForm" class="search-form-container" role="search" method="POST">
+					<input class="form-control" type="search" name="keyword" id="searchInput"
+						placeholder="搜尋景點名稱或標籤" aria-label="Search" required>
+					<select class="form-select search-dropdown" id="searchType" name="searchType">
+						<option value="scenery">景點</option>
+						<option value="tickets">票券</option>
+					</select>
+					<button class="btn btn-outline-primary search-button" type="submit">搜尋</button>
+					<!-- Include CSRF token for security -->
+					<input type="hidden" name="_csrf" value="${_csrf.token}">
 				</form>
-				<a th:href="@{/member/home}" class="btn btn-outline-primary">會員中心</a>
-				<a th:href="@{/member/favorites}" class="btn btn-outline-success">⭐
-					我的收藏</a> <a th:href="@{/member/detail/ticket/orders}"
-					class="btn btn-outline-info">🎫 我的票券訂單</a>
-        <a href="/member/travel/list" class="btn btn-outline-primary mb-3">查看旅程清單</a>
+				
+				<!-- User Menu for Authenticated Users -->
+				<div sec:authorize="isAuthenticated()" class="user-menu">
+					<div class="user-dropdown">
+						<div class="user-info" onclick="toggleUserDropdown()">
+							<img th:if="${avatarBase64 != null}" 
+								 th:src="'data:image/png;base64,' + ${avatarBase64}" 
+								 alt="大頭貼" class="user-avatar">
+							<img th:if="${avatarBase64 == null}" 
+								 src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUiIGhlaWdodD0iMzUiIHZpZXdCb3g9IjAgMCAzNSAzNSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTcuNSIgY3k9IjE3LjUiIHI9IjE3LjUiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPgo8cGF0aCBkPSJNMTIgMTJjMi4yMSAwIDQtMS43OSA0LTRzLTEuNzktNC00LTQtNCAxLjc5LTQgNCAxLjc5IDQgNCA0em0wIDJjLTIuNjcgMC04IDEuMzQtOCA0djJoMTZ2LTJjMC0yLjY2LTUuMzMtNC04LTR6Ii8+Cjwvc3ZnPgo8L3N2Zz4K" 
+								 alt="預設大頭貼" class="user-avatar">
+							<span class="user-name">您好，<span sec:authentication="principal.member.memberName"></span>！</span>
+						</div>
+						
+						<div class="dropdown-menu-custom" id="userDropdown">
+							<a th:href="@{/member/home}" class="dropdown-item-custom">會員中心</a>
+							<a th:href="@{/member/favorites}" class="dropdown-item-custom">⭐ 我的收藏</a>
+							<a th:href="@{/member/detail/ticket/orders}" class="dropdown-item-custom">🎫 我的票券訂單</a>
+							<div class="dropdown-divider-custom"></div>
+							<form th:action="@{/logout}" method="post" style="margin: 0;">
+								<button type="submit" class="dropdown-item-custom">登出</button>
+							</form>
+						</div>
+					</div>
+				</div>
+				
+				<!-- Login/Register for Anonymous Users -->
+				<div sec:authorize="isAnonymous()" class="user-menu">
+					<div class="user-dropdown">
+						<div class="user-info" onclick="toggleUserDropdown()">
+							<img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUiIGhlaWdodD0iMzUiIHZpZXdCb3g9IjAgMCAzNSAzNSUgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTcuNSIgY3k9IjE3LjUiIHI9IjE3LjUiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPgo8cGF0aCBkPSJNMTIgMTJjMi4yMSAwIDQtMS43OSA0LTRzLTEuNzktNC00LTQtNCAxLjc5LTQgNCAxLjc5IDQgNCA0em0wIDJjLTIuNjcgMC04IDEuMzQtOCA0djJoMTZ2LTJjMC0yLjY2LTUuMzMtNC04LTR6Ii8+Cjwvc3ZnPgo8L3N2Zz4K" 
+								 alt="預設大頭貼" class="user-avatar">
+							<span class="user-name">請先登入或註冊以享受完整的服務。</span>
+						</div>
+						
+						<div class="dropdown-menu-custom" id="userDropdown">
+							<a th:href="@{/login}" class="dropdown-item-custom">登入</a>
+							<a th:href="@{/member/register}" class="dropdown-item-custom">註冊</a>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
+	</div>
 
-		<!-- ❗ 未登入使用者 -->
-		<div sec:authorize="isAnonymous()" class="text-center mt-4">
-			<p>
-				您尚未登入，請先 <a th:href="@{/login}">登入</a> 或 <a
-					th:href="@{/member/register}">註冊</a>。
-			</p>
+	<!-- Fixed Logo Section -->
+	<div class="logo-section-fixed">
+		<div class="logo-container">
+			<img th:src="@{/logo_image/Tiger_Travel_Logo_1.png}" alt="Tiger Travel Logo" class="logo-img">
+			<span class="logo-text">臺鴿旅遊</span>
 		</div>
+	</div>
 
-		<!-- 📍 景點查詢 -->
-		<form th:action="@{/scenery/search}" method="post"
-			class="d-flex justify-content-center my-4" role="search">
-			<input class="form-control me-2 w-50" type="search" name="keyword"
-				placeholder="搜尋景點名稱或標籤" aria-label="Search scenery" required>
-			<button class="btn btn-outline-primary" type="submit">搜尋景點</button>
-		</form>
+	<div class="mt-0">
+		<!-- Success/Error Messages -->
+		<div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+		<div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
 
-		<div th:if="${homepageImages != null and #lists.size(homepageImages) > 0}" class="my-4">
+		<div th:if="${homepageImages != null and #lists.size(homepageImages) > 0}" class="mt-0 mb-4">
 			<div id="bannerSlider" class="position-relative">
 				<img th:each="img, stat : ${homepageImages}" th:src="@{${img}}"
 					th:classappend="${stat.index == 0} ? 'd-block' : 'd-none'"
@@ -176,74 +769,104 @@ footer {
 			</div>
 		</div>
 
-		<form th:action="@{/ticketlist}" method="get"
-			class="d-flex justify-content-center my-4" role="search">
-			<input class="form-control me-2 w-50" type="search" name="keyword"
-				placeholder="搜尋票券名稱" aria-label="Search">
-			<button class="btn btn-outline-success" type="submit">搜尋</button>
-		</form>
-
-
-		<!-- 🎫 熱門票券 -->
-		<section class="mt-5">
-			<h2 class="mb-3">🔥 熱門票券</h2>
-			<div class="position-relative">
-				<button
-					class="btn btn-outline-secondary position-absolute top-50 start-0 translate-middle-y z-3"
-					onclick="scrollTicketLeft()">⬅</button>
-				<button
-					class="btn btn-outline-secondary position-absolute top-50 end-0 translate-middle-y z-3"
-					onclick="scrollTicketRight()">➡</button>
-
-				<div id="ticketScroll" class="d-flex overflow-auto gap-3 px-4 py-2"
-					style="scroll-behavior: smooth;">
-					<div th:each="ticket : ${ticketList}" class="card"
-						style="min-width: 250px;">
-						<img th:if="${ticket['ticketImageBase64'] != null}"
-							th:src="'data:image/png;base64,' + ${ticket['ticketImageBase64']}"
-							class="card-img-top" style="height: 150px; object-fit: cover;"
-							alt="票券圖片"> <img
-							th:if="${ticket['ticketImageBase64'] == null}"
-							th:src="@{/images/sample.png}" class="card-img-top"
-							style="height: 150px; object-fit: cover;" alt="預設圖片">
-						<div class="card-body">
-							<h5 class="card-title" th:text="${ticket['ticketName']}">票券名稱</h5>
-							<p class="card-text text-muted mb-0">
-								<span
-									th:text="${#numbers.formatDecimal(ticket['ticketPrice'], 0, 'POINT', 2, 'COMMA')}"></span>
-								元
-							</p>
+		<div class="two-column-layout">
+			<!-- Left Column - Popular Scenery & Tickets -->
+			<div class="left-column">
+				<!-- Popular Scenery Section with Box Outline -->
+				<div class="mb-4">
+					<div class="scenery-section-box">
+						<!-- Desktop Title (always visible) -->
+						<div class="ticket-title-desktop">
+							<h3>熱門景點</h3>
+						</div>
+						
+						<!-- Mobile/Tablet Collapsible Header -->
+						<div class="ticket-section-header" onclick="toggleScenerySection()">
+							<h3>熱門景點</h3>
+							<span class="scenery-toggle-icon">></span>
+						</div>
+						
+						<div class="ticket-content scenery-content" id="sceneryContent">
+							<div class="scenery-grid">
+								<div th:each="scenery, iterStat : ${topSceneries}" 
+									 th:if="${iterStat.index < 4}" 
+									 class="scenery-rectangle"
+									 th:onclick="|window.location.href='/frontend/scenery/detail/${scenery.sceneryId}'|">
+									<span th:text="${scenery.sceneryName}">景點名稱</span>
+								</div>
+								
+								<!-- Show placeholder rectangles only if we have fewer than 4 sceneries -->
+								<div th:if="${#lists.size(topSceneries) == 0}" class="scenery-rectangle">
+									<span>暫無景點</span>
+								</div>
+								<div th:if="${#lists.size(topSceneries) == 1}" class="scenery-rectangle">
+									<span>更多景點</span>
+								</div>
+								<div th:if="${#lists.size(topSceneries) == 2}" class="scenery-rectangle">
+									<span>更多景點</span>
+								</div>
+								<div th:if="${#lists.size(topSceneries) == 3}" class="scenery-rectangle">
+									<span>更多景點</span>
+								</div>
+							</div>
 						</div>
 					</div>
-
-					<!-- 查看更多 -->
-					<div
-						class="card bg-light d-flex align-items-center justify-content-center"
-						style="min-width: 250px;">
-						<a th:href="@{/ticketlist}"
-							class="stretched-link text-decoration-none text-dark text-center">
-							<div class="p-4">
-								<h5>查看更多票券</h5>
-								<span style="font-size: 2rem;">➕</span>
+				</div>
+				
+				<!-- Popular Tickets Section with Centered Title -->
+				<div class="ticket-section-box">
+					<!-- Desktop Title (always visible) -->
+					<div class="ticket-title-desktop">
+						<h3>熱門票券</h3>
+					</div>
+					
+					<!-- Mobile/Tablet Collapsible Header -->
+					<div class="ticket-section-header" onclick="toggleTicketSection()">
+						<h3>熱門票券</h3>
+						<span class="ticket-toggle-icon">></span>
+					</div>
+					
+					<div class="ticket-content" id="ticketContent">
+						<div th:each="ticket, iterStat : ${ticketList}" th:if="${iterStat.index < 4}" class="ticket-bar">
+							<img th:if="${ticket['ticketImageBase64'] != null}"
+								th:src="'data:image/png;base64,' + ${ticket['ticketImageBase64']}"
+								class="ticket-bar-image" alt="票券圖片">
+							<img th:if="${ticket['ticketImageBase64'] == null}"
+								th:src="@{/images/sample.png}" 
+								class="ticket-bar-image" alt="預設圖片">
+							<div class="ticket-bar-content">
+								<h5 class="ticket-bar-title" th:text="${ticket['ticketName']}">票券名稱</h5>
+								<p class="ticket-bar-price">
+									<span th:text="${#numbers.formatDecimal(ticket['ticketPrice'], 0, 'POINT', 2, 'COMMA')}"></span>
+									元
+								</p>
 							</div>
-						</a>
+						</div>
+						
+						<!-- View More Link -->
+						<div class="text-center mt-3">
+							<a th:href="@{/ticketlist}" class="btn btn-outline-primary btn-sm">查看更多票券</a>
+						</div>
 					</div>
 				</div>
 			</div>
-		</section>
+			
+			<!-- Right Column - Future Content -->
+			<div class="right-column">
+				<div style="height: 300px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #666;">
+					<div class="text-center">
+						<h4>其他內容區域</h4>
+						<p>這裡可以放置其他旅遊相關內容</p>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<footer class="text-center mt-5 mb-3 text-muted"> &copy; 2025
 		台鴿旅遊 Tiger Travel. All rights reserved. </footer>
 
 	<script>
-		function scrollTicketLeft() {
-			document.getElementById('ticketScroll').scrollLeft -= 300;
-		}
-		function scrollTicketRight() {
-			document.getElementById('ticketScroll').scrollLeft += 300;
-		}
-		
 		document.addEventListener('DOMContentLoaded', () => {
 		    const images = document.querySelectorAll('#bannerSlider .banner-img');
 		    if (images.length <= 1) return; // Don't cycle if only 1 image
@@ -258,7 +881,100 @@ footer {
 
 		        images[currentIndex].classList.remove('d-none');
 		        images[currentIndex].classList.add('d-block');
-		    }, 20000); // 20 seconds
+		    }, 5000); // 5 seconds
+		});
+		
+		// User dropdown functionality
+		function toggleUserDropdown() {
+			const dropdown = document.getElementById('userDropdown');
+			dropdown.classList.toggle('show');
+		}
+		
+		// Close dropdown when clicking outside
+		document.addEventListener('click', function(event) {
+			const dropdown = document.getElementById('userDropdown');
+			const userInfo = document.querySelector('.user-info');
+			
+			if (!userInfo.contains(event.target)) {
+				dropdown.classList.remove('show');
+			}
+		});
+		
+		// Scenery section toggle functionality
+		function toggleScenerySection() {
+			const content = document.getElementById('sceneryContent');
+			const icon = document.querySelector('.scenery-toggle-icon');
+			
+			content.classList.toggle('expanded');
+			icon.classList.toggle('expanded');
+		}
+		
+		// Ticket section toggle functionality
+		function toggleTicketSection() {
+			const content = document.getElementById('ticketContent');
+			const icon = document.querySelector('.ticket-toggle-icon');
+			
+			content.classList.toggle('expanded');
+			icon.classList.toggle('expanded');
+		}
+		
+		// Enhanced search form submission handling
+		document.getElementById('searchForm').addEventListener('submit', function(e) {
+			e.preventDefault();
+			
+			const searchType = document.getElementById('searchType').value;
+			const searchInput = document.getElementById('searchInput').value.trim();
+			
+			// Validate input
+			if (!searchInput) {
+				alert('請輸入搜尋關鍵字');
+				return;
+			}
+			
+			// Set form action and method based on search type
+			if (searchType === 'scenery') {
+				this.action = '/scenery/search';
+				this.method = 'POST';
+			} else if (searchType === 'tickets') {
+				// For tickets, use GET method to ticketlist with keyword parameter
+				this.action = '/ticketlist';
+				this.method = 'GET';
+				
+				// Create a hidden input for the keyword if it doesn't exist
+				let keywordInput = this.querySelector('input[name="keyword"]');
+				if (!keywordInput) {
+					keywordInput = document.createElement('input');
+					keywordInput.type = 'hidden';
+					keywordInput.name = 'keyword';
+					this.appendChild(keywordInput);
+				}
+				keywordInput.value = searchInput;
+				
+				// Remove the searchType input for GET request to ticketlist
+				const searchTypeInput = this.querySelector('select[name="searchType"]');
+				if (searchTypeInput) {
+					searchTypeInput.removeAttribute('name');
+				}
+			}
+			
+			// Submit the form
+			this.submit();
+		});
+		
+		// Update placeholder when dropdown changes
+		document.getElementById('searchType').addEventListener('change', function() {
+			const searchInput = document.getElementById('searchInput');
+			if (this.value === 'scenery') {
+				searchInput.placeholder = '搜尋景點名稱或標籤';
+			} else {
+				searchInput.placeholder = '搜尋票券';
+			}
+		});
+		
+		// Add error handling for form submission
+		document.getElementById('searchForm').addEventListener('error', function(e) {
+			console.error('Search form error:', e);
+			alert('搜尋時發生錯誤，請稍後再試');
 		});
 	</script>
 </body>
