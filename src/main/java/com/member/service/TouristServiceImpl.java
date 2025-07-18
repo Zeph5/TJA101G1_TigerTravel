@@ -20,6 +20,7 @@ public class TouristServiceImpl implements TouristService {
     }
 
     public TouristVO save(TouristVO tourist) {
+    	System.out.println("✅ 儲存旅客: " + tourist.getTouristName() + ", 對應訂單ID: " + tourist.getTourOrder().getTourOrderId());
         return touristRepo.save(tourist); // JPA save，自動處理 insert/update
     }
 

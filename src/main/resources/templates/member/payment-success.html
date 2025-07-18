@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>付款成功</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <div class="container mt-5">
+        <h2 class="text-center mb-4 text-success"><i class="bi bi-check-circle-fill"></i> 付款成功！感謝您的訂購</h2>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h3 class="card-title text-primary">訂單細節</h3>
+                <p class="card-text"><strong>訂單編號：</strong> <span th:text="${order.tourOrderId}"></span></p>
+                
+                <p th:if="${order.travelItinerary != null}">
+				  行程標題：<span th:text="${order.travelItinerary.travelPlan?.travelTitle}">無資料</span>
+				</p>
+				<p th:if="${order.travelItinerary == null}">
+				  行程資訊無法載入
+				</p>
+
+                <p class="card-text"><strong>總金額：</strong> <span th:text="${order.totalAmount}"></span> 元</p>
+                <p class="card-text"><strong>付款狀態：</strong> <span th:text="${order.tourOrderStatus}"></span></p>
+                <!-- 如果想加更多，像人數或日期，從${order}抓 -->
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="/member/orders" class="btn btn-primary"><i class="bi bi-list-check"></i> 查看我的訂單</a>
+        </div>
+    </div>
+
+    <!-- Cloudflare script，如果你專題有，保持原樣 -->
+    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96092877ad51a367',t:'MTc1Mjc0OTIxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
+</html>
