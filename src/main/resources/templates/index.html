@@ -132,6 +132,23 @@ h1, h2, h4, h5 {
 	font-size: 14px;
 }
 
+/* Anonymous user info styling - without avatar */
+.user-info-anonymous {
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	padding: 8px 15px;
+	border-radius: 5px;
+	transition: background-color 0.2s;
+	background-color: var(--earth-yellow);
+	color: white;
+	font-weight: 500;
+}
+
+.user-info-anonymous:hover {
+	background-color: #c4932a;
+}
+
 .dropdown-menu-custom {
 	position: absolute;
 	top: 100%;
@@ -729,13 +746,11 @@ footer {
 					</div>
 				</div>
 				
-				<!-- Login/Register for Anonymous Users -->
+				<!-- Login/Register for Anonymous Users - NO AVATAR -->
 				<div sec:authorize="isAnonymous()" class="user-menu">
 					<div class="user-dropdown">
-						<div class="user-info" onclick="toggleUserDropdown()">
-							<img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUiIGhlaWdodD0iMzUiIHZpZXdCb3g9IjAgMCAzNSAzNSUgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTcuNSIgY3k9IjE3LjUiIHI9IjE3LjUiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPgo8cGF0aCBkPSJNMTIgMTJjMi4yMSAwIDQtMS43OSA0LTRzLTEuNzktNC00LTQtNCAxLjc5LTQgNCAxLjc5IDQgNCA0em0wIDJjLTIuNjcgMC04IDEuMzQtOCA0djJoMTZ2LTJjMC0yLjY2LTUuMzMtNC04LTR6Ii8+Cjwvc3ZnPgo8L3N2Zz4K" 
-								 alt="預設大頭貼" class="user-avatar">
-							<span class="user-name">請先登入或註冊以享受完整的服務。</span>
+						<div class="user-info-anonymous" onclick="toggleUserDropdown()">
+							<span class="user-name">登入/註冊</span>
 						</div>
 						
 						<div class="dropdown-menu-custom" id="userDropdown">
@@ -889,7 +904,7 @@ footer {
 		// Close dropdown when clicking outside
 		document.addEventListener('click', function(event) {
 			const dropdown = document.getElementById('userDropdown');
-			const userInfo = document.querySelector('.user-info');
+			const userInfo = document.querySelector('.user-info, .user-info-anonymous');
 			
 			if (!userInfo.contains(event.target)) {
 				dropdown.classList.remove('show');
