@@ -1,0 +1,26 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>訂單編號</th>
+            <th>會員</th>
+            <th>行程編號</th>
+            <th>總金額</th>
+            <th>狀態</th>
+            <th>下單時間</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="order : ${orders}">
+            <td th:text="${order.tourOrderId}">1</td>
+            <td th:text="${order.member.memberName}">王小明</td>
+            <td th:text="${order.travelItineraryId}">101</td>
+            <td th:text="${order.totalAmount}">5000</td>
+            <td th:text="${order.tourOrderStatus}">未付款</td>
+            <td th:text="${#temporals.format(order.createTime, 'yyyy-MM-dd HH:mm')}"></td>
+            <td>
+                <a th:href="@{'/admin/orders/' + ${order.tourOrderId}}" class="btn btn-sm btn-info">詳情</a>
+            </td>
+        </tr>
+    </tbody>
+</table>

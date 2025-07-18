@@ -22,7 +22,7 @@
     <form th:action="@{'/admin/members/disable/' + ${member.memberId}}" method="post" style="display:inline;" onsubmit="return confirm('確定要切換狀態嗎？')">
         <button type="submit" class="btn btn-warning" th:text="${member.memberStatus == 1 ? '停權' : '啟用'}"></button>
     </form>
-    <a href="/list" class="btn btn-secondary">返回清單</a>
+    <a href="/admin/members/list" class="btn btn-secondary">返回清單</a>
 </div>
 </body>
 </html>

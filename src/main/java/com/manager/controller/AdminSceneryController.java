@@ -25,7 +25,7 @@ import com.scenery.model.SceneryService;
 
 @Controller
 @RequestMapping("/admin/scenery")
-public class adminSceneryController {
+public class AdminSceneryController {
 
 
 		@Autowired

@@ -3,44 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理員登入</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .login-container { background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); width: 300px; text-align: center; }
-        h2 { color: #333; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; text-align: left; }
-        label { display: block; margin-bottom: 5px; color: #555; }
-        input[type="text"], input[type="password"] { width: calc(100% - 20px); padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; }
-        button:hover { background-color: #0056b3; }
-        .error-message { color: red; margin-top: 10px; }
-    </style>
+    <title>管理員登入 - TravelTiger</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet" th:href="@{/css/managerLogin.css}"> 
 </head>
 <body>
+    <div class="header-section">
+        <div class="header-logo">TravelTiger</div>        
+        </div>
+    </div>
+
     <div class="login-container">
-        <h2>管理員登入</h2>
-        <h2>測試帳號:alice_mgr</h2>
-        <h2>測試密碼:alicePass123</h2>
+        <h2>Log in</h2>
         
+        <div class="test-credentials">
+            <h3>測試帳號: alice_mgr</h3>
+            <h3>測試密碼: alicePass123</h3>
+        </div>
+
         <div th:if="${param.error}" class="error-message">
             無效的帳號或密碼。
         </div>
 
-        <div th:if="${param.logout}" style="color: green; margin-top: 10px;">
+        <div th:if="${param.logout}" class="success-message">
             您已成功登出。
         </div>
 
         <form th:action="@{/manager/login}" method="post">
             <div class="form-group">
-                <label for="username">帳號:</label>
-                <input type="text" id="username" name="username" required>
+                <label for="username">account</label>
+                <input type="text" id="username" name="username" placeholder="tibame123" required>
             </div>
-            <div class="form-group">
-                <label for="password">密碼:</label>
-                <input type="password" id="password" name="password" required>
+            <div class="form-group password-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="8+ characters" required>
+                <button type="button" class="password-toggle" id="passwordToggle">Show</button>
             </div>
-            <button type="submit">登入</button>
+            <div class="forgot-password">
+                <a href="#">Forgot password</a>
+            </div>
+            <button type="submit">Let's go</button>
         </form>
     </div>
+
+    <div class="footer-logo">
+        <p>旅行使我們因世界之美而默然，卻也將我們變成說故事的人</p>
+        </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordField = document.getElementById('password');
+            const passwordToggle = document.getElementById('passwordToggle');
+
+            if (passwordField && passwordToggle) {
+                passwordToggle.addEventListener('click', function() {
+                    const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordField.setAttribute('type', type);
+                    this.textContent = type === 'password' ? 'Show' : 'Hide';
+                });
+            }
+        });
+    </script>
 </body>
 </html>

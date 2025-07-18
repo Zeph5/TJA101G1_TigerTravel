@@ -1,0 +1,93 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>訂單管理</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Bootstrap -->
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+<style>
+body {
+	padding: 2rem;
+	background-color: #f9f9f9;
+}
+
+.table thead th {
+	background-color: #f1f1f1;
+}
+
+.status-pending {
+	color: #f39c12;
+	font-weight: bold;
+}
+
+.status-paid {
+	color: #27ae60;
+	font-weight: bold;
+}
+
+.status-cancelled {
+	color: #e74c3c;
+	font-weight: bold;
+}
+</style>
+</head>
+<body>
+	<div class="container">
+		<h2 class="mb-4">訂單管理</h2>
+
+		<div class="mb-3 d-flex justify-content-between">
+			
+			<div class="text-muted" th:if="${!#lists.isEmpty(orders)}">
+				共 <strong th:text="${#lists.size(orders)}">0</strong> 筆訂單資料
+			</div>
+		</div>
+
+		<div th:if="${#lists.isEmpty(orders)}" class="alert alert-info">
+			尚無訂單資料。</div>
+
+		<div th:unless="${#lists.isEmpty(orders)}">
+			<div class="table-responsive">
+				<table class="table table-bordered table-hover align-middle">
+					<thead class="table-light">
+						<tr>
+							<th>訂單編號</th>
+							<th>會員名稱</th>
+							<th>行程編號</th>
+							<th>總金額</th>
+							<th>狀態</th>
+							<th>下單時間</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="order : ${orders}">
+							<td th:text="${order.tourOrderId}">1</td>
+							<td th:text="${order.memberName}">王小明</td>
+							<td th:text="${order.travelItineraryId}">101</td>
+							<td th:text="${order.totalAmount} + ' 元'">5000</td>
+							<td><span th:switch="${order.tourOrderStatus}"> <span
+									th:case="'未付款'" class="status-pending">未付款</span> <span
+									th:case="'已付款'" class="status-paid">已付款</span> <span
+									th:case="'已取消'" class="status-cancelled">已取消</span> <span
+									th:case="*">未知</span>
+							</span></td>
+							<td
+								th:text="${#temporals.format(order.createTime, 'yyyy-MM-dd HH:mm')}">2025-07-17
+								10:00</td>
+							<td><a th:href="@{'/admin/orders/' + ${order.tourOrderId}}"
+								class="btn btn-sm btn-outline-primary">詳情</a> <a
+								th:href="@{'/admin/orders/edit/' + ${order.tourOrderId}}"
+								class="btn btn-sm btn-outline-secondary">編輯</a></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
