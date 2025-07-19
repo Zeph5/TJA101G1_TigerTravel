@@ -2,74 +2,79 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>會員註冊</title>
+    <title>會員註冊 - 臺鴿旅遊</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="bg-gradient-to-r from-blue-100 to-blue-200 min-h-screen flex items-center justify-center">
+<body class="bg-gradient-to-r from-blue-50 to-blue-100 min-h-screen flex items-center justify-center p-4">
 
-<div class="bg-white shadow-2xl rounded-2xl p-10 w-full max-w-md animate-fade-in">
-    <h1 class="text-2xl font-bold text-center text-gray-700 mb-6">註冊會員</h1>
+<div class="bg-white shadow-xl rounded-3xl p-8 w-full max-w-lg transform transition-all duration-500 hover:scale-105 animate-fade-in">
+    <h1 class="text-3xl font-bold text-center text-blue-600 mb-8">註冊會員</h1>
 
-    <div th:if="${error}" class="text-red-600 text-sm mb-4 text-center" th:text="${error}"></div>
-    <div th:if="${message}" class="text-green-600 text-sm mb-4 text-center" th:text="${message}"></div>
+    <div th:if="${error}" class="bg-red-100 text-red-700 text-sm mb-6 p-3 rounded-lg text-center" th:text="${error}"></div>
+    <div th:if="${message}" class="bg-green-100 text-green-700 text-sm mb-6 p-3 rounded-lg text-center" th:text="${message}"></div>
 
-    <form th:action="@{/member/register}" method="post" enctype="multipart/form-data" th:object="${member}" class="space-y-4">
-        <div>
-            <label class="block text-sm font-medium">帳號</label>
-            <input type="text" th:field="*{memberAccount}" required class="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:ring-blue-400 focus:outline-none">
+    <form th:action="@{/member/register}" method="post" enctype="multipart/form-data" th:object="${member}" class="space-y-6">
+        <div class="relative">
+            <label class="block text-sm font-medium text-gray-700">帳號</label>
+            <input type="text" th:field="*{memberAccount}" required class="w-full mt-1 p-3 border border-blue-200 rounded-xl">
+            <p class="text-red-500 text-sm" th:if="${#fields.hasErrors('memberAccount')}" th:errors="*{memberAccount}"></p>
+        </div>
+
+        <div class="relative">
+            <label class="block text-sm font-medium text-gray-700">密碼</label>
+            <input type="password" th:field="*{memberPassword}" id="memberPassword" oninput="checkPasswordMatch()" required class="w-full mt-1 p-3 border border-blue-200 rounded-xl">
+            <p class="text-red-500 text-sm" th:if="${#fields.hasErrors('memberPassword')}" th:errors="*{memberPassword}"></p>
+        </div>
+
+        <div class="relative">
+            <label class="block text-sm font-medium text-gray-700">再次輸入密碼</label>
+            <input type="password" id="confirmPassword" oninput="checkPasswordMatch()" required class="w-full mt-1 p-3 border border-blue-200 rounded-xl">
+            <span id="pw-warning" class="text-red-500 text-sm absolute right-0 top-10"></span>
+        </div>
+
+        <div class="relative">
+            <label class="block text-sm font-medium text-gray-700">姓名</label>
+            <input type="text" th:field="*{memberName}" required class="w-full mt-1 p-3 border border-blue-200 rounded-xl">
+            <p class="text-red-500 text-sm" th:if="${#fields.hasErrors('memberName')}" th:errors="*{memberName}"></p>
+        </div>
+
+        <div class="relative">
+            <label class="block text-sm font-medium text-gray-700">電話</label>
+            <input type="text" th:field="*{memberPhone}" class="w-full mt-1 p-3 border border-blue-200 rounded-xl">
+            <p class="text-red-500 text-sm" th:if="${#fields.hasErrors('memberPhone')}" th:errors="*{memberPhone}"></p>
+        </div>
+
+        <div class="relative">
+            <label class="block text-sm font-medium text-gray-700">地址</label>
+            <input type="text" th:field="*{memberAddress}" class="w-full mt-1 p-3 border border-blue-200 rounded-xl">
+            <p class="text-red-500 text-sm" th:if="${#fields.hasErrors('memberAddress')}" th:errors="*{memberAddress}"></p>
+        </div>
+
+        <div class="relative">
+            <label class="block text-sm font-medium text-gray-700">Email</label>
+            <input type="email" th:field="*{memberEmail}" required class="w-full mt-1 p-3 border border-blue-200 rounded-xl">
+            <p class="text-red-500 text-sm" th:if="${#fields.hasErrors('memberEmail')}" th:errors="*{memberEmail}"></p>
         </div>
 
         <div>
-            <label class="block text-sm font-medium">密碼</label>
-            <input type="password" th:field="*{memberPassword}" id="memberPassword" oninput="checkPasswordMatch()" required class="w-full mt-1 p-2 border border-gray-300 rounded-lg">
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium">再次輸入密碼</label>
-            <input type="password" id="confirmPassword" oninput="checkPasswordMatch()" required class="w-full mt-1 p-2 border border-gray-300 rounded-lg">
-            <span id="pw-warning" class="text-red-500 text-sm"></span>
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium">姓名</label>
-            <input type="text" th:field="*{memberName}" required class="w-full mt-1 p-2 border border-gray-300 rounded-lg">
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium">電話</label>
-            <input type="text" th:field="*{memberPhone}" placeholder="請輸入聯絡電話" class="w-full mt-1 p-2 border border-gray-300 rounded-lg">
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium">地址</label>
-            <input type="text" th:field="*{memberAddress}" placeholder="請輸入通訊地址" class="w-full mt-1 p-2 border border-gray-300 rounded-lg">
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium">Email</label>
-            <input type="email" th:field="*{memberEmail}" required class="w-full mt-1 p-2 border border-gray-300 rounded-lg">
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium">頭像</label>
-            <input type="file" name="avatarFile" onchange="previewImage(this)" class="block mt-1">
-            <img id="preview" class="mt-2 rounded-xl border max-w-full max-h-40 hidden"/>
+            <label class="block text-sm font-medium text-gray-700">頭像</label>
+            <input type="file" name="avatarFile" onchange="previewImage(this)" class="block mt-1 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100">
+            <img id="preview" class="mt-4 rounded-2xl border border-blue-200 max-w-full max-h-48 hidden shadow-md" />
         </div>
 
         <div th:if="${session.avatarBytes != null}">
-            <label class="block text-sm font-medium">目前圖像預覽</label>
-            <img th:src="'data:image/jpeg;base64,' + ${session.avatarPreview}" class="rounded-xl border max-w-full max-h-40 mt-2"/>
+            <label class="block text-sm font-medium text-gray-700">目前圖像預覽</label>
+            <img th:src="'data:image/jpeg;base64,' + ${session.avatarPreview}" class="rounded-2xl border border-blue-200 max-w-full max-h-48 mt-4 shadow-md" />
         </div>
 
-        <button type="submit" name="action" value="register" id="submitBtn"
-                class="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-md transition-all duration-300">
+        <button type="submit" name="action" value="register" id="submitBtn" class="w-full py-3 px-4 bg-blue-400 hover:bg-blue-500 text-white rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
             完成註冊
         </button>
     </form>
 
-    <p class="text-center text-sm text-gray-600 mt-4">
-        已有帳號？ <a th:href="@{/login}" class="text-blue-500 hover:underline">前往登入</a>
+    <p class="text-center text-sm text-gray-600 mt-6">
+        已有帳號？ <a th:href="@{/login}" class="text-blue-500 hover:text-blue-600 hover:underline transition-all duration-300">前往登入</a>
     </p>
 </div>
 
