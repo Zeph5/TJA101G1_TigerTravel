@@ -3,58 +3,159 @@
 <head>
     <title>旅行計畫管理</title>
     <meta charset="UTF-8">
-    <link rel="stylesheet" th:href="@{/css/styles.css}" /> <style>
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .actions a { margin-right: 10px; text-decoration: none; color: blue; }
-        .actions button { background: none; border: none; color: red; cursor: pointer; text-decoration: underline; }
-        .create-button { margin-bottom: 20px; display: inline-block; padding: 10px 15px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px;}
-        .alert { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; }
-        .alert-success { color: #3c763d; background-color: #dff0d8; border-color: #d6e9c6; }
-        .alert-danger { color: #a94442; background-color: #f2dede; border-color: #ebccd1; }
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f6f8;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+        }
+
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+        }
+
+        .create-button, .btn-delete-selected {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 16px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .btn-delete-selected {
+            background-color: #dc3545;
+            margin-left: 10px;
+        }
+
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .travel-card {
+            background-color: white;
+            width: 280px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .travel-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .travel-card .card-body {
+            padding: 15px;
+        }
+
+        .travel-card .card-body h4 {
+            margin: 0 0 10px;
+            font-size: 18px;
+        }
+
+        .travel-card .card-body p {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .travel-card .info {
+            font-size: 12px;
+            color: #777;
+            margin-top: 8px;
+        }
+
+        .travel-card .actions {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .travel-card .actions a,
+        .travel-card .actions button {
+            font-size: 12px;
+            color: #007bff;
+            text-decoration: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .select-checkbox {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            transform: scale(1.2);
+        }
     </style>
 </head>
 <body>
-    <h1>旅行計畫列表</h1>
 
-    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+<h1>旅行計畫列表</h1>
 
-    <a th:href="@{/admin/travelplans/new}" class="create-button">新增旅行計畫</a>
+<div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+<div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
-    <table border="1">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>標題</th>
-                <th>描述</th>
-                <th>橫幅圖片</th>
-                <th>發布日期</th>
-                <th>最後修改</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="plan : ${travelPlans}">
-                <td th:text="${plan.travelPlanId}">1</td>
-                <td th:text="${plan.travelTitle}">台灣環島十日遊</td>          <td th:text="${plan.travelPlanDescription}">探索台灣的美麗風光和文化</td> <td>
-                    <img th:if="${plan.travelPlanBannerUrl}" th:src="@{${plan.travelPlanBannerUrl}}" alt="Banner" style="width: 100px; height: auto;"> <span th:unless="${plan.travelPlanBannerUrl}">無圖片</span> </td>
-                <td th:text="${#temporals.format(plan.publishedDate, 'yyyy-MM-dd HH:mm')}">2023-01-01</td>
-                <td th:text="${#temporals.format(plan.lastModifiedDate, 'yyyy-MM-dd HH:mm')}">2023-01-01</td>
-                <td class="actions">
-                   <a th:href="@{/admin/travelplans/{id}/edit(id=${plan.travelPlanId})}">編輯</a>
-                    <form th:action="@{/admin/travelplans/{id}(id=${plan.travelPlanId})}" method="post" style="display:inline;"
-                          onsubmit="return confirm('您確定要刪除這個旅行計畫嗎？');">
-                        <input type="hidden" name="_method" value="delete" /> <button type="submit">刪除</button>
-                    </form>
-                    <a th:href="@{/admin/travelplans/{id}/itinerary(id=${plan.travelPlanId})}">詳情</a>
-                </td>
-            </tr>
-            <tr th:if="${#lists.isEmpty(travelPlans)}">
-                <td colspan="7">目前沒有旅行計畫。</td>
-            </tr>
-        </tbody>
-    </table>
+<a th:href="@{/admin/travelplans/new}" class="create-button">新增旅行計畫</a>
+
+<form th:action="@{/admin/travelplans/batch-delete}" method="post"
+      onsubmit="return confirm('確定要刪除選取的所有旅行計畫嗎？');">
+    <button type="submit" class="btn-delete-selected">一鍵刪除</button>
+
+    <div class="card-container">
+        <div th:each="plan : ${travelPlans}" class="travel-card">
+            <input type="checkbox" class="select-checkbox" name="planIds" th:value="${plan.travelPlanId}"/>
+
+            <img th:if="${plan.travelPlanBannerUrl}" th:src="@{${plan.travelPlanBannerUrl}}" alt="Banner">
+            <div th:unless="${plan.travelPlanBannerUrl}" style="height:180px; background-color:#ddd; display:flex; align-items:center; justify-content:center;">
+                無圖片
+            </div>
+
+            <div class="card-body">
+                <h4 th:text="${plan.travelTitle}">旅遊標題</h4>
+                <p th:text="${plan.travelPlanDescription}">旅遊描述</p>
+                <div class="info">
+                    發布：<span th:text="${#temporals.format(plan.publishedDate, 'yyyy-MM-dd')}"></span><br>
+                    更新：<span th:text="${#temporals.format(plan.lastModifiedDate, 'yyyy-MM-dd')}"></span>
+                </div>
+            </div>
+
+            <div class="actions">
+                <a th:href="@{/admin/travelplans/{id}/edit(id=${plan.travelPlanId})}">編輯</a>
+                <form th:action="@{/admin/travelplans/{id}/delete(id=${plan.travelPlanId})}" method="post"
+                      onsubmit="return confirm('您確定要刪除這個旅行計畫嗎？');">
+                    <button type="submit">刪除</button>
+                </form>
+                <a th:href="@{/admin/travelplans/{id}/itinerary(id=${plan.travelPlanId})}">詳情</a>
+            </div>
+        </div>
+    </div>
+
+</form>
+
 </body>
 </html>

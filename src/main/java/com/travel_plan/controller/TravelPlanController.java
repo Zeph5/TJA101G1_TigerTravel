@@ -66,7 +66,7 @@ public class TravelPlanController {
 		return "admin/travelplans/form_step1_plan_details";
 	}
 
-	@PostMapping // 使用者在 form_step1_plan_details.html 頁面填寫完資料並點擊「下一步」按鈕時觸發這個方法。
+	@PostMapping 
 	public String createTravelPlan(@Valid @ModelAttribute("travelPlanCreationDto") TravelPlanCreationDTO dto,
 			BindingResult result, RedirectAttributes redirectAttributes,
 			@RequestParam(value = "bannerImage", required = false) MultipartFile bannerImage, HttpSession session,
@@ -110,7 +110,7 @@ public class TravelPlanController {
 		TravelPlanCreationDTO dto = travelPlanService.convertToCreationDto(existingPlan);
 
 		model.addAttribute("travelPlanCreationDto", dto); // 將 DTO 傳遞到前端表單
-
+		model.addAttribute("travelPlanBannerUrl", existingPlan.getBannerImageUrl()); // 傳遞當前計畫的橫幅圖片 URL
 		session.setAttribute("currentTravelPlanId", id); // 將當前計畫 ID 儲存到 Session 中，供後續使用
 		session.removeAttribute("currentTravelItineraryId"); // 清除可能存在的行程 ID，因為編輯計畫時不需要行程 ID
 
@@ -141,10 +141,7 @@ public class TravelPlanController {
 	    }
 
 	    return "admin/travelplans/preview_full_plan"; // 一個新的 Thymeleaf 模板來顯示預覽
-	}
-	
-	
-	
+	}	
 		
 	}
 

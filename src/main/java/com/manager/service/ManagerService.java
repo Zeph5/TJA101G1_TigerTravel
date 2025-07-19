@@ -12,6 +12,8 @@ public interface ManagerService {
 
 	String register(ManagerRegisterDTO registerDTO);
 
+	boolean checkEmailExists(String email);
+
 	
 
 	

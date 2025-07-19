@@ -1,4 +1,4 @@
-	package com.manager.service;
+	package com.manager.service.Impl;
 	
 	import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +8,7 @@ import com.manager.model.Manager;
 import com.manager.model.DTO.ManagerLoginDTO;
 	import com.manager.model.DTO.ManagerRegisterDTO;
 import com.manager.repository.ManagerRepository;
+import com.manager.service.ManagerService;
 
 	
 	
@@ -16,6 +17,7 @@ import com.manager.repository.ManagerRepository;
 		
 		@Autowired
 		private ManagerRepository managerRepository;
+		
 		
 		@Override
 		public String login(ManagerLoginDTO loginDTO) {
@@ -40,6 +42,11 @@ import com.manager.repository.ManagerRepository;
 			
 			managerRepository.save(managerRegister);
 			return "帳號已創建";
+		}
+
+		@Override
+		public boolean checkEmailExists(String email) {
+			 return managerRepository.findByEmail(email).isPresent();
 		}
 		
 		

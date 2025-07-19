@@ -47,7 +47,7 @@ public class SecurityConfig {
     		AuthenticationProvider managerAuthenticationProvider) throws Exception {
         http.securityMatcher("/manager/**") // 這個規則只看「管理者專屬的路」
                 .authorizeHttpRequests(auth -> auth // 定義「誰能走，誰不能走」
-                        .requestMatchers("/manager/register", "/manager/login").permitAll() // 對所有人（包括未登入的訪客）開放
+                        .requestMatchers("/manager/register", "/manager/login","/manager/forgetPassword","/manager/forgetPasswordSuccess").permitAll() // 對所有人（包括未登入的訪客）開放
                         .anyRequest().hasRole("ADMIN") // 其他所有 /manager/** 頁面需要 ADMIN 角色
                 ).formLogin(form -> form // 定義「怎麼登入」
                         .loginPage("/manager/login") // Manager 的登入頁面 URL

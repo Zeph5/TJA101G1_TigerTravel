@@ -1,254 +1,283 @@
-/* Header 排版區 */
+/* ===== 背景 ===== */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Noto Sans TC', sans-serif;
+  overflow: hidden;
+}
+
+.background {
+  background: url(/images/train_bg.jpg) no-repeat center center;
+  background-size: cover;
+  filter: blur(8px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+}
+
+/* ===== Header ===== */
 .site-header {
-	display: flex;
-	align-items: center;
-	padding: 20px 40px;
-	background-color: #ffffff;
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	z-index: 10;
+  display: flex;
+  align-items: center;
+  padding: 20px 40px;
+  background-color: transparent;
+  position: relative;
+  width: 100%;
+  z-index: 3;
 }
 
 .logo-wrapper {
-	display: flex;
-	align-items: center;
-	gap: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .logo-img {
-	height: 48px;
+  height: 48px;
 }
 
 .site-title {
-	font-size: 20px;
-	font-weight: bold;
-	color: #1e88e5;
+  font-size: 20px;
+  font-weight: bold;
+  color: #1e88e5;
 }
 
-/* 讓 login container 不會被 header 擋到 */
+/* ===== 登入容器區 ===== */
+.login-wrapper {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 40px; /* 預留底部空間避免文字貼底 */
+}
+
 .login-container {
-	margin-top: 100px;
+  background-color: rgba(255, 255, 255, 0.92);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+  max-width: 420px;
+  width: 90%;
+  box-sizing: border-box;
+  backdrop-filter: blur(2px);
+  text-align: center;
 }
-
-body {
-	font-family: Arial, sans-serif;
-	background-color: #F8F7F4; /* 接近圖片的淺灰白色背景 */
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	min-height: 100vh;
-	margin: 0;
-	padding: 20px; /* 確保上下左右都有一些空間 */
-	box-sizing: border-box; /* 避免 padding 導致溢出 */
-}
-
-/* 登入容器 */
-.login-container {
-	background-color: #fff;
-	padding: 40px; /* 增加內邊距 */
-	border-radius: 12px; /* 更圓潤的邊角 */
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* 更明顯的陰影 */
-	width: 100%;
-	max-width: 400px; /* 限制最大寬度，類似圖片 */
+.login-container h2 {
 	text-align: center;
-	box-sizing: border-box;
-	position: relative; /* 用於定位其他元素 */
+  font-size: 28px;
+  margin-bottom: 20px;
+  color: #1e88e5;
+  font-weight: 600;
 }
 
-/* 標題 */
+/* ===== 表單樣式 ===== */
 h2 {
-	color: #333;
-	margin-bottom: 25px; /* 增加標題下方間距 */
-	font-size: 28px; /* 調整字體大小 */
-	font-weight: 600; /* 更粗的字體 */
-	text-align: left; /* 標題左對齊 */
+  text-align: left;
+  color: #333;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 25px;
 }
 
-/* 測試帳密提示 */
 .test-credentials {
-	text-align: left; /* 左對齊 */
-	margin-bottom: 20px;
-	color: #666;
-	font-size: 14px;
-	line-height: 1.5;
+  text-align: left;
+  margin-bottom: 20px;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .test-credentials h3 {
-	margin: 5px 0;
-	font-size: 15px;
-	font-weight: normal;
+  margin: 5px 0;
+  font-size: 15px;
+  font-weight: normal;
 }
 
-/* 錯誤和登出訊息 */
-.error-message {
-	color: #dc3545; /* 紅色 */
-	background-color: #ffeaea; /* 淺紅色背景 */
-	padding: 10px;
-	border-radius: 6px;
-	margin-bottom: 15px;
-	font-size: 14px;
-	text-align: left;
-}
-
-.success-message {
-	color: #28a745; /* 綠色 */
-	background-color: #eafbea; /* 淺綠色背景 */
-	padding: 10px;
-	border-radius: 6px;
-	margin-bottom: 15px;
-	font-size: 14px;
-	text-align: left;
-}
-
-/* 表單組 */
 .form-group {
-	margin-bottom: 20px; /* 增加組間距 */
-	text-align: left;
+  margin-bottom: 20px;
+  text-align: left;
 }
 
-/* 輸入框和標籤 */
 label {
-	display: block;
-	margin-bottom: 8px; /* 增加標籤與輸入框的間距 */
-	color: #333; /* 更深的顏色 */
-	font-weight: 500;
-	font-size: 15px;
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-size: 15px;
 }
 
-input[type="text"], input[type="password"] {
-	width: 100%; /* 佔滿可用寬度 */
-	padding: 12px 15px; /* 增加內邊距 */
-	border: 1px solid #e0e0e0; /* 更淺的邊框 */
-	border-radius: 8px; /* 更圓潤的邊角 */
-	box-sizing: border-box;
-	font-size: 16px;
-	color: #333;
-	outline: none; /* 移除預設的聚焦邊框 */
-	transition: border-color 0.2s ease; /* 平滑過渡效果 */
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
 }
 
-input[type="text"]:focus, input[type="password"]:focus {
-	border-color: #007bff; /* 聚焦時的邊框顏色 */
-}
-
-/* 密碼欄位特定樣式 */
 .password-group {
-	position: relative; /* 為了定位 'Show'/'Hide' 按鈕 */
+  position: relative;
 }
 
 .password-group input {
-	padding-right: 60px; /* 為 'Show'/'Hide' 按鈕預留空間 */
+  padding-right: 40px;
 }
 
 .password-toggle {
-	position: absolute;
-	right: 15px;
-	top: 50%; /* 相對於 input 的垂直置中 */
-	transform: translateY(-50%);
-	background: none;
-	border: none;
-	color: #888;
-	font-size: 14px;
-	cursor: pointer;
-	padding: 5px;
-	outline: none;
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #888;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%; /* 讓 icon 能在整個 input 高度中置中 */
 }
+
+.password-toggle i {
+  pointer-events: none; /* 點擊只作用在 button，不是 icon 本身 */
+}
+
 
 .password-toggle:hover {
-	color: #333;
+  color: #333;
 }
 
-/* 忘記密碼連結 */
+
 .forgot-password {
-	text-align: right; /* 右對齊 */
-	margin-top: -10px; /* 調整位置 */
-	margin-bottom: 25px; /* 增加下方間距 */
+  text-align: right;
+  margin-top: -10px;
+  margin-bottom: 25px;
 }
 
 .forgot-password a {
-	color: #007bff; /* 連結顏色 */
-	text-decoration: none;
-	font-size: 14px;
+  color: #007bff;
+  text-decoration: none;
+  font-size: 14px;
 }
 
 .forgot-password a:hover {
-	text-decoration: underline;
+  text-decoration: underline;
 }
 
-/* 登入按鈕 */
 button[type="submit"] {
-	background-color: #2a2a2a; /* 深色背景 */
-	color: white;
-	padding: 15px 20px; /* 增加內邊距 */
-	border: none;
-	border-radius: 10px; /* 更圓潤的邊角 */
-	cursor: pointer;
-	font-size: 18px; /* 較大字體 */
-	width: 100%;
-	display: flex; /* 使用 flexbox 讓內容水平置中 */
-	justify-content: center;
-	align-items: center;
-	font-weight: 600;
-	transition: background-color 0.2s ease;
+  background-color: #2a2a2a;
+  color: white;
+  padding: 15px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 18px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
 }
 
 button[type="submit"]:hover {
-	background-color: #000; /* hover 時更深色 */
+  background-color: #000;
 }
 
-button[type="submit"]::after { /* 向右箭頭 */
-	content: '→';
-	margin-left: 10px;
-	font-size: 20px;
-	line-height: 1;
+button[type="submit"]::after {
+  content: ' →';
+  margin-left: 10px;
+  font-size: 20px;
 }
 
-/* 底部 Logo (參考圖片風格，但這個不會包含在 login-container 裡，需要外層包裝) */
+/* ===== 提示訊息 ===== */
+.error-message {
+  color: #dc3545;
+  background-color: #ffeaea;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  text-align: left;
+}
+
+.success-message {
+  color: #28a745;
+  background-color: #eafbea;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  text-align: left;
+}
+
+/* ===== 名言文字區 ===== */
 .footer-logo {
-	position: absolute; /* 相對於 body 或其他容器定位 */
-	bottom: 20px;
-	left: 50%;
-	transform: translateX(-50%);
-	color: #bbb;
-	font-size: 18px;
+  margin-top: 12px;           /* 與登入框的距離（可再微調） */
+  margin-bottom: 40px;           /* 不用保留過多底部空間 */
+  padding-bottom: 30px;       /* 預留底部距離，防止貼到邊 */
+  text-align: center;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  line-height: 1.5;
 }
 
-.footer-logo span {
-	font-weight: bold;
-	color: #888;
+
+/* 忘記密碼描述段落 */
+.form-desc {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 24px;
+  line-height: 1.6;
+  text-align: left;
 }
 
-/* 頁面頂部 Logo 和 Create An Account (如果需要加入) */
-.header-section {
-	position: absolute;
-	top: 20px;
-	width: 100%;
-	max-width: 900px; /* 圖片中 header 寬度好像比 login-container 寬 */
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 0 20px;
-	box-sizing: border-box;
+
+
+
+/* 調整電子郵件輸入框大小 */
+.form-group input[type="email"] {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
 }
 
-.header-logo {
-	font-size: 18px;
-	font-weight: bold;
-	color: #333;
+.form-group input[type="email"]:focus {
+  border-color: #1e88e5;
+  outline: none;
 }
 
-.create-account {
-	font-size: 14px;
+/* 按鈕縮小 */
+.submit-btn {
+  background-color: #1e88e5;
+  color: white;
+  padding: 10px 16px;   /* 縮小內距 */
+  border: none;
+  border-radius: 6px;
+  width: 100%;
+  font-size: 14px;      /* 字體小一點 */
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-.create-account a {
-	color: #007bff;
-	text-decoration: none;
+.submit-btn:hover {
+  background-color: #1565c0;
 }
 
-.create-account a:hover {
-	text-decoration: underline;
-}

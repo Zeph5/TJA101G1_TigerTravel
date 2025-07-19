@@ -1,107 +1,126 @@
 <!DOCTYPE html>
 <html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>新增/編輯旅行計畫 - 步驟 1: 旅行計畫</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            padding-top: 50px;
-            background-color: #f8f9fa;
-        }
-        .container {
-            max-width: 700px;
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #333;
-        }
-        .error-message {
-            color: red;
-            font-size: 0.875em;
-            margin-top: 0.25em;
-        }
-        .required {
-            color: red;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新增/編輯旅行計畫 - 步驟 1: 旅行計畫</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+<style>
+body {
+	padding-top: 50px;
+	background-color: #f8f9fa;
+}
+
+.container {
+	max-width: 700px;
+	background-color: #fff;
+	padding: 30px;
+	border-radius: 8px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+	text-align: center;
+	margin-bottom: 30px;
+	color: #333;
+}
+
+.error-message {
+	color: red;
+	font-size: 0.875em;
+	margin-top: 0.25em;
+}
+
+.required {
+	color: red;
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <h2>新增/編輯旅行計畫 - 步驟 1: 旅行計畫</h2>
-        <p class="text-muted text-center">請輸入旅行計畫的基本資訊。</p>
+	<div class="container">
+		<h2>新增/編輯旅行計畫 - 步驟 1: 旅行計畫</h2>
+		<p class="text-muted text-center">請輸入旅行計畫的基本資訊。</p>
 
-        <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+		<div th:if="${successMessage}" class="alert alert-success"
+			role="alert" th:text="${successMessage}"></div>
+		<div th:if="${errorMessage}" class="alert alert-danger" role="alert"
+			th:text="${errorMessage}"></div>
 
-        <form th:action="@{/admin/travelplans}" th:object="${travelPlanCreationDto}" method="post" enctype="multipart/form-data">
-            <input type="hidden" th:field="*{travelPlanId}" />
+		<form th:action="@{/admin/travelplans}"
+			th:object="${travelPlanCreationDto}" method="post"
+			enctype="multipart/form-data">
+			<input type="hidden" th:field="*{travelPlanId}" />
 
-            <div class="mb-3">
-                <label for="travelTitle" class="form-label">標題: <span class="required">*</span></label>
-                <input type="text"
-                       id="travelTitle"
-                       th:field="*{travelTitle}"
-                       class="form-control"
-                       required
-                       maxlength="100"
-                       placeholder="請輸入旅行計畫標題..." />
-                <p th:if="${#fields.hasErrors('travelTitle')}"
-                   th:errors="*{travelTitle}"
-                   class="error-message"></p>
-            </div>
+			<div class="mb-3">
+				<label for="travelTitle" class="form-label">標題: <span
+					class="required">*</span></label> <input type="text" id="travelTitle"
+					th:field="*{travelTitle}" class="form-control" required
+					maxlength="100" placeholder="請輸入旅行計畫標題..." />
+				<p th:if="${#fields.hasErrors('travelTitle')}"
+					th:errors="*{travelTitle}" class="error-message"></p>
+			</div>
 
-            <div class="mb-3">
-                <label for="travelPlanDescription" class="form-label">描述: <span class="required">*</span></label>
-                <textarea id="travelPlanDescription"
-                          th:field="*{travelPlanDescription}"
-                          class="form-control"
-                          rows="4"
-                          required
-                          minlength="10"
-                          maxlength="1000"
-                          placeholder="請輸入旅行計畫描述..."></textarea>
-                <p th:if="${#fields.hasErrors('travelPlanDescription')}"
-                   th:errors="*{travelPlanDescription}"
-                   class="error-message"></p>
-            </div>
+			<div class="mb-3">
+				<label for="travelPlanDescription" class="form-label">描述: <span
+					class="required">*</span></label>
+				<textarea id="travelPlanDescription"
+					th:field="*{travelPlanDescription}" class="form-control" rows="4"
+					required minlength="10" maxlength="1000" placeholder="請輸入旅行計畫描述..."></textarea>
+				<p th:if="${#fields.hasErrors('travelPlanDescription')}"
+					th:errors="*{travelPlanDescription}" class="error-message"></p>
+			</div>
 
-            <div class="mb-3">
-                <label for="bannerImage" class="form-label">橫幅圖片:</label>
-                <input type="file"
-                       id="bannerImage"
-                       name="bannerImage"  class="form-control"
-                       accept="image/*" />
-                <div class="form-text">支援格式：JPG, PNG, GIF (最大 5MB)</div>
-                <p th:if="${#fields.hasErrors('bannerImage')}"
-                   th:errors="*{bannerImage}"
-                   class="error-message"></p>
+			<div class="mb-3">
+				<label for="bannerImage" class="form-label">橫幅圖片:</label>
 
-                <div th:if="${travelPlanBannerUrl}">
-                    <p class="mt-2">目前圖片:</p>
-                    <img th:src="${travelPlanBannerUrl}"
-                         alt="現有橫幅圖片"
-                         style="max-width: 200px; height: auto;"
-                         class="img-thumbnail" />
-                </div>
-            </div>
+				<!-- 顯示現有圖片預覽 -->
+				<div th:if="${travelPlanBannerUrl}">
+					<p class="mt-2">目前圖片:</p>
+					<img th:src="${travelPlanBannerUrl}" alt="現有橫幅圖片"
+						class="img-thumbnail" style="max-width: 200px; height: auto;"
+						id="existingBannerPreview" />
 
-            <div class="d-grid gap-2 mt-4">
-                <button type="submit" class="btn btn-primary btn-lg">完成</button>
-                <a href="/admin/travelplans" class="btn btn-secondary">取消</a>
-            </div>
-        </form>
-    </div>
+					<!-- ✅ 刪除圖片選項 -->
+					<div class="form-check mt-2">
+						<input class="form-check-input" type="checkbox"
+							id="deleteBannerCheckbox" name="deleteBanner"> <label
+							class="form-check-label" for="deleteBannerCheckbox">
+							移除目前圖片 </label>
+					</div>
+				</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        
-    </script>
+				<!-- ✅ 新上傳圖的 input 與預覽 -->
+				<input type="file" id="bannerImage" name="bannerImage"
+					class="form-control mt-3" accept="image/*"
+					onchange="previewNewBannerImage()" />
+				<div class="form-text">支援格式：JPG, PNG, GIF (最大 5MB)</div>
+
+				<!-- 即時預覽新圖 -->
+				<div class="mt-2" id="newBannerPreviewBlock" style="display: none;">
+					<p>新圖片預覽：</p>
+					<img id="newBannerPreview" class="img-thumbnail"
+						style="max-width: 200px;">
+				</div>
+
+				<!-- 錯誤訊息顯示 -->
+				<p th:if="${#fields.hasErrors('bannerImage')}"
+					th:errors="*{bannerImage}" class="error-message"></p>
+			</div>
+
+
+			<div class="d-grid gap-2 mt-4">
+				<button type="submit" class="btn btn-primary btn-lg">完成</button>
+				<a href="/admin/travelplans" class="btn btn-secondary">取消</a>
+			</div>
+		</form>
+	</div>
+
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		
+	</script>
 </body>
 </html>
