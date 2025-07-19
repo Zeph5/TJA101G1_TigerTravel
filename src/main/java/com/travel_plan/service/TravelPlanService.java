@@ -72,5 +72,7 @@ public interface TravelPlanService {
 	
 	List<TravelPlan> searchByTitle(String keyword);
 
+	Optional<TravelPlan> findById(Integer id); //01新增
+
 	
 }

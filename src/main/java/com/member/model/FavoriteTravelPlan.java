@@ -68,4 +68,6 @@ public class FavoriteTravelPlan {
 		this.travelPlan = travelPlan;
 	}
 	
+	
+	
 }

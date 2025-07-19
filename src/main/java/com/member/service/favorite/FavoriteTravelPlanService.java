@@ -12,37 +12,13 @@ import com.member.model.MemberRepository;
 import com.member.model.memVO;
 import com.travel_plan.model.TravelPlan;
 
-@Service
-public class FavoriteTravelPlanService {
+public interface FavoriteTravelPlanService {
+	boolean existsByMember_MemberIdAndTravelPlan_TravelPlanId(Integer memberId, Integer travelPlanId);
 
-    private final FavoriteTravelPlanRepository favoriteTravelPlanRepo;
+    void deleteByMember_MemberIdAndTravelPlan_TravelPlanId(Integer memberId, Integer travelPlanId);
+
+    FavoriteTravelPlan save(FavoriteTravelPlan favorite);
     
-    private final MemberRepository memberRepository;
-    
-    public FavoriteTravelPlanService(FavoriteTravelPlanRepository favoriteTravelPlanRepo,
-    									MemberRepository memberRepository) {
-        this.favoriteTravelPlanRepo = favoriteTravelPlanRepo;
-        this.memberRepository = memberRepository;
-    }
-
-    public List<TravelPlan> getTravelPlansByMember(memVO member) {
-    	memVO realMember = memberRepository.findById(member.getMemberId()).orElse(null);
-        if (realMember == null) return Collections.emptyList();
-        
-        System.out.println("會員ID: " + realMember.getMemberId());
-        System.out.println("會員帳號: " + realMember.getMemberAccount());
-
-        List<FavoriteTravelPlan> list = favoriteTravelPlanRepo.findByMember(realMember);
-        System.out.println("查詢收藏筆數: " + list.size());
-
-
-        return favoriteTravelPlanRepo.findByMember(realMember)
-                .stream()
-                .map(FavoriteTravelPlan::getTravelPlan)
-                .collect(Collectors.toList());
-    }
-    
-    
-
+    List<TravelPlan> getTravelPlansByMember(memVO member);
     
 }
