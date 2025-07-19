@@ -3,12 +3,15 @@ package com.member.controller;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -362,62 +365,100 @@ public class MemberController {
 		return "member/password/changePassword";
 	}
 
-	@PostMapping("/forgot")
-	public String processForgotPassword(@RequestParam("email") String email, Model model) {
-		System.out.println("🔔 [DEBUG] 進入 forgot controller！");
-		System.out.println("🔎 [DEBUG] 使用者輸入的 email: " + email);
+    
+    @PostMapping("/forgot")
+    public String processForgotPassword(@RequestParam("email") String email, Model model) {
+        System.out.println("🔔 [DEBUG] 進入 forgot controller！");
+        System.out.println("🔎 [DEBUG] 使用者輸入的 email: " + email);
 
-		Optional<memVO> optional = memberRepository.findByMemberEmail(email);
+        Optional<memVO> optional = memberRepository.findByMemberEmail(email);
 
-		if (optional.isPresent()) {
-			memVO member = optional.get();
-			System.out.println("✅ [DEBUG] 找到會員帳號: " + member.getMemberAccount());
-			memberService.generateResetToken(member);
-			model.addAttribute("msg", "重設密碼連結已寄出，請檢查您的信箱");
-		} else {
-			System.out.println("❌ [DEBUG] 查無此 email！");
-			model.addAttribute("error", "查無此 Email，請確認輸入是否正確");
-		}
+        if (optional.isPresent()) {
+            memVO member = optional.get();
+            System.out.println("✅ [DEBUG] 找到會員帳號: " + member.getMemberAccount());
+            memberService.generateResetToken(member);
+            model.addAttribute("msg", "重設密碼連結已寄出，請檢查您的信箱");
+        } else {
+            System.out.println("❌ [DEBUG] 查無此 email！");
+            model.addAttribute("error", "查無此 Email，請確認輸入是否正確");
+        }
 
-		return "member/password/forgotPassword";
-	}
+        return "member/password/forgotPassword";
+    }
 
-	@PostMapping("/reset")
-	public String processResetPassword(@RequestParam("token") String token,
-			@RequestParam("newPassword") String newPassword, @RequestParam("confirmPassword") String confirmPassword,
-			Model model) {
-		System.out.println("🎯 進入 processResetPassword()");
+    @PostMapping("/reset")
+    public String processResetPassword(@RequestParam("token") String token,
+                                       @RequestParam("newPassword") String newPassword,
+                                       @RequestParam("confirmPassword") String confirmPassword,
+                                       Model model) {
+    	System.out.println("🎯 進入 processResetPassword()");
 
-		System.out.println("[DEBUG] 提交重設密碼 token = " + token);
+        System.out.println("[DEBUG] 提交重設密碼 token = " + token);
 
-		if (!newPassword.equals(confirmPassword)) {
-			model.addAttribute("error", "兩次輸入的密碼不一致");
-			model.addAttribute("token", token); // 繼續保留 token 供表單使用
-			return "member/password/reset_password";
-		}
+        if (!newPassword.equals(confirmPassword)) {
+            model.addAttribute("error", "兩次輸入的密碼不一致");
+            model.addAttribute("token", token); // 繼續保留 token 供表單使用
+            return "member/password/reset_password";
+        }
 
-		Optional<memVO> optional = memberService.findByResetToken(token);
-		if (optional.isPresent()) {
-			memVO member = optional.get();
-			memberService.resetPassword(member, newPassword);
-			model.addAttribute("msg", "密碼已成功重設，請重新登入");
-			return "member/login";
-		} else {
-			model.addAttribute("error", "連結無效或已過期");
-			return "member/password/reset_password";
-		}
-	}
+        Optional<memVO> optional = memberService.findByResetToken(token);
+        if (optional.isPresent()) {
+            memVO member = optional.get();
+            memberService.resetPassword(member, newPassword);
+            model.addAttribute("msg", "密碼已成功重設，請重新登入");
+            return "member/login";
+        } else {
+            model.addAttribute("error", "連結無效或已過期");
+            return "member/password/reset_password";
+        }
+    }
+    
+    @GetMapping("/favorites")
+    public String showFavorites(@AuthenticationPrincipal MemberUserDetails loginUser, Model model) {
+        memVO member = loginUser.getMember();
 
-	@GetMapping("/favorites")
-	public String showFavorites(@AuthenticationPrincipal MemberUserDetails loginUser, Model model) {
-		memVO member = loginUser.getMember();
+        // Get favorite travel plans
+        List<TravelPlan> plans = favoriteTravelPlanSvc.getTravelPlansByMember(member);
+        
+        // Get favorite sceneries
+        List<SceneryVO> sceneryFavorites = favortieScenerySvc.getFavoritesByMember(member);
+        
+        // Encode banner images for sceneries
+        for (SceneryVO scenery : sceneryFavorites) {
+            if (scenery.getSceneryBanner() != null) {
+                String base64Image = Base64.getEncoder().encodeToString(scenery.getSceneryBanner());
+                scenery.setImageUrl("data:image/png;base64," + base64Image);
+            }
+        }
+        
+        model.addAttribute("sceneryFavorites", sceneryFavorites);
+        model.addAttribute("tourFavorites", plans);
+        return "member/favorites";
+    }
 
-		List<TravelPlan> plans = favoriteTravelPlanSvc.getTravelPlansByMember(member);
-		List<SceneryVO> sceneryFavorites = favortieScenerySvc.getFavoritesByMember(member);
-
-		model.addAttribute("sceneryFavorites", sceneryFavorites);
-		model.addAttribute("tourFavorites", plans);
-		return "member/favorites";
-	}
-
+    // Add unfavorite endpoint
+    @PostMapping("/favorites/scenery/remove/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> removeFavoriteScenery(@PathVariable Integer id, 
+                                                                   @AuthenticationPrincipal MemberUserDetails loginUser) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            memVO member = loginUser.getMember();
+            
+            // Remove from favorites
+            favortieScenerySvc.removeFavorite(member.getMemberId(), id);
+            
+            response.put("success", true);
+            response.put("message", "已從收藏中移除");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            System.err.println("Error removing favorite scenery: " + e.getMessage());
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "操作失敗");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 }

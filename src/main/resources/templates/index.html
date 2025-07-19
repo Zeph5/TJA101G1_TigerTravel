@@ -539,8 +539,8 @@ h1, h2, h4, h5 {
 
 /* Responsive banner styles */
 .banner-img {
-	max-height: 400px;
-	object-fit: cover;
+	max-height: 600px;
+	object-position: top;
 	transition: opacity 1s ease-in-out;
 	width: 100%;
 	height: auto;
@@ -720,7 +720,7 @@ footer {
 						<div class="dropdown-menu-custom" id="userDropdown">
 							<a th:href="@{/member/home}" class="dropdown-item-custom">會員中心</a>
 							<a th:href="@{/member/favorites}" class="dropdown-item-custom">⭐ 我的收藏</a>
-							<a th:href="@{/member/detail/ticket/orders}" class="dropdown-item-custom">🎫 我的票券訂單</a>
+							<a th:href="@{/member/ticketOrders}" class="dropdown-item-custom">🎫 我的票券訂單</a>
 							<div class="dropdown-divider-custom"></div>
 							<form th:action="@{/logout}" method="post" style="margin: 0;">
 								<button type="submit" class="dropdown-item-custom">登出</button>
@@ -761,13 +761,9 @@ footer {
 		<div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 		<div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
 
-		<div th:if="${homepageImages != null and #lists.size(homepageImages) > 0}" class="mt-0 mb-4">
-			<div id="bannerSlider" class="position-relative">
-				<img th:each="img, stat : ${homepageImages}" th:src="@{${img}}"
-					th:classappend="${stat.index == 0} ? 'd-block' : 'd-none'"
-					class="img-fluid w-100 rounded banner-img" />
-			</div>
-		</div>
+		<div class="mt-0 mb-4">
+    <div id="bannerSlider" class="position-relative"></div>
+</div>
 
 		<div class="two-column-layout">
 			<!-- Left Column - Popular Scenery & Tickets -->
@@ -975,6 +971,35 @@ footer {
 		document.getElementById('searchForm').addEventListener('error', function(e) {
 			console.error('Search form error:', e);
 			alert('搜尋時發生錯誤，請稍後再試');
+		});
+		document.addEventListener('DOMContentLoaded', () => {
+		    // 自動生成 banner 圖片陣列（可根據你需求調整數量與命名規則）
+		    const bannerCount = 6;
+		    const images = [];
+		    for (let i = 1; i <= bannerCount; i++) {
+		        images.push(`/homepage_images/banner${i}.png`);
+		    }
+
+		    // 動態產生圖片到 #bannerSlider
+		    const bannerSlider = document.getElementById('bannerSlider');
+		    bannerSlider.innerHTML = images.map((img, idx) => 
+		        `<img src="${img}" class="img-fluid w-100 rounded banner-img${idx === 0 ? ' d-block' : ' d-none'}">`
+		    ).join('');
+
+		    // 輪播邏輯
+		    if (images.length > 1) {
+		        let currentIndex = 0;
+		        setInterval(() => {
+		            const bannerImgs = bannerSlider.querySelectorAll('.banner-img');
+		            bannerImgs[currentIndex].classList.remove('d-block');
+		            bannerImgs[currentIndex].classList.add('d-none');
+
+		            currentIndex = (currentIndex + 1) % images.length;
+
+		            bannerImgs[currentIndex].classList.remove('d-none');
+		            bannerImgs[currentIndex].classList.add('d-block');
+		        }, 5000); // 5 秒切換
+		    }
 		});
 	</script>
 </body>
