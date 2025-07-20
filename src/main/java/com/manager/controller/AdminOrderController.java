@@ -1,6 +1,7 @@
 package com.manager.controller;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +15,7 @@ import com.manager.model.DTO.OrderListDTO;
 import com.manager.model.DTO.TouristListDTO;
 import com.manager.service.AdminOrderService;
 import com.member.model.TourOrderVO;
+import com.member.model.TouristVO;
 
 @Controller
 @RequestMapping("/admin/orders")
@@ -30,9 +32,17 @@ public class AdminOrderController {
 	}
 	@GetMapping("/{id}")
 	public String showOrderDetail(@PathVariable Integer id, Model model) {		
-		OrderListDTO order = adminOrderService.findOrderById(id);
+		OrderListDTO order = adminOrderService.findOrderById(id);// 查訂單 DTO
+		TourOrderVO tourOrderVO = adminOrderService.findOrderEntityById(id); // 查實體（為了取旅客）
 		
+		Set<TouristVO> tourist= tourOrderVO.getTourists(); // 取得訂單中的旅客列表
+		
+		model.addAttribute("tourists", tourist);
 		model.addAttribute("order", order);
+		System.out.println("旅客數：" + tourOrderVO.getTourists().size());
+		for (TouristVO t : tourOrderVO.getTourists()) {
+		    System.out.println(t.getTouristName());
+		}
 		
 		return "admin/order/order_Detail"; 
 	}
@@ -48,4 +58,5 @@ public class AdminOrderController {
 		adminOrderService.updateOrder(id, updatedOrder);
 		return "redirect:/admin/orders/" + id; // 重定向到訂單詳細頁面
 	}
+	
 }

@@ -21,5 +21,9 @@ public interface AdminOrderService {
 	OrderListDTO convertToDTO(TourOrderVO order);
 
 	void updateOrder(Integer id, OrderListDTO updatedOrder);
+
+	TouristListDTO findOrderByTouristId(Integer id);
+
+	TourOrderVO findOrderEntityById(Integer id);
 	
 }

@@ -11,4 +11,6 @@ public interface ManagerRepository extends JpaRepository<Manager, Integer> {
 
 	Optional<Manager> findByAccount(String account);
 
+	Optional<Manager> findByEmail(String email);
+
 }
