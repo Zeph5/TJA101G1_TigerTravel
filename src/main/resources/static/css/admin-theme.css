@@ -194,4 +194,10 @@ body, html {
   border-radius: 8px;
   padding-left: 10px;
 }
-
+.travel-banner {
+  width: 100%;
+  max-width: 800px;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 12px;
+}

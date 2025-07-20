@@ -13,6 +13,7 @@ import com.manager.repository.AdminTouristRepository;
 import com.manager.service.AdminOrderService;
 import com.member.model.TourOrderRepository;
 import com.member.model.TourOrderVO;
+import com.member.model.TouristIdVO;
 import com.member.model.TouristVO;
 
 @Service

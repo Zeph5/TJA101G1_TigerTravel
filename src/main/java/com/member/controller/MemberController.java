@@ -41,12 +41,20 @@ import com.member.service.MemberService;
 import com.member.service.favorite.FavoriteTravelPlanService;
 import com.scenery.model.SceneryService;
 import com.scenery.model.SceneryVO;
+import com.travel_plan.model.TravelItinerary;
 import com.travel_plan.model.TravelPlan;
+import com.travel_plan.service.TravelItineraryService;
 import com.travel_plan.service.TravelPlanDayService;
+import com.travel_plan.service.TravelPlanService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+
+import org.springframework.validation.BindingResult;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Controller
 @RequestMapping("/member")
@@ -68,13 +76,22 @@ public class MemberController {
 	private final FavoriteTravelPlanService favoriteTravelPlanSvc;
 
 	private final FavoriteSceneryService favortieScenerySvc;
+	
+	private final TravelItineraryService travelItinerarySvc;
+	
+	private final TravelPlanService travelPlanSvc;
+
+	private static final Logger log = LoggerFactory.getLogger(MemberController.class);
 
 	public MemberController(MemberService memberService, PasswordEncoder passwordEncoder,
-			FavoriteTravelPlanService favoriteTravelPlanSvc, FavoriteSceneryService favortieScenerySvc) {
+			FavoriteTravelPlanService favoriteTravelPlanSvc, FavoriteSceneryService favortieScenerySvc,
+			TravelItineraryService travelItinerarySvc,TravelPlanService travelPlanSvc) {
 		this.memberService = memberService;
 		this.passwordEncoder = passwordEncoder;
 		this.favoriteTravelPlanSvc = favoriteTravelPlanSvc;
 		this.favortieScenerySvc = favortieScenerySvc;
+		this.travelItinerarySvc = travelItinerarySvc;
+		this.travelPlanSvc = travelPlanSvc;
 	}
 
 	// 會員中心
@@ -100,6 +117,7 @@ public class MemberController {
 		return "member/register";
 	}
 
+	// =============註冊註冊註冊註冊註冊註冊====================
 	// 處理註冊流程
 	@PostMapping("/register")
 	public String processRegister(@Valid @ModelAttribute("member") memVO member, BindingResult result,
@@ -107,7 +125,7 @@ public class MemberController {
 			@RequestParam(value = "code", required = false) String inputCode, @RequestParam("action") String action,
 			HttpSession session, Model model) {
 
-// ✅ 若欄位格式驗證不通過
+		// ✅ 若欄位格式驗證不通過
 		if (result.hasErrors()) {
 			model.addAttribute("member", member);
 			return "member/register";
@@ -116,7 +134,7 @@ public class MemberController {
 		try {
 			if ("register".equals(action)) {
 
-// 檢查帳號是否已存在
+				// 檢查帳號是否已存在
 				Optional<memVO> existing = memberService.findByAccount(member.getMemberAccount());
 				if (existing.isPresent()) {
 					model.addAttribute("error", "此帳號已有人使用，請更換帳號");
@@ -124,23 +142,23 @@ public class MemberController {
 					return "member/register";
 				}
 
-// 處理頭像
+				// 處理頭像
 				if (!avatarFile.isEmpty()) {
 					member.setAvatar(avatarFile.getBytes());
 				}
 
-// 從 session 還原頭像（保險起見）
+				// 從 session 還原頭像（保險起見）
 				byte[] avatarBytes = (byte[]) session.getAttribute("avatarBytes");
 				if (avatarBytes != null) {
 					member.setAvatar(avatarBytes);
 				}
 
-// 儲存會員（未啟用）
+				// 儲存會員（未啟用）
 				member.setEmailVerified(false);
 				member.setMemberStatus((byte) 0);
 				memberService.save(member);
 
-// ✅ 改用統一的 Service 方法處理驗證流程
+				// ✅ 改用統一的 Service 方法處理驗證流程
 				memberService.sendVerificationalEmail(member);
 
 				session.invalidate();
@@ -207,14 +225,27 @@ public class MemberController {
 		model.addAttribute("member", member);
 		System.out.println("登入會員資料：" + loginUser.getMember().getMemberName());
 
+		if (member.getAvatar() != null) {
+			String avatarBase64 = Base64.getEncoder().encodeToString(member.getAvatar());
+			model.addAttribute("avatarPreview", avatarBase64); // ✅ 新增預覽圖用
+		}
+
 		return "member/edit";
 	}
 
 	// 接收表單修改編輯
 	@PostMapping("/edit")
-	public String updateMember(@ModelAttribute("member") memVO member,
-			@RequestParam("avatarFile") MultipartFile avatarFile, @AuthenticationPrincipal MemberUserDetails loginUser,
-			Model model) {
+	public String updateMember(@ModelAttribute("member") memVO member, 
+								BindingResult bindingResult,
+								@RequestParam("avatarFile") MultipartFile avatarFile, @AuthenticationPrincipal MemberUserDetails loginUser,
+			RedirectAttributes redirectAttributes) {
+		System.out.println("✅ 進入 updateMember 方法");
+
+		if (bindingResult.hasErrors()) {
+			System.out.println("❌ 有驗證錯誤：" + bindingResult.getAllErrors());
+			return "member/edit";
+		}
+
 		memVO original = loginUser.getMember();
 
 		// 只允許更新這四個欄位
@@ -223,27 +254,35 @@ public class MemberController {
 		original.setMemberPhone(member.getMemberPhone());
 		original.setMemberAddress(member.getMemberAddress());
 
-		// 若有上傳新頭像，儲存進資料庫
+		// 頭像優化：加大小/格式檢查
 		try {
 			if (avatarFile != null && !avatarFile.isEmpty()) {
+				if (!avatarFile.getContentType().startsWith("image/")) {
+					redirectAttributes.addFlashAttribute("error", "上傳的不是圖片檔案");
+					return "redirect:/member/edit";
+				}
+				if (avatarFile.getSize() > 2 * 1024 * 1024) { // 限制2MB
+					redirectAttributes.addFlashAttribute("error", "圖片大小超過2MB");
+					return "redirect:/member/edit";
+				}
 				original.setAvatar(avatarFile.getBytes());
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
-			model.addAttribute("error", "上傳圖片失敗");
-			return "member/edit";
+			log.error("頭像上傳IO錯誤", e);
+			redirectAttributes.addFlashAttribute("error", "上傳圖片失敗，請重試");
+			return "redirect:/member/edit";
+		} catch (Exception e) {
+			log.error("頭像上傳未知錯誤", e);
+			redirectAttributes.addFlashAttribute("error", "系統錯誤，請聯絡管理員");
+			return "redirect:/member/edit";
 		}
 
-		if (!avatarFile.getContentType().startsWith("image/")) {
-			model.addAttribute("error", "上傳的不是圖片檔案");
-			return "member/edit";
-		}
-
-		model.addAttribute("success", "會員資料更新成功～！");
 		memberRepository.save(original);
-		return "redirect:/index";
-
+		redirectAttributes.addFlashAttribute("success", "會員資料更新成功～！");
+		return "redirect:/member/home"; // redirect到會員中心，顯示成功訊息
 	}
+	
+	
 
 	@GetMapping("/member/profile/{id}")
 	public String getMember(@PathVariable Integer id, Model model) {
@@ -365,100 +404,149 @@ public class MemberController {
 		return "member/password/changePassword";
 	}
 
-    
-    @PostMapping("/forgot")
-    public String processForgotPassword(@RequestParam("email") String email, Model model) {
-        System.out.println("🔔 [DEBUG] 進入 forgot controller！");
-        System.out.println("🔎 [DEBUG] 使用者輸入的 email: " + email);
+	@PostMapping("/forgot")
+	public String processForgotPassword(@RequestParam("email") String email, Model model) {
+		System.out.println("🔔 [DEBUG] 進入 forgot controller！");
+		System.out.println("🔎 [DEBUG] 使用者輸入的 email: " + email);
 
-        Optional<memVO> optional = memberRepository.findByMemberEmail(email);
+		Optional<memVO> optional = memberRepository.findByMemberEmail(email);
 
-        if (optional.isPresent()) {
-            memVO member = optional.get();
-            System.out.println("✅ [DEBUG] 找到會員帳號: " + member.getMemberAccount());
-            memberService.generateResetToken(member);
-            model.addAttribute("msg", "重設密碼連結已寄出，請檢查您的信箱");
-        } else {
-            System.out.println("❌ [DEBUG] 查無此 email！");
-            model.addAttribute("error", "查無此 Email，請確認輸入是否正確");
-        }
+		if (optional.isPresent()) {
+			memVO member = optional.get();
+			System.out.println("✅ [DEBUG] 找到會員帳號: " + member.getMemberAccount());
+			memberService.generateResetToken(member);
+			model.addAttribute("msg", "重設密碼連結已寄出，請檢查您的信箱");
+		} else {
+			System.out.println("❌ [DEBUG] 查無此 email！");
+			model.addAttribute("error", "查無此 Email，請確認輸入是否正確");
+		}
 
-        return "member/password/forgotPassword";
-    }
+		return "member/password/forgotPassword";
+	}
 
-    @PostMapping("/reset")
-    public String processResetPassword(@RequestParam("token") String token,
-                                       @RequestParam("newPassword") String newPassword,
-                                       @RequestParam("confirmPassword") String confirmPassword,
-                                       Model model) {
-    	System.out.println("🎯 進入 processResetPassword()");
+	@PostMapping("/reset")
+	public String processResetPassword(@RequestParam("token") String token,
+			@RequestParam("newPassword") String newPassword, @RequestParam("confirmPassword") String confirmPassword,
+			Model model) {
+		System.out.println("🎯 進入 processResetPassword()");
 
-        System.out.println("[DEBUG] 提交重設密碼 token = " + token);
+		System.out.println("[DEBUG] 提交重設密碼 token = " + token);
 
-        if (!newPassword.equals(confirmPassword)) {
-            model.addAttribute("error", "兩次輸入的密碼不一致");
-            model.addAttribute("token", token); // 繼續保留 token 供表單使用
-            return "member/password/reset_password";
-        }
+		if (!newPassword.equals(confirmPassword)) {
+			model.addAttribute("error", "兩次輸入的密碼不一致");
+			model.addAttribute("token", token); // 繼續保留 token 供表單使用
+			return "member/password/reset_password";
+		}
 
-        Optional<memVO> optional = memberService.findByResetToken(token);
-        if (optional.isPresent()) {
-            memVO member = optional.get();
-            memberService.resetPassword(member, newPassword);
-            model.addAttribute("msg", "密碼已成功重設，請重新登入");
-            return "member/login";
-        } else {
-            model.addAttribute("error", "連結無效或已過期");
-            return "member/password/reset_password";
-        }
-    }
-    
-    @GetMapping("/favorites")
-    public String showFavorites(@AuthenticationPrincipal MemberUserDetails loginUser, Model model) {
-        memVO member = loginUser.getMember();
+		Optional<memVO> optional = memberService.findByResetToken(token);
+		if (optional.isPresent()) {
+			memVO member = optional.get();
+			memberService.resetPassword(member, newPassword);
+			model.addAttribute("msg", "密碼已成功重設，請重新登入");
+			return "member/login";
+		} else {
+			model.addAttribute("error", "連結無效或已過期");
+			return "member/password/reset_password";
+		}
+	}
 
-        // Get favorite travel plans
-        List<TravelPlan> plans = favoriteTravelPlanSvc.getTravelPlansByMember(member);
-        
-        // Get favorite sceneries
-        List<SceneryVO> sceneryFavorites = favortieScenerySvc.getFavoritesByMember(member);
-        
-        // Encode banner images for sceneries
-        for (SceneryVO scenery : sceneryFavorites) {
-            if (scenery.getSceneryBanner() != null) {
-                String base64Image = Base64.getEncoder().encodeToString(scenery.getSceneryBanner());
-                scenery.setImageUrl("data:image/png;base64," + base64Image);
-            }
-        }
-        
-        model.addAttribute("sceneryFavorites", sceneryFavorites);
-        model.addAttribute("tourFavorites", plans);
-        return "member/favorites";
-    }
+	@GetMapping("/favorites")
+	public String showFavorites(@AuthenticationPrincipal MemberUserDetails loginUser, Model model) {
+		memVO member = loginUser.getMember();
 
-    // Add unfavorite endpoint
-    @PostMapping("/favorites/scenery/remove/{id}")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> removeFavoriteScenery(@PathVariable Integer id, 
-                                                                   @AuthenticationPrincipal MemberUserDetails loginUser) {
-        Map<String, Object> response = new HashMap<>();
-        
-        try {
-            memVO member = loginUser.getMember();
-            
-            // Remove from favorites
-            favortieScenerySvc.removeFavorite(member.getMemberId(), id);
-            
-            response.put("success", true);
-            response.put("message", "已從收藏中移除");
-            return ResponseEntity.ok(response);
-            
-        } catch (Exception e) {
-            System.err.println("Error removing favorite scenery: " + e.getMessage());
-            e.printStackTrace();
-            response.put("success", false);
-            response.put("message", "操作失敗");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
+		// Get favorite travel plans
+		List<TravelPlan> plans = favoriteTravelPlanSvc.getTravelPlansByMember(member);
+
+		// Get favorite sceneries
+		List<SceneryVO> sceneryFavorites = favortieScenerySvc.getFavoritesByMember(member);
+
+		// Encode banner images for sceneries
+		for (SceneryVO scenery : sceneryFavorites) {
+			if (scenery.getSceneryBanner() != null) {
+				String base64Image = Base64.getEncoder().encodeToString(scenery.getSceneryBanner());
+				scenery.setImageUrl("data:image/png;base64," + base64Image);
+			}
+		}
+
+		model.addAttribute("sceneryFavorites", sceneryFavorites);
+		model.addAttribute("tourFavorites", plans);
+		return "member/favorites";
+	}
+
+	// Add unfavorite endpoint
+	@PostMapping("/favorites/scenery/remove/{id}")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> removeFavoriteScenery(@PathVariable Integer id,
+			@AuthenticationPrincipal MemberUserDetails loginUser) {
+		Map<String, Object> response = new HashMap<>();
+
+		try {
+			memVO member = loginUser.getMember();
+
+			// Remove from favorites
+			favortieScenerySvc.removeFavorite(member.getMemberId(), id);
+
+			response.put("success", true);
+			response.put("message", "已從收藏中移除");
+			return ResponseEntity.ok(response);
+
+		} catch (Exception e) {
+			System.err.println("Error removing favorite scenery: " + e.getMessage());
+			e.printStackTrace();
+			response.put("success", false);
+			response.put("message", "操作失敗");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+	}
+	
+	// (旅程)加入收藏
+	@PostMapping("/favorites/tour/add/{planId}")
+	@ResponseBody
+	public Map<String, Object> addFavorite(@PathVariable Integer planId,
+	                                       @AuthenticationPrincipal MemberUserDetails loginUser) {
+	    Map<String, Object> response = new HashMap<>();
+	    memVO member = loginUser.getMember();
+
+	    TravelPlan plan = travelPlanSvc.findById(planId).orElse(null);
+	    if (plan == null) {
+	        response.put("success", false);
+	        response.put("message", "找不到旅程");
+	        return response;
+	    }
+
+	    favoriteTravelPlanSvc.addFavorite(member, plan);
+	    response.put("success", true);
+	    return response;
+	}
+
+
+	
+    // (旅程)移除收藏
+	@PostMapping("/favorites/tour/remove/{id}")
+	@ResponseBody
+	public Map<String, Object> removeFavoritePlan(@PathVariable Integer id,
+	                                              @AuthenticationPrincipal MemberUserDetails loginUser) {
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        memVO member = loginUser.getMember();
+
+	        TravelPlan plan = travelPlanSvc.findById(id).orElse(null);
+	        if (plan == null) {
+	            result.put("success", false);
+	            result.put("message", "找不到旅程");
+	            return result;
+	        }
+
+	        favoriteTravelPlanSvc.removeFavorite(member, plan); // ❗這裡可能報錯
+
+	        result.put("success", true);
+	    } catch (Exception e) {
+	        e.printStackTrace(); // ✅ 加這行！！
+	        result.put("success", false);
+	        result.put("message", "取消收藏失敗");
+	    }
+	    return result;
+	}
+
+
 }

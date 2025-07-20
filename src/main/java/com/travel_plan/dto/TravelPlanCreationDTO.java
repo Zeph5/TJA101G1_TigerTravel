@@ -23,7 +23,8 @@ public class TravelPlanCreationDTO {
     @Size(min = 10, max = 500, message = "旅行計畫描述長度必須在10-500個字之間")
     private String travelPlanDescription; // 修正：駝峰命名
     
-
+    
+    private String travelPlanBannerUrl;
     
    
     
@@ -45,6 +46,14 @@ public class TravelPlanCreationDTO {
     
     
 
+
+	public String getTravelPlanBannerUrl() {
+		return travelPlanBannerUrl;
+	}
+
+	public void setTravelPlanBannerUrl(String travelPlanBannerUrl) {
+		this.travelPlanBannerUrl = travelPlanBannerUrl;
+	}
 
 	// Getter 和 Setter 方法
     public Integer getTravelPlanId() {

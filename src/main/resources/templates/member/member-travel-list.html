@@ -4,103 +4,232 @@
     <meta charset="UTF-8">
     <title>可預訂的旅程清單</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+	<meta name="_csrf" th:content="${_csrf.token}"/>
+	<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+	
+	<style>
+        body {
+            background-color: #f0f8ff; /* 淡藍背景，清新如藍天 */
+            color: #333;
+        }
+        h2 {
+            color: #007bff; /* 藍標題 */
+            text-align: center;
+        }
+        .avatar {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .avatar img {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .nav-buttons a {
+            transition: background-color 0.3s;
+        }
+        .nav-buttons a:hover {
+            background-color: #e9f7ff; /* 淡藍hover */
+        }
+        .search-form input {
+            border-color: #007bff;
+        }
+        .search-form button {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .search-form button:hover {
+            background-color: #0056b3;
+        }
+        .per-page select {
+            border-color: #007bff;
+        }
+        .card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        .card-img-top {
+            height: 200px;
+            object-fit: cover;
+        }
+        .btn-outline-secondary {
+            border-color: #28a745; /* 綠邊 */
+            color: #28a745;
+        }
+        .btn-outline-secondary:hover {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-outline-danger, .btn-secondary {
+            transition: background-color 0.3s;
+        }
+        .pagination .page-link {
+            color: #007bff;
+        }
+        .pagination .active .page-link {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .alert {
+            border-radius: 10px;
+        }
+        @media (max-width: 768px) {
+            .row-cols-md-3 {
+                row-gap: 20px;
+            }
+        }
+    </style>
 </head>
 <body class="container mt-5">
 
     <h2 class="mb-4">🧳 可預訂的旅程清單</h2>
     
-    <div th:if="${avatarBase64 != null}" class="mb-3">
-            <img th:src="'data:image/png;base64,' + ${avatarBase64}" alt="大頭貼" width="100" height="100" class="rounded-circle border">
-        </div>
+    <div th:if="${avatarBase64 != null}" class="avatar">
+        <img th:src="'data:image/png;base64,' + ${avatarBase64}" alt="大頭貼" width="100" height="100" class="rounded-circle border">
+    </div>
 
-        <div class="d-flex justify-content-center gap-3">
-            <a th:href="@{/index}" class="btn btn-outline-primary">首頁</a>
-            <a th:href="@{/member/favorites}" class="btn btn-outline-success">⭐ 我的收藏</a>
-            <a th:href="@{/member/orders}" class="btn btn-outline-info">🎫 我的訂單</a>
-        </div>
-        
-        <form th:action="@{/member/travel/list}" method="get" class="d-flex justify-content-center my-4" role="search">
-		    <input class="form-control me-2 w-50" type="search" name="keyword" placeholder="搜尋旅程標題" aria-label="Search"
-		           th:value="${keyword}">
-		    <button class="btn btn-outline-primary" type="submit">搜尋</button>
-		</form>
-		
-		<!-- ✅ 每頁顯示筆數選單 -->
-		<form method="get" th:action="@{/member/travel/list}" class="text-end mb-3">
-		    <input type="hidden" name="keyword" th:value="${keyword}" />
-		    <input type="hidden" name="page" value="0" />
-		    <label>
-		        每頁顯示：
-		        <select name="size" onchange="this.form.submit()" class="form-select d-inline w-auto">
-		            <option th:value="6" th:selected="${size == 6}">6 筆</option>
-		            <option th:value="12" th:selected="${size == 12}">12 筆</option>
-		            <option th:value="24" th:selected="${size == 24}">24 筆</option>
-		        </select>
-		    </label>
-		</form>
-
-		
-		<!-- ✅ 旅程卡片清單 -->
-		<div class="row row-cols-1 row-cols-md-3 g-4" th:if="${plans.size() > 0}">
-		    <div class="col" th:each="plan : ${plans}">
-		        <div class="card h-100 shadow-sm">
-		            <img th:src="${#strings.isEmpty(plan.travelPlanBannerUrl) ? '/images/bannerSample.jpg' : plan.travelPlanBannerUrl}"
-		                 class="card-img-top" alt="旅程圖片">
-		            <div class="card-body">
-		                <h5 class="card-title" th:text="${plan.travelTitle}">旅程標題</h5>
-		                <p class="card-text" th:text="${plan.travelPlanDescription}">旅程簡介</p>
-		                <a th:href="@{/member/travel/detail/{id}(id=${plan.travelPlanId})}" class="btn btn-outline-secondary">查看詳情</a>
-		                
-		            </div>
-		        </div>
-		    </div>
-		</div>
-		
-		<!-- ✅ 無結果處理 -->
-		<div th:if="${plans.size() == 0}">
-		    <div th:if="${keyword != null}" class="alert alert-warning">
-		        沒有找到符合「<span th:text="${keyword}"></span>」的旅程，請試試其他關鍵字。
-		    </div>
-		    <div th:if="${keyword == null}" class="alert alert-info">
-		        目前尚無可預訂的旅遊行程。
-		    </div>
-		</div>
-		
-		<!-- ✅ 分頁元件 -->
-		<div class="d-flex justify-content-center mt-4" th:if="${totalPages >= 1}">
-		    <ul class="pagination">
-		
-		        <!-- 上一頁 -->
-		        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-		            <a class="page-link"
-		               th:href="@{/member/travel/list(page=${currentPage - 1}, keyword=${keyword}, size=${size})}">
-		                上一頁
-		            </a>
-		        </li>
-		
-		        <!-- 頁碼 -->
-		        <li class="page-item"
-		            th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
-		            th:classappend="${i == currentPage} ? 'active'">
-		            <a class="page-link"
-   						th:href="@{/member/travel/list(page=${i}, keyword=${keyword}, size=${size})}"
-		               th:text="${i + 1}">
-		            </a>
-		        </li>
-		
-		        <!-- 下一頁 -->
-		        <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
-		            <a class="page-link"
-		               th:href="@{/member/travel/list(page=${currentPage + 1}, keyword=${keyword}, size=${size})}">
-		                下一頁
-		            </a>
-		        </li>
-		
-		    </ul>
-		</div>
-
+    <div class="d-flex justify-content-center gap-3 nav-buttons mb-4">
+        <a th:href="@{/index}" class="btn btn-outline-primary">首頁</a>
+        <a th:href="@{/member/favorites}" class="btn btn-outline-success">⭐ 我的收藏</a>
+        <a th:href="@{/member/orders}" class="btn btn-outline-info">🎫 我的訂單</a>
+    </div>
+    
+    <form th:action="@{/member/travel/list}" method="get" class="d-flex justify-content-center my-4 search-form" role="search">
+        <input class="form-control me-2 w-50" type="search" name="keyword" placeholder="搜尋旅程標題" aria-label="Search"
+               th:value="${keyword}">
+        <button class="btn btn-outline-primary" type="submit">搜尋</button>
+    </form>
+    
+    <!-- ✅ 每頁顯示筆數選單 -->
+    <form method="get" th:action="@{/member/travel/list}" class="text-end mb-3 per-page">
+        <input type="hidden" name="keyword" th:value="${keyword}" />
+        <input type="hidden" name="page" value="0" />
+        <label>
+            每頁顯示：
+            <select name="size" onchange="this.form.submit()" class="form-select d-inline w-auto">
+                <option th:value="6" th:selected="${size == 6}">6 筆</option>
+                <option th:value="12" th:selected="${size == 12}">12 筆</option>
+                <option th:value="24" th:selected="${size == 24}">24 筆</option>
+            </select>
+        </label>
+    </form>
 
     
+    <!-- ✅ 旅程卡片清單 -->
+    <div class="row row-cols-1 row-cols-md-3 g-4" th:if="${plans.size() > 0}">
+        <div class="col" th:each="plan : ${plans}">
+            <div class="card h-100 shadow-sm">
+                <img th:src="${#strings.isEmpty(plan.travelPlanBannerUrl) ? '/images/bannerSample.jpg' : plan.travelPlanBannerUrl}"
+                     class="card-img-top" alt="旅程圖片">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${plan.travelTitle}">旅程標題</h5>
+                    <p class="card-text" th:text="${plan.travelPlanDescription}">旅程簡介</p>
+                    <a th:href="@{/member/travel/detail/{id}(id=${plan.travelPlanId})}" class="btn btn-outline-secondary">查看詳情</a>
+                    
+                    <!-- 收藏按鈕，初始狀態用data-favorited -->
+                    <button type="button"
+                            th:attr="data-plan-id=${plan.travelPlanId}, data-favorited=${favoritedIds != null and favoritedIds.contains(plan.travelPlanId) ? 'true' : 'false'}"
+                            class="btn mt-2" 
+                            th:classappend="${favoritedIds != null and favoritedIds.contains(plan.travelPlanId)} ? 'btn-secondary' : 'btn-outline-danger'"
+                            onclick="toggleFavorite(this)">
+                        <span th:text="${favoritedIds != null and favoritedIds.contains(plan.travelPlanId)} ? '❤️ 已收藏' : '♥ 收藏'"></span>
+                    </button>
+                                    
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ✅ 無結果處理 -->
+    <div th:if="${plans.size() == 0}">
+        <div th:if="${keyword != null}" class="alert alert-warning text-center">
+            沒有找到符合「<span th:text="${keyword}"></span>」的旅程，請試試其他關鍵字。
+        </div>
+        <div th:if="${keyword == null}" class="alert alert-info text-center">
+            目前尚無可預訂的旅遊行程。
+        </div>
+    </div>
+    
+    <!-- ✅ 分頁元件 -->
+    <div class="d-flex justify-content-center mt-4" th:if="${totalPages >= 1}">
+        <ul class="pagination">
+    
+            <!-- 上一頁 -->
+            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/member/travel/list(page=${currentPage - 1}, keyword=${keyword}, size=${size})}">
+                    上一頁
+                </a>
+            </li>
+    
+            <!-- 頁碼 -->
+            <li class="page-item"
+                th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                th:classappend="${i == currentPage} ? 'active'">
+                <a class="page-link"
+                   th:href="@{/member/travel/list(page=${i}, keyword=${keyword}, size=${size})}"
+                   th:text="${i + 1}">
+                </a>
+            </li>
+    
+            <!-- 下一頁 -->
+            <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/member/travel/list(page=${currentPage + 1}, keyword=${keyword}, size=${size})}">
+                    下一頁
+                </a>
+            </li>
+    
+        </ul>
+    </div>
+
+	<script>
+		function toggleFavorite(button) {
+		    const planId = button.getAttribute("data-plan-id");
+		    const isFavorited = button.getAttribute("data-favorited") === 'true';
+		    const url = isFavorited ? `/member/favorites/tour/remove/${planId}` : `/member/favorites/tour/add/${planId}`;
+		
+		    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+		    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+		
+		    fetch(url, {
+		        method: 'POST',
+		        headers: {
+		            'X-Requested-With': 'XMLHttpRequest',
+		            [csrfHeader]: csrfToken
+		        },
+		        credentials: 'same-origin'
+		    })
+		    .then(res => res.json())
+		    .then(data => {
+		        if (data.success) {
+		            if (isFavorited) {
+		                alert("已取消收藏！");
+		                button.setAttribute("data-favorited", "false");
+		                button.classList.remove("btn-secondary");
+		                button.classList.add("btn-outline-danger");
+		                button.innerHTML = "♥ 收藏";
+		            } else {
+		                alert("已加入收藏！");
+		                button.setAttribute("data-favorited", "true");
+		                button.classList.remove("btn-outline-danger");
+		                button.classList.add("btn-secondary");
+		                button.innerHTML = "❤️ 已收藏";
+		            }
+		            // 點擊進收藏：成功後跳到收藏頁（可註解掉如果不要）
+		            // window.location.href = "/member/favorites";
+		        } else {
+		            alert(data.message || "操作失敗");
+		        }
+		    })
+		    .catch(error => {
+		        alert("連線錯誤，請稍後再試");
+		        console.error("Fetch error:", error);
+		    });
+		}
+	</script>
 
 </body>
 </html>

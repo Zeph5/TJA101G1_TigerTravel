@@ -1,10 +1,15 @@
 package com.travel_plan.controller;
 
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ssl.SslProperties.Bundles.Watch.File;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -26,10 +31,13 @@ import com.travel_plan.dto.TravelPlanDayDTO;
 import com.travel_plan.dto.TravelPlanPreviewDTO;
 import com.travel_plan.model.TravelItinerary;
 import com.travel_plan.model.TravelPlan;
+import com.travel_plan.repository.TravelPlanRepository;
+import com.travel_plan.service.ImageService;
 import com.travel_plan.service.TravelPlanService;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import net.coobird.thumbnailator.Thumbnails;
 
 //顯示所有旅行計畫列表 (/admin/travelplans)。
 //
@@ -44,10 +52,16 @@ import jakarta.validation.Valid;
 public class TravelPlanController {
 
 	private final TravelPlanService travelPlanService;
+	private final TravelPlanRepository travelPlanRepository;
+	private final ImageService imageService;
 
 	@Autowired
-	public TravelPlanController(TravelPlanService travelPlanService) {
+	public TravelPlanController(TravelPlanService travelPlanService,
+			TravelPlanRepository travelPlanRepository,
+			ImageService imageService) {
 		this.travelPlanService = travelPlanService;
+		this.travelPlanRepository = travelPlanRepository;
+		this.imageService = imageService;
 	}
 
 	// 這是 顯示所有旅行計畫列表 的頁面入口。
@@ -59,8 +73,7 @@ public class TravelPlanController {
 		return "admin/travelplans/list";
 	}
 
-	@GetMapping("/new") // 在 list.html 頁面點擊「新增計畫」按鈕/連結
-	// 或直接訪問 http://localhost:8080/admin/travelplans/new 時，這個方法會被觸發。
+	@GetMapping("/new") // 在 list.html 頁面點擊「新增計畫」按鈕/連結	
 	public String showNewTPForm(Model model) {
 		model.addAttribute("travelPlanCreationDto", new TravelPlanCreationDTO()); // 假設有一個 TravelPlan 類別
 		return "admin/travelplans/form_step1_plan_details";
@@ -86,7 +99,13 @@ public class TravelPlanController {
 	            // 創建新計畫 (假設 Service 有此方法)
 	            savedPlan = travelPlanService.createTravelPlanFromDto(dto, bannerImage);
 	            redirectAttributes.addFlashAttribute("successMessage", "計畫基本資訊儲存成功，請繼續編輯行程細節。");
-	        }	
+	        }
+		 if ((dto.getBannerImage() == null || dto.getBannerImage().isEmpty()) 
+				    && (dto.getTravelPlanBannerUrl() == null || dto.getTravelPlanBannerUrl().isBlank())) {
+				    result.rejectValue("bannerImage", "error.bannerImage", "請上傳圖片");
+				    model.addAttribute("errorMessage", "資料驗證失敗，請檢查輸入。");
+				    return "admin/travelplans/form_step1_plan_details";
+				}
 
 		// 將新建立的旅行計畫 ID 儲存到 Session 中，供下一步使用
 		session.setAttribute("currentTravelPlanId", savedPlan.getTravelPlanId());
@@ -96,8 +115,7 @@ public class TravelPlanController {
 		return "redirect:/admin/travelplans";
 	}
 
-	// 編輯現有計畫的入口點 (可重用第一步表單)
-	// 當使用者點擊「編輯」按鈕時，會跳轉到這個方法。
+	
 	@GetMapping("/{id}/edit")
 	public String editTravelPlan(@PathVariable("id") Integer id, Model model, HttpSession session) {
 
@@ -118,30 +136,59 @@ public class TravelPlanController {
 
 		return "admin/travelplans/form_step1_plan_details";
 	}
-	
-	
-
-	
-	@GetMapping("/{planId}/preview")
-	public String previewTravelPlan(@PathVariable("planId") Integer planId, Model model) {
-	    // 獲取完整的旅行計畫數據 (包含所有行程天數和景點)
-	    // 這需要 TravelPlanService 提供一個方法來獲取完整的 DTO
-	    // 將這裡的類型從 TravelPlanCreationDTO 改為 TravelPlanPreviewDTO
-	    TravelPlanPreviewDTO travelPlanPreviewDTO = travelPlanService.getFullTravelPlanDetails(planId); // <-- 修正這裡的類型
-
-	    // 將 Model Attribute 的名稱改為 "travelPlanPreview"，與前端模板預期的名稱一致
-	    model.addAttribute("travelPlanPreview", travelPlanPreviewDTO); // <-- 修正這裡的名稱
-
-	    // 計算總天數，從 TravelPlanPreviewDTO 中獲取梯次日期
-	    if (travelPlanPreviewDTO.getStartDate() != null && travelPlanPreviewDTO.getEndDate() != null) {
-	        long totalDays = ChronoUnit.DAYS.between(travelPlanPreviewDTO.getStartDate(), travelPlanPreviewDTO.getEndDate()) + 1;
-	        model.addAttribute("totalTravelDays", totalDays); // 將總天數傳遞給 Model
-	    } else {
-	        model.addAttribute("totalTravelDays", 0);
+	@PostMapping("/{id}/delete")
+	public String deleteTravelPlan(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+	    try {
+	        travelPlanService.deleteById(id);  // 你需要在 service 裡加這個方法
+	        redirectAttributes.addFlashAttribute("successMessage", "刪除成功！");
+	    } catch (Exception e) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "刪除失敗：" + e.getMessage());
+	    }
+	    return "redirect:/admin/travelplans";
+	}
+	@PostMapping("/batch-delete")
+	public String batchDeleteTravelPlans(@RequestParam("planIds") List<Integer> planIds,
+	                                     RedirectAttributes redirectAttributes) {
+	    if (planIds == null || planIds.isEmpty()) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "請先選取要刪除的旅行計畫");
+	        return "redirect:/admin/travelplans";
 	    }
 
-	    return "admin/travelplans/preview_full_plan"; // 一個新的 Thymeleaf 模板來顯示預覽
-	}	
-		
+	    try {
+	        travelPlanService.deleteAllByIds(planIds);  // 你需要加一個這個 service 方法
+	        redirectAttributes.addFlashAttribute("successMessage", "成功刪除 " + planIds.size() + " 筆旅行計畫！");
+	    } catch (Exception e) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "刪除失敗：" + e.getMessage());
+	    }
+
+	    return "redirect:/admin/travelplans";
+	}
+
+	@PostMapping("/upload")
+	public String handleUpload(@ModelAttribute TravelPlanCreationDTO dto) {
+	    MultipartFile file = dto.getBannerImage();
+
+	    if (file != null && !file.isEmpty()) {
+	        try {
+	            String uploadDir = "src/main/resources/static/uploads/";
+	            String newFileName = UUID.randomUUID().toString(); // 避免重複檔名
+	            String imageUrl = imageService.saveAndResizeImage(file, uploadDir, newFileName);
+
+	            // 設定圖片 URL 存到資料庫
+	            TravelPlan plan = new TravelPlan();
+	            plan.setTravelTitle(dto.getTravelTitle());
+	            plan.setTravelPlanDescription(dto.getTravelPlanDescription());
+	            plan.setTravelPlanBannerUrl(imageUrl);
+	            travelPlanRepository.save(plan);
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            return "upload-failed";
+	        }
+	    }
+
+	    return "redirect:/admin/travelplans";
+	}
+
 	}
 

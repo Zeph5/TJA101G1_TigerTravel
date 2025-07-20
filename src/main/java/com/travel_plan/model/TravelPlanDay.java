@@ -18,6 +18,7 @@ import jakarta.persistence.GeneratedValue;
 	import jakarta.persistence.Id;
 	import jakarta.persistence.JoinColumn;
 	import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Transient;
 	
 	@Entity
 	@EntityListeners(AuditingEntityListener.class)
@@ -111,7 +112,5 @@ import jakarta.persistence.GeneratedValue;
 					+ ", scenery=" + scenery + ", travelDayNumber=" + travelDayNumber + ", travelSequenceNumber="
 					+ travelSequenceNumber + ", createtime=" + createtime + ", traveltime=" + traveltime + "]";
 		}
-		
-		
 		
 	}

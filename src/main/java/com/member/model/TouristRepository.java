@@ -1,13 +1,12 @@
 package com.member.model;
 
-import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import com.member.model.TouristVO;
-import com.member.model.TourOrderVO;
-
+@Repository
 public interface TouristRepository extends JpaRepository<TouristVO, Integer> {
 
-    List<TouristVO> findByTourOrder(TourOrderVO tourOrder); // 自動生成 by 關聯
+    // 根據帳號查詢（如果未來需要）
+    TouristVO findByMemberAccount(String memberAccount);
 }
+

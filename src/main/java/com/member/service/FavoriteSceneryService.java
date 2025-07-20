@@ -12,6 +12,8 @@ import com.member.model.FavoriteSceneryVO;
 import com.member.model.memVO;
 import com.scenery.model.SceneryVO;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class FavoriteSceneryService {
 	
@@ -54,8 +56,9 @@ public class FavoriteSceneryService {
             
             favoriteSceneryRepository.save(favorite);
         }
+        
     }
-    
+    @Transactional
     public void removeFavorite(Integer memberId, Integer sceneryId) {
         favoriteSceneryRepository.deleteByMember_MemberIdAndScenery_SceneryId(memberId, sceneryId);
     }

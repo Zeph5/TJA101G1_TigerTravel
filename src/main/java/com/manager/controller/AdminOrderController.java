@@ -15,6 +15,7 @@ import com.manager.model.DTO.OrderListDTO;
 import com.manager.model.DTO.TouristListDTO;
 import com.manager.service.AdminOrderService;
 import com.member.model.TourOrderVO;
+import com.member.model.TouristIdVO;
 import com.member.model.TouristVO;
 
 @Controller
@@ -34,12 +35,12 @@ public class AdminOrderController {
 	public String showOrderDetail(@PathVariable Integer id, Model model) {		
 		OrderListDTO order = adminOrderService.findOrderById(id);// 查訂單 DTO
 		TourOrderVO tourOrderVO = adminOrderService.findOrderEntityById(id); // 查實體（為了取旅客）		
-		Set<TouristVO> tourist= tourOrderVO.getTourists(); // 取得訂單中的旅客列表
+		Set<TouristIdVO> tourist= tourOrderVO.getTourists(); // 取得訂單中的旅客列表
 		
 		model.addAttribute("tourists", tourOrderVO.getTourists());
 		model.addAttribute("order", order);
 		System.out.println("旅客數：" + tourOrderVO.getTourists().size());
-		for (TouristVO t : tourOrderVO.getTourists()) {
+		for (TouristIdVO t : tourOrderVO.getTourists()) {
 		    System.out.println(t.getTouristName());
 		}
 		

@@ -41,6 +41,7 @@ public class memVO implements Serializable {
 	@Column(name = "mem_phone")
 	private String memberPhone;
 
+	@NotBlank(message = "請輸入詳細地址")
 	@Size(max = 100, message = "地址長度不可超過 100 字")
 	@Column(name = "mem_address")
 	private String memberAddress;

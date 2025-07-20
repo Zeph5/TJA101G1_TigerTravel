@@ -130,7 +130,7 @@ CREATE TABLE favorite_tour (
 
 CREATE TABLE travel_itinerary (
     travel_itinerary_id INTEGER NOT NULL AUTO_INCREMENT,
-    travel_plan_id INTEGER NOT NULL,last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    travel_plan_id INTEGER NOT NULL,
     max_tourist INTEGER NOT NULL,
     total_price INTEGER NOT NULL,
     start_date DATE NOT NULL, 
@@ -219,14 +219,13 @@ CREATE TABLE ticket_order_receipt (
     FOREIGN KEY (ticket_id) REFERENCES ticket(ticket_id)
 );
 
-CREATE TABLE tourist_id (
-    tourist_id INTEGER AUTO_INCREMENT NOT NULL,
+CREATE TABLE tourist (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     tour_order_id INTEGER NOT NULL,
     tourist_name VARCHAR(50) NOT NULL,
     tourist_personal_id VARCHAR(10) NOT NULL,
     contact_number VARCHAR(10) NOT NULL,
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (tourist_id),
     FOREIGN KEY (tour_order_id) REFERENCES tour_order(tour_order_id)
 );
 
