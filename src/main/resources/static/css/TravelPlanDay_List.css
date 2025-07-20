@@ -1,0 +1,41 @@
+ body {
+      padding: 2rem;
+      background-color: #f0f2f5;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .handle {
+      cursor: move;
+      text-align: center;
+      width: 40px;
+    }
+    h2 {
+      margin-bottom: 1rem;
+      font-weight: bold;
+      color: #0d6efd;
+    }
+    .date-select {
+      margin-bottom: 1.5rem;
+    }
+    .table thead {
+      background-color: #e9ecef;
+    }
+    .btn-success, .btn-primary, .btn-danger {
+      border-radius: 20px;
+    }
+    .d-flex.gap-2 > * {
+      white-space: nowrap;
+    }
+    .flex-wrap {
+      flex-wrap: wrap;
+    }
+    .btn-sm {
+      padding: 0.25rem 0.75rem;
+      font-size: 0.875rem;
+    }
+    .section-title {
+      font-size: 1.25rem;
+      color: #495057;
+      margin-bottom: 1rem;
+      border-left: 4px solid #0d6efd;
+      padding-left: 10px;
+    }

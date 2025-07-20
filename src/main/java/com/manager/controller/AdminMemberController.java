@@ -53,7 +53,7 @@ public class AdminMemberController {
 	@PostMapping("/disable/{id}")
 	public String disableMember(@PathVariable Integer id) {
 		adminMemberService.toggleMemberStatus(id);
-		return "redirect:/admin/members/list"; // 重定向到會員列表頁面
+		return "redirect:/admin/members/" + id; // 重定向到會員列表頁面
 	}
 }
 

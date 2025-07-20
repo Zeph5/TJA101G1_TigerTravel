@@ -122,3 +122,76 @@ label {
 .alert {
   border-radius: 0.5rem;
 }
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Noto Sans TC', sans-serif;
+}
+
+.admin-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* 🔹 左側選單 */
+.sidebar {
+  width: 220px;
+  background-color: #1e293b;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 40px;
+}
+
+.logo-img {
+  height: 40px;
+}
+
+.system-title {
+  font-size: 18px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.sidebar-menu a {
+  color: #cbd5e1;
+  text-decoration: none;
+  padding: 10px 0;
+  display: block;
+  font-size: 15px;
+  transition: color 0.3s;
+}
+
+.sidebar-menu a:hover {
+  color: #fff;
+}
+
+/* 🔹 內容區域 */
+.main-content {
+  flex: 1;
+  background-color: #f8fafc;
+  padding: 30px;
+  overflow-y: auto;
+}
+
+.content-wrapper {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+.sidebar-menu a.active {
+  color: #fff;
+  font-weight: bold;
+  background-color: #334155;
+  border-radius: 8px;
+  padding-left: 10px;
+}
+

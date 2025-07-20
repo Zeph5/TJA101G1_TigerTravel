@@ -1,28 +1,33 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant"
+      th:replace="~{layout :: layout (~{::title}, ~{::body}, ~{::cssLinks})}">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>旅遊網站後台管理系統</title>
-<link rel="stylesheet" th:href="@{/css/home.css}" />
+<th:block th:fragment="title">後台管理系統</th:block>
+<th:block th:fragment="cssLinks">
+	<link rel="stylesheet" th:href="@{/css/home.css}" />
+</th:block>
+
 </head>
 <body>
 	<header class="site-header">
-  <div class="header-left">
-    <div class="logo-wrapper">
-      <img th:src="@{/logo_image/Tiger_Travel_Logo_1.png}" alt="Tiger Travel Logo" class="logo-img" />
-      <span class="site-title">TravelTiger 管理系統</span>
-    </div>
-  </div>
+		<div class="header-left">
+			<div class="logo-wrapper">
+				<img th:src="@{/logo_image/Tiger_Travel_Logo_1.png}"
+					alt="Tiger Travel Logo" class="logo-img" /> <span
+					class="site-title">TigerTravel 管理系統</span>
+			</div>
+		</div>
 
-  <div class="header-right">
-    <div th:text="'Hi, 歡迎 ' + ${session.managerName}"></div>
-    <form th:action="@{/manager/logout}" method="post">
-      <button type="submit">登出</button>
-    </form>
-  </div>
-</header>
-	<div class="container">	
+		<div class="header-right">
+			<div th:text="'Hi, 歡迎 ' + ${session.managerName}"></div>
+			<form th:action="@{/manager/logout}" method="post">
+				<button type="submit">登出</button>
+			</form>
+		</div>
+	</header>
+	<div class="container">
 
 		<h1>旅遊網站後台管理系統</h1>
 
@@ -58,5 +63,5 @@
 			</div>
 		</div>
 	</div>
-</body>
+</main>
 </html>

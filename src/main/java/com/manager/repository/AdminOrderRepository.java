@@ -21,5 +21,7 @@ public interface AdminOrderRepository extends JpaRepository<TourOrderVO, Integer
 
 	@Query("SELECT t FROM TouristVO t WHERE t.tourOrder.tourOrderId = :orderId")
 	List<TouristVO> findTouristsByOrderId(Integer orderId);
+	@Query("SELECT o FROM TourOrderVO o LEFT JOIN FETCH o.tourists WHERE o.tourOrderId = :id")
+	Optional<TourOrderVO> findOrderWithTouristsById(Integer id);
 
 }

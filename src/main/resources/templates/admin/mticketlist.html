@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant"
+th:replace="~{layout :: layout (~{::title}, ~{::body}, ~{})}">
 <head>
 <meta charset="UTF-8">
-<title>票券管理</title>
+<th:block th:fragment="title">票券管理</th:block>
 <link rel="stylesheet"
 	href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 <style>

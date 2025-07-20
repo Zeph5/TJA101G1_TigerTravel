@@ -1,56 +1,17 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant">
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant"
+th:replace="~{layout :: layout (~{::title}, ~{::body}, ~{})}">
 <head>
   <meta charset="UTF-8" />
-  <title>每日行程列表（可拖曳排序）</title>
+  <th:block th:fragment="title">每日行程列表</th:block>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <style>
-    body {
-      padding: 2rem;
-      background-color: #f0f2f5;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .handle {
-      cursor: move;
-      text-align: center;
-      width: 40px;
-    }
-    h2 {
-      margin-bottom: 1rem;
-      font-weight: bold;
-      color: #0d6efd;
-    }
-    .date-select {
-      margin-bottom: 1.5rem;
-    }
-    .table thead {
-      background-color: #e9ecef;
-    }
-    .btn-success, .btn-primary, .btn-danger {
-      border-radius: 20px;
-    }
-    .d-flex.gap-2 > * {
-      white-space: nowrap;
-    }
-    .flex-wrap {
-      flex-wrap: wrap;
-    }
-    .btn-sm {
-      padding: 0.25rem 0.75rem;
-      font-size: 0.875rem;
-    }
-    .section-title {
-      font-size: 1.25rem;
-      color: #495057;
-      margin-bottom: 1rem;
-      border-left: 4px solid #0d6efd;
-      padding-left: 10px;
-    }
-  </style>
+  
+
+
 </head>
 <body>
   <div class="container bg-white shadow rounded p-4">

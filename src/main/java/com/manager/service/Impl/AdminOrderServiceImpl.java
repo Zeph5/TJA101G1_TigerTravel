@@ -80,9 +80,11 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 
 	@Override
 	public TourOrderVO findOrderEntityById(Integer id) {
-		return adminOrderRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Order not found with id: " + id)); // 查找訂單實體並處理未找到的情況
+	    return adminOrderRepository.findOrderWithTouristsById(id)
+	        .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+	    
 	}
+
 
 
 

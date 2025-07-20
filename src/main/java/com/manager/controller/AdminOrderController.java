@@ -33,11 +33,10 @@ public class AdminOrderController {
 	@GetMapping("/{id}")
 	public String showOrderDetail(@PathVariable Integer id, Model model) {		
 		OrderListDTO order = adminOrderService.findOrderById(id);// 查訂單 DTO
-		TourOrderVO tourOrderVO = adminOrderService.findOrderEntityById(id); // 查實體（為了取旅客）
-		
+		TourOrderVO tourOrderVO = adminOrderService.findOrderEntityById(id); // 查實體（為了取旅客）		
 		Set<TouristVO> tourist= tourOrderVO.getTourists(); // 取得訂單中的旅客列表
 		
-		model.addAttribute("tourists", tourist);
+		model.addAttribute("tourists", tourOrderVO.getTourists());
 		model.addAttribute("order", order);
 		System.out.println("旅客數：" + tourOrderVO.getTourists().size());
 		for (TouristVO t : tourOrderVO.getTourists()) {

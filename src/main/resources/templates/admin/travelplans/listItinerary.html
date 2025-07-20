@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant"
+th:replace="~{layout :: layout (~{::title}, ~{::body}, ~{})}">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport"
 	content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 <link href="/css/admin-theme.css" rel="stylesheet">
-<title>所有行程資料</title>
+<th:block th:fragment="title">行程梯次列表</th:block>
 
 <!-- Bootstrap 5 -->
 <link
