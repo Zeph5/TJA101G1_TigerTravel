@@ -12,7 +12,7 @@ import com.manager.repository.AdminOrderRepository;
 import com.manager.service.AdminOrderService;
 import com.member.model.TourOrderRepository;
 import com.member.model.TourOrderVO;
-import com.member.model.TouristVO;
+import com.member.model.TouristIdVO;
 
 @Service
 public class AdminOrderServiceImpl implements AdminOrderService {

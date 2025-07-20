@@ -1,76 +1,72 @@
 package com.member.model;
 
-import java.sql.Timestamp;
-import java.util.HashSet;
+import jakarta.persistence.*;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
-import org.hibernate.annotations.CreationTimestamp;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-
 @Entity
-@Table(name = "tourist_id")
+@Table(name = "tourist")
 public class TouristVO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "tourist_id", nullable = false, unique = true)
+    @Column(name = "tourist_id")
     private Integer touristId;
 
-    @ManyToOne(fetch = FetchType.LAZY) // LAZY 避免載太多訂單資料
-    @JoinColumn(name = "tour_order_id", nullable = false)
-    private TourOrderVO tourOrder; // 連訂單 VO
-
-    @Column(name = "tourist_name", nullable = false, length = 50)
-    private String touristName;
-
-    @Column(name = "tourist_personal_id", nullable = false, length = 20)
-    private String touristPersonalId;
-
-    @Column(name = "contact_number", nullable = false, length = 20)
+    @Column(name = "contact_number", nullable = false)
     private String contactNumber;
 
-    @Column(name = "create_time", nullable = false, updatable = false)
-    @CreationTimestamp
-    private Timestamp createTime;
+    @Column(name = "tourist_name", nullable = false)
+    private String touristName;
+
+    @Column(name = "tourist_email", nullable = false)
+    private String touristEmail;
+
+    @Column(name = "phone", nullable = false)
+    private String phone;
+
+    @Column(name = "member_account", nullable = false)
+    private String memberAccount;
     
-    @Column(name = "people_count")
-    private Integer peopleCount;
+    @Column(name = "tourist_personal_id", nullable = false)
+    private String touristPersonalId;
     
-    public TouristVO() {}
+    private LocalDateTime createTime;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tour_order_id", referencedColumnName = "tour_order_id", nullable = false)
+    private TourOrderVO tourOrder;
+
+
+    // ✅ 一對多：主報名人 → 子旅客清單
+    @OneToMany(mappedBy = "tourist", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TouristIdVO> touristIds;
     
-    public TouristVO(Integer touristId, TourOrderVO tourOrder, String touristName, String touristPersonalId,
-			String contactNumber, Timestamp createTime) {
-    	super();
+//    @OneToMany(mappedBy = "tourist", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<TouristIdVO> touristIds;
+
+	public TouristVO(Integer touristId, String memberAccount, String touristName, String touristEmail, String phone,
+			TourOrderVO tourOrder,Set<TouristIdVO> touristIds,String contactNumber, String touristPersonalId,
+			LocalDateTime createTime) {
+		super();
 		this.touristId = touristId;
-		this.tourOrder = tourOrder;
+		this.memberAccount = memberAccount;
 		this.touristName = touristName;
-		this.touristPersonalId = touristPersonalId;
+		this.touristEmail = touristEmail;
+		this.phone = phone;
+		this.tourOrder = tourOrder;
+		this.touristIds = touristIds;
 		this.contactNumber = contactNumber;
+		this.touristPersonalId = touristPersonalId;
 		this.createTime = createTime;
 	}
+	public TouristVO(){};
 
+    // Getter / Setter
 
-
-	public Integer getPeopleCount() {
-		return peopleCount;
-	}
-
-	public void setPeopleCount(Integer peopleCount) {
-		this.peopleCount = peopleCount;
-	}
-
-	public Integer getTouristId() {
+    public Integer getTouristId() {
         return touristId;
     }
 
@@ -78,12 +74,12 @@ public class TouristVO {
         this.touristId = touristId;
     }
 
-    public TourOrderVO getTourOrder() {
-        return tourOrder;
+    public String getMemberAccount() {
+        return memberAccount;
     }
 
-    public void setTourOrder(TourOrderVO tourOrder) {
-        this.tourOrder = tourOrder;
+    public void setMemberAccount(String memberAccount) {
+        this.memberAccount = memberAccount;
     }
 
     public String getTouristName() {
@@ -94,34 +90,69 @@ public class TouristVO {
         this.touristName = touristName;
     }
 
-    public String getTouristPersonalId() {
-        return touristPersonalId;
+    public String getTouristEmail() {
+        return touristEmail;
     }
 
-    public void setTouristPersonalId(String touristPersonalId) {
-        this.touristPersonalId = touristPersonalId;
+    public void setTouristEmail(String touristEmail) {
+        this.touristEmail = touristEmail;
     }
 
-    public String getContactNumber() {
-        return contactNumber;
+    public String getPhone() {
+        return phone;
     }
 
-    public void setContactNumber(String contactNumber) {
-        this.contactNumber = contactNumber;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
-    public Timestamp getCreateTime() {
-        return createTime;
-    }
+	public TourOrderVO getTourOrder() {
+		return tourOrder;
+	}
 
-    public void setCreateTime(Timestamp createTime) {
-        this.createTime = createTime;
-    }
+	public void setTourOrder(TourOrderVO tourOrder) {
+		this.tourOrder = tourOrder;
+	}
 
-    @Override
-    public String toString() {
-        return "TouristVO [touristId=" + touristId + ", tourOrder=" + tourOrder + ", touristName=" + touristName
-                + ", touristPersonalId=" + touristPersonalId + ", contactNumber=" + contactNumber + ", createTime="
-                + createTime + "]";
-    }
+	public Set<TouristIdVO> getTouristIds() {
+		return touristIds;
+	}
+
+	public void setTouristIds(Set<TouristIdVO> touristIds) {
+		this.touristIds = touristIds;
+	}
+
+	public String getContactNumber() {
+		return contactNumber;
+	}
+
+	public void setContactNumber(String contactNumber) {
+		this.contactNumber = contactNumber;
+	}
+	
+
+	public String getTouristPersonalId() {
+		return touristPersonalId;
+	}
+
+	public void setTouristPersonalId(String touristPersonalId) {
+		this.touristPersonalId = touristPersonalId;
+	}
+	public LocalDateTime getCreateTime() {
+		return createTime;
+	}
+	public void setCreateTime(LocalDateTime createTime) {
+		this.createTime = createTime;
+	}
+	
+	
+
+    
+//    public List<TouristIdVO> getTouristIds() {
+//		return touristIds;
+//	}
+//
+//	public void setTouristIds(List<TouristIdVO> touristIds) {
+//		this.touristIds = touristIds;
+//	}
 }

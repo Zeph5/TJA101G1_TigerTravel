@@ -10,6 +10,7 @@ import com.member.model.FavoriteTravelPlan;
 import com.member.model.FavoriteTravelPlanRepository;
 import com.member.model.MemberRepository;
 import com.member.model.memVO;
+import com.travel_plan.model.TravelItinerary;
 import com.travel_plan.model.TravelPlan;
 
 public interface FavoriteTravelPlanService {
@@ -21,4 +22,10 @@ public interface FavoriteTravelPlanService {
     
     List<TravelPlan> getTravelPlansByMember(memVO member);
     
+    void addFavorite(memVO member, TravelPlan travelPlan);
+    
+    void removeFavorite(memVO member, TravelPlan plan);
+    List<FavoriteTravelPlan> getFavoritesByMember(memVO member);
+    boolean isFavorite(memVO member, TravelPlan plan);
 }
+

@@ -6,7 +6,7 @@ import java.util.Set;
 
 import org.springframework.data.annotation.CreatedDate;
 
-import com.member.model.TouristVO;
+import com.member.model.TouristIdVO;
 import com.member.model.memVO;
 import com.travel_plan.model.TravelItinerary;
 

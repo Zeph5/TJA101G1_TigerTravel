@@ -84,9 +84,12 @@
                         </td>
                         <td th:text="${order.orderDatetime != null ? #temporals.format(order.orderDatetime, 'yyyy/MM/dd HH:mm') : '-'}"></td>
                         <td>
-                            <a th:href="@{'/member/detail/order/' + ${order.ticketOrderId}}"
-                               class="btn btn-sm btn-outline-primary">查看明細</a>
-                        </td>
+						    <a th:href="@{'/member/detail/order/' + ${order.ticketOrderId}}"
+						       class="btn btn-sm btn-outline-primary">查看明細</a>
+						</td>
+
+                        
+                        
                     </tr>
                 </tbody>
             </table>
@@ -146,8 +149,15 @@
 				        </td>
 				
 				        <td>
-				            <a th:href="@{'/member/tour-order/detail/' + ${tour.tourOrderId}}" class="btn btn-sm btn-outline-primary">查看明細</a>
-				        </td>
+						    <a th:href="@{'/member/tour-order/detail/' + ${tour.tourOrderId}}" 
+						       class="btn btn-sm btn-outline-primary">查看明細</a>
+						
+						    <a th:if="${tour.tourOrderStatus == '待付款'}"
+						       th:href="@{'/member/simulate-payment?orderId=' + ${tour.tourOrderId}}"
+						       class="btn btn-sm btn-warning ms-2">繼續付款</a>
+						</td>
+
+
 				    </tr>
 				</tbody>
             </table>

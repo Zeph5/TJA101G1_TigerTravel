@@ -73,6 +73,7 @@ public interface TravelPlanService {
 	List<TravelPlan> searchByTitle(String keyword);
 
 	Optional<TravelPlan> findById(Integer id); //01新增
+	List<TravelItinerary> findItinerariesByPlanId(Integer planId);//01新增
 
 	
 }

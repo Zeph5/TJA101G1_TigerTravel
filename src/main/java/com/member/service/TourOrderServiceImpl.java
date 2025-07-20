@@ -10,7 +10,10 @@ import com.member.model.TourOrderVO;
 import com.member.model.memVO;
 import com.ticket.model.TicketOrder;
 
+import jakarta.transaction.Transactional;
+
 @Service
+@Transactional
 public class TourOrderServiceImpl implements TourOrderService {
 	
 	private final TourOrderRepository tourOrderRepo;

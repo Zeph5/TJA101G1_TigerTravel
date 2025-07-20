@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,8 +28,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.member.model.FavoriteTravelPlan;
 import com.member.model.MemberTicketOrderRepository;
 import com.member.model.TourOrderVO;
+import com.member.model.TouristIdRepository;
+import com.member.model.TouristIdVO;
+import com.member.model.TouristRepository;
 import com.member.model.TouristVO;
 import com.member.model.memVO;
 import com.member.model.memberTour.MemTravelPlanDayRepository;
@@ -36,7 +42,9 @@ import com.member.service.MemberTicketOrderReceiptService;
 import com.member.service.MemberTicketOrderService;
 import com.member.service.TourOrderService;
 import com.member.service.TouristService;
+import com.member.service.favorite.FavoriteTravelPlanService;
 import com.member.service.travel.MemberTravelPlanService;
+import com.scenery.model.SceneryVO;
 import com.ticket.model.Ticket;
 import com.ticket.model.TicketOrder;
 import com.ticket.model.TicketOrderReceipt;
@@ -60,6 +68,9 @@ public class MemberTourOrderController {
 	private final MemberTravelPlanService memberTravelPlanSvc;
 	private final TouristService touristSvc;
 	private final TravelItineraryService travelItinerarySvc;
+	private final FavoriteTravelPlanService favoriteTravelPlanSvc;
+	private final TouristRepository touristRepo;
+	private final TouristIdRepository touristIdRepo;
 	
 	public MemberTourOrderController(MemberTicketOrderService ticketOrderSvc,
 										TourOrderService tourOrderSvc,
@@ -69,7 +80,10 @@ public class MemberTourOrderController {
 										TravelPlanService travelPlanSvc,
 										MemberTravelPlanService memberTravelPlanSvc,
 										TouristService touristSvc,
-										TravelItineraryService travelItinerarySvc) {
+										TravelItineraryService travelItinerarySvc,
+										FavoriteTravelPlanService favoriteTravelPlanSvc,
+										TouristRepository touristRepo,
+										TouristIdRepository touristIdRepo) {
 		this.ticketOrderSvc = ticketOrderSvc;
 		this.tourOrderSvc = tourOrderSvc;
 		this.receiptService = receiptService;
@@ -79,6 +93,9 @@ public class MemberTourOrderController {
 		this.memberTravelPlanSvc = memberTravelPlanSvc;
 		this.touristSvc = touristSvc;
 		this.travelItinerarySvc = travelItinerarySvc;
+		this.favoriteTravelPlanSvc = favoriteTravelPlanSvc;
+		this.touristRepo = touristRepo;
+		this.touristIdRepo = touristIdRepo;
 	}
 	
 	
@@ -174,7 +191,8 @@ public class MemberTourOrderController {
 		}
 		
 		TourOrderVO order = optional.get();
-		
+
+		List<TouristIdVO> tourists = touristSvc.findByTourOrder(order);
 		
 		TravelPlan plan = order.getTravelItinerary().getTravelPlan();
 		plan.getTravelTitle();
@@ -192,6 +210,7 @@ public class MemberTourOrderController {
 		model.addAttribute("planTitle", order.getTravelItinerary().getTravelPlan().getTravelTitle());
 		model.addAttribute("order", order);
 		model.addAttribute("travelPlanDays", dayList);
+		model.addAttribute("tourists", tourists);
 		
 		return "member/member-tour-order-detail";
 
@@ -199,11 +218,13 @@ public class MemberTourOrderController {
 	
 	//觀看整個旅程清單
 	@GetMapping("/travel/list")
-	public String showPagedPlans(@RequestParam(defaultValue = "0") int page,
+	public String showPagedPlans(@AuthenticationPrincipal MemberUserDetails loginUser,
+								 @RequestParam(defaultValue = "0") int page,
 	                             @RequestParam(defaultValue = "12") int size,
 	                             @RequestParam(value = "keyword", required = false) String keyword,
 	                             Model model) {
-
+		memVO member = loginUser.getMember();
+		
 	    // 🔍 判斷是否有搜尋關鍵字
 	    List<TravelPlan> allPlans;
 	    if (keyword != null && !keyword.isBlank()) {
@@ -214,6 +235,13 @@ public class MemberTourOrderController {
 	    } else {
 	        allPlans = travelPlanSvc.getAllTravelPlans();
 	    }
+	    
+	    List<FavoriteTravelPlan> favorites = favoriteTravelPlanSvc.getFavoritesByMember(member);
+	    List<Integer> favoritedIds = favorites.stream()
+	        .map(fav -> fav.getTravelPlan().getTravelPlanId())
+	        .collect(Collectors.toList());
+	    
+
 
 	    // ✂ 分頁邏輯
 	    int start = page * size;
@@ -221,6 +249,7 @@ public class MemberTourOrderController {
 	    List<TravelPlan> pagedPlans = allPlans.subList(start, end);
 
 	    // 💾 塞進 model 給 Thymeleaf 用
+	    model.addAttribute("favoritedIds", favoritedIds);
 	    model.addAttribute("plans", pagedPlans);
 	    model.addAttribute("currentPage", page);
 	    model.addAttribute("totalPages", (int) Math.ceil((double) allPlans.size() / size));
@@ -231,8 +260,10 @@ public class MemberTourOrderController {
 	}
 
 	//查看指定旅程清單
+	// 詳情頁（含多個出團行程）
 	@GetMapping("/travel/detail/{id}")
-	public String showTravelPlanDetail(@PathVariable("id") Integer planId, Model model) {
+	public String showTravelPlanDetail(@PathVariable("id") Integer planId, Model model,
+										@AuthenticationPrincipal MemberUserDetails loginUser) {
 	    Optional<TravelPlan> optionalPlan = travelPlanSvc.getTravelPlanEntityById(planId);
 	    if (optionalPlan.isEmpty()) {
 	        return "redirect:/member/travel/list";
@@ -241,102 +272,127 @@ public class MemberTourOrderController {
 	    TravelPlan plan = optionalPlan.get();
 	    model.addAttribute("plan", plan);
 	    
-	    // 第一個宣告，查Itinerary並判斷
-	    Optional<TravelItinerary> optionalItinerary = travelPlanSvc.getTravelItineraryForPlan(planId);
-	    if (optionalItinerary.isEmpty()) {
-	        model.addAttribute("message", "無可用行程！從CSV看ID= " + planId + " 沒對應。"); // 加訊息給頁面
-	        return "member/member-travel-detail";
+	    if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()
+	            && loginUser != null && loginUser.getMember() != null) {
+
+	        memVO member = loginUser.getMember();
+	        boolean isFavorite = favoriteTravelPlanSvc.isFavorite(member, plan); // ❗你要實作這方法
+	        model.addAttribute("isFavorite", isFavorite);
 	    }
-	    TravelItinerary itinerary = optionalItinerary.get();
-	    System.out.println("詳情頁ID: " + itinerary.getTravelItineraryId()); // 加這行debug，確認有數字如2
-	    model.addAttribute("itinerary", optionalItinerary.get());
 
-	    // 直接查 TravelPlanDay by planId，排序
+
+	    // 🔄 多個 Itinerary 一起撈出來
+	    List<TravelItinerary> itineraries = travelPlanSvc.findItinerariesByPlanId(planId);
+	    model.addAttribute("itineraries", itineraries);
+
+	    // 🗓 查每日行程
 	    List<TravelPlanDay> dayList = travelPlanDayRepo.findByTravelPlan_TravelPlanIdOrderByTravelDayNumber(planId);
-
 	    if (dayList.isEmpty()) {
-	        System.out.println("No DayList for planId: " + planId);
 	        model.addAttribute("dayList", List.of());
 	        model.addAttribute("message", "目前無可用的每日行程");
 	    } else {
-	        System.out.println("📅 多天行程數量：" + dayList.size());
-	        for (TravelPlanDay day : dayList) {
-	            System.out.println("Day " + day.getTravelDayNumber() + ": " + day.getTraveltime());
-	        }
-	        
 	        Map<Integer, List<TravelPlanDay>> groupedDays = new TreeMap<>();
 	        for (TravelPlanDay day : dayList) {
+	            SceneryVO scenery = day.getScenery();
+	            if (scenery != null && scenery.getSceneryBanner() != null) {
+	                String base64 = Base64.getEncoder().encodeToString(scenery.getSceneryBanner());
+	                scenery.setBase64Image(base64);
+	            }
+	            
 	            groupedDays.computeIfAbsent(day.getTravelDayNumber(), k -> new ArrayList<>()).add(day);
 	        }
-	        
+
+	        model.addAttribute("today", new Date());
 	        model.addAttribute("groupedDays", groupedDays);
 	        model.addAttribute("dayList", dayList);
 	    }
 
-	 // 在if (optionalItinerary.isEmpty())後
-	    model.addAttribute("itinerary", optionalItinerary.get());
-	    System.out.println("傳ID到頁面: " + optionalItinerary.get().getTravelItineraryId()); // 加這行debug logs
-	    
-	    // 刪掉重複宣告，直接用第一個optionalItinerary（如果需要orElse(null)，但上面已get()傳了）
-	    // model.addAttribute("itinerary", optionalItinerary.orElse(null)); // 如果想覆蓋成null時用，但上面已處理
-
 	    return "member/member-travel-detail";
 	}
+
+
 	
 	//送出資訊之後
 	@PostMapping("/tour-order/create")
 	public String createTourOrder(@ModelAttribute TourOrderVO order,
-	                              @RequestParam("peopleCount") int peopleCount,
+	                              @RequestParam Map<String, String> params,
 	                              @AuthenticationPrincipal MemberUserDetails loginUser,
-	                              Model model,
-	                              @RequestParam Map<String, String> params) {
-
+	                              Model model) {
+	    // ✅ 綁定登入會員
 	    memVO member = loginUser.getMember();
 	    order.setMember(member);
-	    order.setPeopleCount(peopleCount);
-	    order.setTourOrderStatus("待付款");
 
-	    // 驗證Itinerary
-	    Optional<TravelItinerary> optItinerary = travelItinerarySvc.findById(order.getTravelItineraryId());
-	    if (optItinerary.isEmpty() || peopleCount > optItinerary.get().getMaxTourist()) {
-	        model.addAttribute("error", "行程不存在或人數超過上限！");
+	    // ✅ 行程 ID 檢查
+	    String travelItineraryStr = params.get("travelItineraryId");
+	    if (travelItineraryStr == null || travelItineraryStr.isBlank()) {
+	        model.addAttribute("error", "行程 ID 缺失");
+	        model.addAttribute("inputBackup", params);
 	        return "member/member-tour-order-form";
 	    }
-	    TravelItinerary itinerary = optItinerary.get();
 
-	    // 訂單基本資料
-	    order.setTourPrice(itinerary.getTotalPrice().intValue());
-	    order.setTotalAmount(order.getTourPrice() * peopleCount);
-	    order.setTotalAfterCoupon(order.getTotalAmount());
-	    order.setTravelItinerary(itinerary);
-	    order.setTravelItineraryId(itinerary.getTravelItineraryId());
+	    int peopleCount = Integer.parseInt(params.getOrDefault("peopleCount", "0"));
+	    Integer itineraryId = Integer.parseInt(travelItineraryStr);
+	    Optional<TravelItinerary> opt = travelItinerarySvc.findById(itineraryId);
+	    if (opt.isEmpty()) {
+	        model.addAttribute("error", "行程不存在");
+	        model.addAttribute("inputBackup", params);
+	        return "member/member-tour-order-form";
+	    }
+	    TravelItinerary itinerary = opt.get();
 
-	    // 建立旅客集合
-	    Set<TouristVO> touristSet = new HashSet<>();
-	    for (int i = 0; i < peopleCount; i++) {
-	        String name = params.get("touristName" + i);
-	        String pid = params.get("touristPersonalId" + i);
-	        String phone = params.get("contactNumber" + i);
-
-	        System.out.println("🧾 收到旅客資訊: " + name + ", " + pid + ", " + phone);
-
-	        TouristVO tourist = new TouristVO();
-	        tourist.setTourOrder(order); // 綁尚未儲存的 order 對象
-	        tourist.setTouristName(name);
-	        tourist.setTouristPersonalId(pid);
-	        tourist.setContactNumber(phone);
-
-	        touristSet.add(tourist); // 放進集合
+	    // ✅ 檢查人數限制
+	    if (peopleCount + 1 > itinerary.getMaxTourist()) {
+	        model.addAttribute("error", "人數超過行程可報名上限！");
+	        model.addAttribute("inputBackup", params);
+	        return "member/member-tour-order-form";
 	    }
 
-	    // 綁進訂單物件
-	    order.setTourists(touristSet);
+	    // ✅ 初始化旅客明細集合（避免 null）
+	    Set<TouristIdVO> touristSet = new HashSet<>();
 
-	    // 儲存訂單與旅客一起寫入
+	    // ✅ 建立訂單基本資料（先不綁主報名人）
+	    order.setTourOrderStatus("待付款");
+	    order.setTourPrice(itinerary.getTotalPrice().intValue());
+	    order.setPeopleCount(peopleCount + 1);
+	    order.setTotalAmount(order.getTourPrice() * order.getPeopleCount());
+	    order.setTotalAfterCoupon(order.getTotalAmount());
+	    order.setTravelItinerary(itinerary);
+	    order.setTourist(null); // 主報名人之後補上
+	    order.setTourists(touristSet); // 先綁空集合，避免 null 錯誤
+
 	    TourOrderVO savedOrder = tourOrderSvc.save(order);
 
-	    // 更新 maxTourist（選擇性）
-	    itinerary.setMaxTourist(itinerary.getMaxTourist() - peopleCount);
+	    // ✅ 儲存主報名人（要在訂單之後，因為要關聯 order_id）
+	    TouristVO mainTourist = new TouristVO();
+	    mainTourist.setTouristName(params.get("mainName"));
+	    mainTourist.setTouristEmail(params.get("mainEmail"));
+	    mainTourist.setPhone(params.get("mainPhone"));
+	    mainTourist.setTouristPersonalId(params.get("mainPid"));
+	    mainTourist.setContactNumber(params.get("mainPhone"));
+	    mainTourist.setMemberAccount(member.getMemberAccount());
+	    mainTourist.setCreateTime(LocalDateTime.now());
+	    mainTourist.setTourOrder(savedOrder); // 關聯 tour_order_id
+	    TouristVO savedMain = touristRepo.save(mainTourist);
+
+	    // ✅ 補上訂單主報名人
+	    savedOrder.setTourist(savedMain);
+	    tourOrderSvc.save(savedOrder);
+
+	    for (int i = 0; i < peopleCount; i++) {
+	        TouristIdVO tid = new TouristIdVO();
+	        tid.setTourOrder(savedOrder);
+	        tid.setTouristName(params.get("touristName" + i));
+	        tid.setTouristPersonalId(params.get("touristPersonalId" + i));
+	        tid.setContactNumber(params.get("contactNumber" + i));
+	        touristIdRepo.save(tid);
+	        touristSet.add(tid);
+	    }
+
+	    tourOrderSvc.save(savedOrder); // 一次性 persist 明細
+
+
+	    // ✅ 扣除報名名額
+	    itinerary.setMaxTourist(itinerary.getMaxTourist() - savedOrder.getPeopleCount());
 	    travelItinerarySvc.save(itinerary);
 
 	    return "redirect:/member/simulate-payment?orderId=" + savedOrder.getTourOrderId();
@@ -357,7 +413,10 @@ public class MemberTourOrderController {
 	        model.addAttribute("error", "找不到行程資訊，從planId=" + planId + "查無對應");
 	        return "error-page";
 	    }
+	    
 	    model.addAttribute("itinerary", itinerary);
+	    model.addAttribute("order", new TourOrderVO());
+
 
 	    return "member/member-tour-order-form";
 	}
