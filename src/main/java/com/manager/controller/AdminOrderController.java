@@ -31,7 +31,10 @@ public class AdminOrderController {
 	@GetMapping("/{id}")
 	public String showOrderDetail(@PathVariable Integer id, Model model) {		
 		OrderListDTO order = adminOrderService.findOrderById(id);
+		TouristListDTO tourist = adminOrderService.findOrderByTouristId(id);
 		
+		
+		model.addAttribute("tourist", tourist);
 		model.addAttribute("order", order);
 		
 		return "admin/order/order_Detail"; 
@@ -48,4 +51,5 @@ public class AdminOrderController {
 		adminOrderService.updateOrder(id, updatedOrder);
 		return "redirect:/admin/orders/" + id; // 重定向到訂單詳細頁面
 	}
+	
 }

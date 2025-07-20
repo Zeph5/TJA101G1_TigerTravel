@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.manager.model.DTO.OrderListDTO;
 import com.manager.model.DTO.TouristListDTO;
 import com.manager.repository.AdminOrderRepository;
+import com.manager.repository.AdminTouristRepository;
 import com.manager.service.AdminOrderService;
 import com.member.model.TourOrderRepository;
 import com.member.model.TourOrderVO;
@@ -18,8 +19,11 @@ import com.member.model.TouristVO;
 public class AdminOrderServiceImpl implements AdminOrderService {
 	
 	private final AdminOrderRepository adminOrderRepository;
-	public AdminOrderServiceImpl(AdminOrderRepository adminOrderRepository) {
+	private final AdminTouristRepository adminTouristRepository;
+	public AdminOrderServiceImpl(AdminOrderRepository adminOrderRepository,
+			AdminTouristRepository adminTouristRepository) {
 		this.adminOrderRepository = adminOrderRepository;
+		this.adminTouristRepository = adminTouristRepository;
 	}
 	
 	
@@ -28,7 +32,10 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 	@Override
 	public OrderListDTO convertToDTO(TourOrderVO order) {
 		OrderListDTO dto = new OrderListDTO();
-		BeanUtils.copyProperties(order, dto); 
+		BeanUtils.copyProperties(order, dto); // 使用 BeanUtils 複製屬性
+		 if (order.getMember() != null) {
+		        dto.setMemberName(order.getMember().getMemberName()); // 假設是 memName
+		    }
 		return dto;
 	}	
 
@@ -54,6 +61,18 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 				.orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
 		BeanUtils.copyProperties(updatedOrder, existingOrder, "id"); // 更新訂單屬性，排除 id 屬性
 		adminOrderRepository.save(existingOrder); // 保存更新後的訂單資料		
+	}
+
+
+
+
+	@Override
+	public TouristListDTO findOrderByTouristId(Integer id) {
+		TouristVO touristVO = adminTouristRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Tourist not found with id: " + id)); // 查找旅客並處理未找到的情況
+		TouristListDTO touristDTO = new TouristListDTO();
+		BeanUtils.copyProperties(touristVO, touristDTO); // 使用 BeanUtils 複製屬性
+		return touristDTO;
 	}
 
 

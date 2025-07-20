@@ -1,94 +1,138 @@
 <!DOCTYPE html>
 <html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>訂單詳情</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>訂單詳情</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- 主題樣式與 Bootstrap -->
+  <link href="/css/admin-theme.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-    <!-- Font Awesome 圖示庫（可選） -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f6f8fa;
+      font-family: 'Segoe UI', 'Noto Sans TC', sans-serif;
+    }
 
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .card-title i {
-            margin-right: 8px;
-        }
-        .badge {
-            font-size: 0.95em;
-        }
-    </style>
+    h2 {
+      font-weight: 600;
+      color: #2f3e46;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .card {
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+      border: none;
+    }
+
+    .card-title {
+      font-weight: 600;
+      color: #457b9d;
+      margin-bottom: 1rem;
+    }
+
+    .list-group-item {
+      font-size: 1rem;
+      padding: 0.75rem 1.25rem;
+    }
+
+    .order-status-badge {
+      padding: 0.35rem 0.75rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+    }
+
+    .status-paid {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .status-pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+
+    .status-cancelled {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .btn i {
+      margin-right: 6px;
+    }
+  </style>
 </head>
 <body>
 
 <div class="container py-5">
-    <h2 class="mb-4"><i class="fa-solid fa-file-invoice"></i> 訂單詳情</h2>
+  <h2><i class="fa-solid fa-file-invoice"></i> 訂單詳情</h2>
 
-    <!-- 基本訂單資訊 -->
-    <div class="card mb-4 shadow-sm">
-        <div class="card-body">
-            <h5 class="card-title"><i class="fa-solid fa-circle-info"></i> 基本資訊</h5>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item">訂單編號：<strong th:text="${order.tourOrderId}">12345</strong></li>
-                <li class="list-group-item">訂單狀態：
-                    <span th:classappend="${order.tourOrderStatus == '已付款' ? 'status-paid' : 
-                               (order.tourOrderStatus == '未付款' ? 'status-pending' : 
-                               (order.tourOrderStatus == '已取消' ? 'status-cancelled' : 'status-default'))}"
-      th:text="${order.tourOrderStatus}" class="order-status-badge">未付款</span>
-                </li>
-                <li class="list-group-item">行程編號：<span th:text="${order.travelItineraryId}">T2025</span></li>
-                <li class="list-group-item">旅客人數：<span th:text="${order.peopleCount}">2</span> 人</li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- 旅客資料表格 -->
-    <!--
-<div class="card shadow-sm">
+  <!-- 📦 基本資訊卡片 -->
+  <div class="card mb-4">
     <div class="card-body">
-        <h5 class="card-title"><i class="fa-solid fa-users"></i> 旅客資訊</h5>
-        <div th:if="${#lists.isEmpty(tourists)}">
-            <p class="text-muted">此訂單尚未填寫旅客資料。</p>
-        </div>
-        <div th:unless="${#lists.isEmpty(tourists)}" class="table-responsive">
-            <table class="table table-bordered table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>旅客姓名</th>
-                        <th>身分證字號</th>
-                        <th>聯絡電話</th>
-                        <th>建立時間</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="tourist : ${tourists}">
-                        <td th:text="${tourist.touristName}">王小明</td>
-                        <td th:text="${tourist.touristPersonalId}">A123456789</td>
-                        <td th:text="${tourist.contactNumber}">0912345678</td>
-                        <td th:text="${#dates.format(tourist.createTime, 'yyyy-MM-dd HH:mm')}">2025-07-15 12:00</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+      <h5 class="card-title"><i class="fa-solid fa-circle-info"></i> 基本資訊</h5>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">訂單編號：<strong th:text="${order.tourOrderId}">12345</strong></li>
+        <li class="list-group-item">訂單狀態：
+          <span class="order-status-badge"
+                th:classappend="${order.tourOrderStatus == '已付款' ? ' status-paid' :
+                                (order.tourOrderStatus == '未付款' ? ' status-pending' :
+                                (order.tourOrderStatus == '已取消' ? ' status-cancelled' : ''))}"
+                th:text="${order.tourOrderStatus}">未付款</span>
+        </li>
+        <li class="list-group-item">行程編號：<strong th:text="${order.travelItineraryId}">T2025</strong></li>
+        <li class="list-group-item">旅客人數：<strong th:text="${order.peopleCount}">2</strong> 人</li>
+        <li class="list-group-item">總金額：<strong th:text="${order.totalAmount}">NT$ 9999</strong> 元</li>
+        <li class="list-group-item">建立時間：<strong th:text="${#temporals.format(order.createTime, 'yyyy-MM-dd HH:mm')}">2025-07-15 14:00</strong></li>
+      </ul>
     </div>
-</div>
--->
+  </div>
+  <!-- 👥 旅客資料區塊 -->
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title"><i class="fa-solid fa-users"></i> 旅客資訊</h5>
 
-
-    <!-- 返回按鈕 -->
-    <div class="mt-4">
-        <a href="/admin/orders/list" class="btn btn-outline-secondary">
-            <i class="fa-solid fa-arrow-left"></i> 返回訂單列表
-        </a>
+    <div th:if="${#lists.isEmpty(tourists)}">
+      <p class="text-muted">此訂單尚未填寫旅客資料。</p>
     </div>
+
+    <div th:unless="${#lists.isEmpty(tourists)}" class="table-responsive">
+      <table class="table table-bordered align-middle text-center">
+        <thead class="table-light">
+          <tr>
+            <th scope="col"><i class="fa-regular fa-user"></i> 姓名</th>
+            <th scope="col"><i class="fa-regular fa-id-card"></i> 身分證字號</th>
+            <th scope="col"><i class="fa-solid fa-phone"></i> 聯絡電話</th>
+            <th scope="col"><i class="fa-regular fa-clock"></i> 建立時間</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="tourist : ${tourists}">
+            <td th:text="${tourist.touristName}">王小明</td>
+            <td th:text="${tourist.touristPersonalId}">A123456789</td>
+            <td th:text="${tourist.contactNumber}">0912345678</td>
+            <td th:text="${#dates.format(tourist.createTime, 'yyyy-MM-dd HH:mm')}">2025-07-15 12:00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+  
+
+  <!-- 🔁 返回按鈕 -->
+  <div class="text-end">
+    <a href="/admin/orders/list" class="btn btn-outline-secondary">
+      <i class="fa-solid fa-arrow-left"></i> 返回訂單列表
+    </a>
+  </div>
 </div>
 
-<!-- Bootstrap 5 JS (必要時用) -->
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
