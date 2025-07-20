@@ -1,6 +1,7 @@
 package com.travel_plan.dto;
 
 import java.time.LocalDate;
+import java.util.Base64;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -102,6 +103,15 @@ public class TravelPlanDayDTO {
 				+ ", travelDayNumber=" + travelDayNumber + ", travelSequenceNumber=" + travelSequenceNumber
 				+ ", traveltime=" + traveltime + "]";
 	}
+	
+	//01新增
+	public String getBase64Image() {
+	    if (scenery != null && scenery.getSceneryBanner() != null) {
+	        return Base64.getEncoder().encodeToString(scenery.getSceneryBanner());
+	    }
+	    return null;
+	}
+
     
     
 }

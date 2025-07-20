@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <title>我的收藏</title>
+
+<meta name="_csrf" th:content="${_csrf.token}" />
+<meta name="_csrf_header" th:content="${_csrf.headerName}" />
+
 <style>
 body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -287,17 +291,49 @@ body {
 <!-- 🧳 收藏旅程區塊 -->
 <div class="tour-section">
     <h2 class="section-header">🧳 收藏旅程</h2>
-    
-    <div class="tour-placeholder">
-        <p>旅程收藏功能開發中...</p>
-        <p style="font-size: 0.9em; margin-top: 10px;">敬請期待！</p>
+
+    <div class="favorites-container" th:if="${tourFavorites.size() > 0}">
+        <div th:each="plan : ${tourFavorites}" class="scenery-card">
+            <!-- 圖片（若無圖則放預設） -->
+            <div th:if="${plan.travelPlanBannerUrl != null}">
+                <img class="scenery-image" th:src="${plan.travelPlanBannerUrl}" alt="旅程圖片" />
+            </div>
+            <div th:unless="${plan.travelPlanBannerUrl != null}" class="placeholder-image">
+                無圖片
+            </div>
+
+            <!-- 內容 -->
+            <div class="card-content">
+                <a th:href="@{/member/travel/detail/{id}(id=${plan.travelPlanId})}"
+                   class="scenery-title"
+                   th:text="${plan.travelTitle}">旅程標題</a>
+
+                <form th:action="@{/member/favorites/tour/remove/{id}(id=${plan.travelPlanId})}"
+                      method="post" th:object="${plan}">
+                    <button type="button"
+					        th:attr="data-plan-id=${plan.travelPlanId}"
+					        onclick="unfavoriteTour(this, event)"
+					        class="favorite-heart"
+					        title="移除收藏">♥</button>
+
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="no-fav" th:if="${tourFavorites.size() == 0}">
+        <p>你尚未收藏任何旅程。</p>
+        <a href="/member/travel/list" class="browse-link">🔍 去探索旅程</a>
     </div>
 </div>
+
 
 <!-- Notification -->
 <div id="notification" class="notification"></div>
 
 <script>
+//景點收藏
 function unfavoriteScenery(button, event) {
     // Prevent the click from bubbling up to the card
     event.stopPropagation();
@@ -312,11 +348,15 @@ function unfavoriteScenery(button, event) {
     // Disable button during request
     button.disabled = true;
     
+    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+    
     fetch(`/member/favorites/scenery/remove/${sceneryId}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
+            'X-Requested-With': 'XMLHttpRequest',
+            [csrfHeader]: csrfToken
         },
         credentials: 'same-origin'
     })
@@ -375,6 +415,48 @@ function unfavoriteScenery(button, event) {
     });
 }
 
+//旅程收藏
+function unfavoriteTour(button, event) {
+    event.preventDefault();
+
+    const planId = button.getAttribute('data-plan-id');
+
+    if (!confirm('確定要取消收藏這個旅程嗎？')) return;
+
+    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+    fetch(`/member/favorites/tour/remove/${planId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            [csrfHeader]: csrfToken
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+    	console.log("HTTP status:", response.status);
+    	return response.json()
+    	})
+    .then(data => {
+    	console.log("Response data:", data);
+        if (data.success) {
+            alert("已取消收藏！");
+            const card = button.closest('.scenery-card');
+            card.remove();
+        } else {
+            alert(data.message || "取消失敗");
+        }
+    })
+    .catch(error => {
+        alert("連線錯誤，請稍後再試");
+        console.error("Fetch error:", error);
+    });
+}
+
+
+
 function showNotification(message, type) {
     const notification = document.getElementById('notification');
     notification.textContent = message;
@@ -389,4 +471,4 @@ function showNotification(message, type) {
 </script>
 
 </body>
-</html>
+</html>]

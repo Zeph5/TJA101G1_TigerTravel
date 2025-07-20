@@ -5,12 +5,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.travel_plan.model.TravelItinerary;
 
 import jakarta.persistence.*;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "tour_order")
 public class TourOrderVO {
 
@@ -23,64 +25,62 @@ public class TourOrderVO {
     @JoinColumn(name = "member_id")
     private memVO member;
 
-    @Column(name = "travel_itinerary_id")
-    private Integer travelItineraryId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "travel_itinerary_id")
+    private TravelItinerary travelItinerary;
 
-    @Column(name = "tour_price")
     private Integer tourPrice;
-
-    @Column(name = "total_amount")
     private Integer totalAmount;
-
-    @Column(name = "total_after_coupon")
     private Integer totalAfterCoupon;
-
-    @Column(name = "tour_order_status")
     private String tourOrderStatus;
-    
-    @Column(name = "people_count") // or 根據你的欄位名稱
     private Integer peopleCount;
 
-    @Column(name = "create_time", nullable = false, updatable = false)
     @CreatedDate
+    @Column(name = "create_time", nullable = false, updatable = false)
     private LocalDateTime createTime;
-    
-    
-    @Column(name = "card_last_four")
-    private String cardLastFour;
 
-    @Column(name = "card_expiry_date")
+    private String cardLastFour;
     private String cardExpiryDate;
 
-    // ✅ 關聯到 TravelItinerary
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "travel_itinerary_id", insertable = false, updatable = false)
-    private TravelItinerary travelItinerary;
-    
-    @OneToMany(mappedBy = "tourOrder", cascade = CascadeType.ALL)
-    private Set<TouristVO> tourists = new HashSet<>();
+    @OneToOne
+    @JoinColumn(name = "tourist_id")
+    private TouristVO tourist;
+
+    @OneToMany(mappedBy = "tourOrder", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TouristIdVO> tourists;
     
     public TourOrderVO() {};
     
-    public TourOrderVO(Integer tourOrderId, memVO member, Integer travelItineraryId, Integer tourPrice,
+    public TourOrderVO(Integer tourOrderId, memVO member, Integer tourPrice,
 			Integer totalAmount, Integer totalAfterCoupon, String tourOrderStatus, LocalDateTime createTime,
-			TravelItinerary travelItinerary , Set<TouristVO> tourists,String cardExpiryDate,String cardLastFour) {
+			TravelItinerary travelItinerary,String cardExpiryDate,String cardLastFour,TouristVO tourist,
+			Set<TouristIdVO> tourists) {
 		super();
 		this.tourOrderId = tourOrderId;
 		this.member = member;
-		this.travelItineraryId = travelItineraryId;
 		this.tourPrice = tourPrice;
 		this.totalAmount = totalAmount;
 		this.totalAfterCoupon = totalAfterCoupon;
 		this.tourOrderStatus = tourOrderStatus;
 		this.createTime = createTime;
 		this.travelItinerary = travelItinerary;
-		this.tourists = tourists;
+		this.tourist = tourist;
 		this.cardExpiryDate = cardExpiryDate;
 		this.cardLastFour = cardLastFour;
+		this.tourists = tourists;
 	}
-    
-    public String getCardLastFour() {
+
+	
+
+	public Set<TouristIdVO> getTourists() {
+		return tourists;
+	}
+
+	public void setTourists(Set<TouristIdVO> tourists) {
+	    this.tourists = tourists;
+	}
+
+	public String getCardLastFour() {
 		return cardLastFour;
 	}
 
@@ -99,14 +99,13 @@ public class TourOrderVO {
 	public Integer getPeopleCount() {
         return peopleCount;
     }
-    
 
-    public Set<TouristVO> getTourists() {
-		return tourists;
+	public TouristVO getTourist() {
+		return tourist;
 	}
 
-	public void setTourists(Set<TouristVO> tourists) {
-		this.tourists = tourists;
+	public void setTourist(TouristVO tourist) {
+		this.tourist = tourist;
 	}
 
 	public void setPeopleCount(Integer peopleCount) {
@@ -130,14 +129,6 @@ public class TourOrderVO {
 	public void setMember(memVO member) {
 		this.member = member;
 	}
-
-	public Integer getTravelItineraryId() {
-        return travelItineraryId;
-    }
-
-    public void setTravelItineraryId(Integer travelItineraryId) {
-        this.travelItineraryId = travelItineraryId;
-    }
 
     public Integer getTourPrice() {
         return tourPrice;

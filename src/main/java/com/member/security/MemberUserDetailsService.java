@@ -19,9 +19,11 @@ import com.member.model.memVO;
 @Service						//實作介面：我要告訴你怎麼查帳號
 public class MemberUserDetailsService implements UserDetailsService {
 
-	@Autowired 
-	private MemberRepository memberRepository;
+	private final MemberRepository memberRepository;
 	
+	public MemberUserDetailsService(MemberRepository memberRepository) {
+		this.memberRepository = memberRepository;
+	}
 	
 	@Override //Security 在登入時會自動呼叫這個方法，把使用者輸入的帳號當成username傳進來
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -39,5 +41,5 @@ public class MemberUserDetailsService implements UserDetailsService {
 		
 		return new MemberUserDetails(member); //包裝成 Spring Security 能用的格式
 	}
-
+	
 }

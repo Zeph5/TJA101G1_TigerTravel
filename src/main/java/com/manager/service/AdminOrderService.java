@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import com.manager.model.DTO.OrderListDTO;
 import com.manager.model.DTO.TouristListDTO;
 import com.member.model.TourOrderVO;
-import com.member.model.TouristVO;
+import com.member.model.TouristIdVO;
 
 @Service
 public interface AdminOrderService {

@@ -252,4 +252,10 @@ public class SceneryVO implements java.io.Serializable {
 
     public String getRatingStars() { return ratingStars; }
     public void setRatingStars(String ratingStars) { this.ratingStars = ratingStars; }
+
+
+    @Transient //01新增
+	private String base64Image;
+	public String getBase64Image() {return base64Image;}
+	public void setBase64Image(String base64Image) {this.base64Image = base64Image;}
 }

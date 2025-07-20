@@ -376,5 +376,10 @@ public class TravelPlanServiceImpl implements TravelPlanService {
         return travelPlanRepository.findById(id);
     }
 
+	@Override //01新增
+	public List<TravelItinerary> findItinerariesByPlanId(Integer planId) {
+		return travelItineraryRepository.findByTravelPlan_TravelPlanId(planId);
+	}
+
 
 }
