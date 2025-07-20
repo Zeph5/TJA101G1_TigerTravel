@@ -72,22 +72,27 @@ public class TravelPlanDayServiceImpl implements TravelPlanDayService {
 	@Override
 	@Transactional
 	public void saveDailyItems(Integer itineraryId, LocalDate unusedDate, List<TravelPlanDayDTO> dailyItems) {
-	   
-
 	    TravelItinerary itinerary = travelItineraryRepository.findById(itineraryId)
 	            .orElseThrow(() -> new IllegalArgumentException("Travel Itinerary not found with ID: " + itineraryId));
 	    TravelPlan travelPlan = itinerary.getTravelPlan();
 
 	    List<TravelPlanDay> itemsToSave = new ArrayList<>();
 
-	    for (TravelPlanDayDTO dto : dailyItems) {
-	        if (dto.getTravelPlanDayId() != null) {	           
-	            continue;
+	    for (int i = 0; i < dailyItems.size(); i++) {
+	        TravelPlanDayDTO dto = dailyItems.get(i);
+
+	        if (dto.getTravelPlanDayId() != null) {
+	            continue; // 只處理新增的
 	        }
 
 	        LocalDate date = dto.getTraveltime();
-	        if (date == null) {	            
+	        if (date == null) {
 	            continue;
+	        }
+
+	     // ✅ 只有在前端沒給序號時才自動編號，避免覆蓋掉原本值
+	        if (dto.getTravelSequenceNumber() == null) {
+	            dto.setTravelSequenceNumber(i + 1);
 	        }
 
 	        dto.setTravelDayNumber(calculateTravelDayNumber(itineraryId, date));
@@ -113,6 +118,7 @@ public class TravelPlanDayServiceImpl implements TravelPlanDayService {
 	        System.out.println("⚠️ 沒有要儲存的資料");
 	    }
 	}
+
 
 
 
@@ -215,6 +221,98 @@ public class TravelPlanDayServiceImpl implements TravelPlanDayService {
 			        .filter(Objects::nonNull)
 			        .collect(Collectors.toList());
 	}
+
+	@Override
+	public void updateTravelPlanDaySequence(Integer travelPlanDayId, String action) {
+		TravelPlanDay day = travelPlanDayRepository.findById(travelPlanDayId)
+				.orElseThrow(() -> new IllegalArgumentException("找不到 ID 為 " + travelPlanDayId + " 的旅行行程。"));
+
+		
+		if ("increase".equals(action)) {
+	        day.setTravelSequenceNumber(day.getTravelSequenceNumber() + 1);
+	    } else if ("decrease".equals(action) && day.getTravelSequenceNumber() > 1) {
+	        day.setTravelSequenceNumber(day.getTravelSequenceNumber() - 1);
+	    }
+
+	    travelPlanDayRepository.save(day);
+	}
+
+	@Override
+	@Transactional
+	public void updateOrder(List<Integer> sortedIds) {
+		for (int i = 0; i < sortedIds.size(); i++) {
+	        Integer id = sortedIds.get(i);
+	        TravelPlanDay day = travelPlanDayRepository.findById(id)
+	            .orElseThrow(() -> new RuntimeException("找不到 ID: " + id));
+	        day.setTravelSequenceNumber(i + 1);
+	        travelPlanDayRepository.save(day);
+	    }
+	}
+	@Transactional
+	public void saveOrUpdateItems(Integer itineraryId, LocalDate date, List<TravelPlanDayDTO> dailyItems) {
+	    TravelItinerary itinerary = travelItineraryRepository.findById(itineraryId)
+	            .orElseThrow(() -> new IllegalArgumentException("找不到行程梯次"));
+
+	    TravelPlan travelPlan = itinerary.getTravelPlan();
+
+	    // 找出當日已存在的序號（避免重複）
+	    List<Integer> existingSequences = travelPlanDayRepository
+	            .findByTravelItinerary_TravelItineraryIdAndTraveltime(itineraryId, date)
+	            .stream().map(TravelPlanDay::getTravelSequenceNumber)
+	            .collect(Collectors.toList());
+
+	    int maxSeq = existingSequences.stream().mapToInt(Integer::intValue).max().orElse(0);
+
+	    for (TravelPlanDayDTO dto : dailyItems) {
+	        // 若沒有序號就補
+	        if (dto.getTravelSequenceNumber() == null) {
+	            dto.setTravelSequenceNumber(++maxSeq);
+	        }
+
+	        if (dto.getTravelPlanDayId() != null) {
+	            // 更新
+	            TravelPlanDay existing = travelPlanDayRepository.findById(dto.getTravelPlanDayId())
+	                    .orElseThrow(() -> new IllegalArgumentException("找不到每日行程 ID: " + dto.getTravelPlanDayId()));
+
+	            existing.setScenery(sceneryRepository.findById(dto.getSceneryId()).orElse(null));
+	            existing.setTraveltime(dto.getTraveltime());
+	            existing.setTravelDayNumber(dto.getTravelDayNumber());
+	            existing.setTravelSequenceNumber(dto.getTravelSequenceNumber());
+
+	        } else {
+	            // 新增
+	            TravelPlanDay entity = convertToTravelPlanDayEntity(dto);
+	            entity.setTravelItinerary(itinerary);
+	            entity.setTravelPlan(travelPlan);
+	            entity.setTraveltime(dto.getTraveltime());
+	            entity.setTravelDayNumber(dto.getTravelDayNumber());
+	            entity.setTravelSequenceNumber(dto.getTravelSequenceNumber());
+
+	            if (dto.getSceneryId() != null) {
+	                sceneryRepository.findById(dto.getSceneryId()).ifPresent(entity::setScenery);
+	            }
+
+	            travelPlanDayRepository.save(entity);
+	        }
+	    }
+	}
+
+	@Override
+	public void deleteAllByItineraryIdAndDate(Integer itineraryId, LocalDate date) {
+		List<TravelPlanDay> dayList = travelPlanDayRepository.findByTravelItinerary_TravelItineraryIdAndTraveltime(itineraryId, date);
+	    travelPlanDayRepository.deleteAll(dayList);
+	}
+
+	@Override
+	public void deleteMultipleByIds(Integer itineraryId, List<Integer> dayIds) {
+	    List<TravelPlanDay> toDelete = travelPlanDayRepository.findAllById(dayIds).stream()
+	        .filter(day -> day.getTravelItinerary().getTravelItineraryId().equals(itineraryId))
+	        .collect(Collectors.toList());
+	    travelPlanDayRepository.deleteAll(toDelete);
+	}
+
+	
+
 
 
 }

@@ -1,6 +1,8 @@
 package com.travel_plan.controller;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,11 +54,11 @@ public class TravelItineraryController {
 		// 從 Service 獲取特定 TravelPlan 下的所有 TravelItinerary 梯次
 		// 注意：這裡應該呼叫類似 getItinerariesByTravelPlanId(planId) 的服務方法
 		List<TravelItinerary> itineraries = travelItineraryService.getItinerariesByTravelPlanId(planId);
-		System.out.println("目前查詢到的行程梯次數量為: " + itineraries.size()); // <--- 加這行
-		model.addAttribute("itineraries", itineraries);
+		
+		Map<TravelPlan, List<TravelItinerary>> groupedItineraries = new LinkedHashMap<>();
+		groupedItineraries.put(travelPlan, itineraries); // 只一筆也一樣包進去
 
-		model.addAttribute("travelPlanId", planId); // 傳遞 planId
-		model.addAttribute("travelPlanTitle", travelPlan.getTravelTitle()); // 傳遞計畫名稱給前端顯示
+		model.addAttribute("groupedItineraries", groupedItineraries);
 
 		return "admin/travelplans/listItinerary"; // 返回顯示行程梯次列表的視圖
 	}
@@ -111,8 +113,7 @@ public class TravelItineraryController {
 		}
 	}
 
-	// 編輯現有梯次基本資訊的入口點
-	// 路徑: GET /admin/travelplans/{planId}/itinerary/{itineraryId}/edit
+	
 	@GetMapping("/{itineraryId}/edit")
 	public String showEditItineraryForm(@PathVariable("planId") Integer planId,
 			@PathVariable("itineraryId") Integer itineraryId, Model model, HttpSession session) {
@@ -146,7 +147,7 @@ public class TravelItineraryController {
 		model.addAttribute("travelPlanId", planId); // 傳遞 planId 給前端用於表單提交路徑等
 
 		// 7. 返回視圖名稱
-		return "admin/travelplans/updateItinerary";
+		return "admin/travelplans/form_step2_itinerary_details";
 	}
 
 	@PostMapping("/{itineraryId}/update")
@@ -168,7 +169,7 @@ public class TravelItineraryController {
 			model.addAttribute("travelPlanId", planId);
 			model.addAttribute("travelItineraryId", itineraryId);
 			model.addAttribute("errorMessage", "資料驗證失敗，請檢查輸入。");
-			return "admin/travelplans/updateItinerary";
+			return "admin/travelplans/form_step2_itinerary_details";
 		}
 
 		try {

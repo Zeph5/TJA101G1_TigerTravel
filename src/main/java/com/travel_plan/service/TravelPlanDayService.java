@@ -43,4 +43,24 @@ public interface TravelPlanDayService {
 
 	List<Integer> findSequenceNumbersByItineraryIdAndDate(Integer itineraryId, LocalDate date);
 
+
+
+	void updateTravelPlanDaySequence(Integer travelPlanDayId, String action);
+
+
+
+	void updateOrder(List<Integer> sortedIds);
+
+
+
+	void saveOrUpdateItems(Integer itineraryId, LocalDate date, List<TravelPlanDayDTO> dailyItems);
+
+
+
+	void deleteAllByItineraryIdAndDate(Integer itineraryId, LocalDate date);
+
+
+
+	void deleteMultipleByIds(Integer itineraryId, List<Integer> dayIds);
+
 }
