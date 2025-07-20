@@ -119,6 +119,12 @@ public class SecurityConfig {
                 
                 // ✅ 景點評論功能（需要登入）- 對應 templates/frontend/scenery/Scenery.html
                 .requestMatchers(HttpMethod.POST, "/frontend/scenery/detail/*/add-comment").authenticated()
+                
+                // ✅ NEW: 景點收藏功能（需要登入）
+                .requestMatchers(HttpMethod.POST, "/frontend/scenery/detail/*/favorite/add").authenticated()
+                .requestMatchers(HttpMethod.POST, "/frontend/scenery/detail/*/favorite/remove").authenticated()
+                .requestMatchers(HttpMethod.POST, "/scenery/favorite/add/*").authenticated()
+                .requestMatchers(HttpMethod.POST, "/scenery/favorite/remove/*").authenticated()
 
                 // ✅ 景點相關資源（圖片等）
                 .requestMatchers("/scenery/banner/**", "/scenery/image/**").permitAll()

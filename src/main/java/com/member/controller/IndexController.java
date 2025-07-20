@@ -2,6 +2,7 @@ package com.member.controller;
 
 import com.member.model.MemberRepository;
 import com.member.model.memVO;
+import com.member.service.FavoriteSceneryService;
 import com.member.service.MailService;
 import com.member.service.MemberService;
 import com.scenery.model.SceneryRepository;
@@ -18,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,7 +31,6 @@ import org.springframework.web.util.UriUtils;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.Base64;
 
 @Controller
 public class IndexController {
@@ -41,6 +43,8 @@ public class IndexController {
     private MailService mailService;
     @Autowired
     private SceneryService sceneryService;
+    @Autowired
+    private FavoriteSceneryService favoriteSceneryService;
     @Autowired
     private SceneryRepository sceneryRepository;
     @Autowired
@@ -56,7 +60,7 @@ public class IndexController {
 
     // Fixed scenery search handler - now properly handles POST requests
     @PostMapping("/scenery/search")
-    public String searchSceneryPost(@RequestParam("keyword") String keyword, 
+    public String searchSceneryPost(@RequestParam("keyword") String keyword,
                                    RedirectAttributes redirectAttributes) {
         try {
             // Validate keyword
@@ -121,13 +125,14 @@ public class IndexController {
     // ===== SCENERY DETAIL PAGE WITH COMMENTS =====
 
     @GetMapping("/frontend/scenery/detail/{id}")
-    public String showSceneryDetail(@PathVariable("id") Integer id, Model model) {
+    public String showSceneryDetail(@PathVariable("id") Integer id, Model model, 
+                                   HttpServletRequest request, Authentication authentication) {
         try {
             // Validate scenery ID
             if (id == null || id <= 0) {
                 return "error/404";
             }
-            
+
             SceneryVO scenery = sceneryService.getById(id);
             if (scenery == null) {
                 return "error/404";
@@ -142,10 +147,10 @@ public class IndexController {
             // Load comments/scores with safer approach
             try {
                 List<SceneryScoreVO> scores = sceneryScoreRepository.findByScenery_SceneryIdOrderByCreateTimeDesc(id);
-                
+
                 // Debug logging (remove in production)
                 System.out.println("Found " + scores.size() + " scores for scenery " + id);
-                
+
                 scenery.setSceneryScores(scores);
             } catch (Exception e) {
                 System.err.println("Error loading scores: " + e.getMessage());
@@ -161,9 +166,34 @@ public class IndexController {
                 scenery.setRating(0.0);
             }
 
+            // Check if user is logged in and if scenery is favorited using Authentication
+            if (authentication != null && authentication.isAuthenticated()) {
+                try {
+                    String memberAccount = authentication.getName();
+                    System.out.println("Checking favorite status for user: " + memberAccount);
+                    
+                    Optional<memVO> memberOpt = memberService.findByAccount(memberAccount);
+                    if (memberOpt.isPresent()) {
+                        memVO currentUser = memberOpt.get();
+                        boolean isFavorited = favoriteSceneryService.isFavorited(currentUser.getMemberId(), id);
+                        model.addAttribute("isFavorited", isFavorited);
+                        System.out.println("User " + currentUser.getMemberId() + " favorite status for scenery " + id + ": " + isFavorited);
+                    } else {
+                        System.out.println("User not found in database: " + memberAccount);
+                        model.addAttribute("isFavorited", false);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error checking favorite status: " + e.getMessage());
+                    model.addAttribute("isFavorited", false);
+                }
+            } else {
+                model.addAttribute("isFavorited", false);
+                System.out.println("No user authenticated, setting isFavorited to false");
+            }
+
             model.addAttribute("scenery", scenery);
             return "frontend/scenery/Scenery";
-            
+
         } catch (Exception e) {
             System.err.println("Error in showSceneryDetail: " + e.getMessage());
             e.printStackTrace();
@@ -413,6 +443,123 @@ public class IndexController {
             return result.toString();
         } catch (Exception e) {
             return "❌ Error checking ratings: " + e.getMessage();
+        }
+    }
+    
+    @PostMapping("/frontend/scenery/detail/{id}/favorite/add")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> addFavorite(@PathVariable Integer id, 
+                                                          HttpServletRequest request,
+                                                          Authentication authentication) {
+        System.out.println("=== ADD FAVORITE DEBUG ===");
+        System.out.println("Scenery ID: " + id);
+        System.out.println("Authentication: " + (authentication != null ? authentication.getName() : "null"));
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // Check authentication
+            if (authentication == null || !authentication.isAuthenticated()) {
+                System.out.println("No authentication - returning unauthorized");
+                response.put("success", false);
+                response.put("message", "請先登入");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            
+            // Get user from authentication
+            String memberAccount = authentication.getName();
+            System.out.println("Member account from auth: " + memberAccount);
+            
+            Optional<memVO> memberOpt = memberService.findByAccount(memberAccount);
+            if (memberOpt.isEmpty()) {
+                System.out.println("Member not found in database");
+                response.put("success", false);
+                response.put("message", "會員資料不存在，請重新登入");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            
+            memVO currentUser = memberOpt.get();
+            System.out.println("Found member: " + currentUser.getMemberAccount() + " (ID: " + currentUser.getMemberId() + ")");
+            
+            // Check if already favorited
+            boolean alreadyFavorited = favoriteSceneryService.isFavorited(currentUser.getMemberId(), id);
+            System.out.println("Already favorited: " + alreadyFavorited);
+            
+            if (alreadyFavorited) {
+                System.out.println("Already in favorites - returning message");
+                response.put("success", false);
+                response.put("message", "已經在收藏清單中");
+                return ResponseEntity.ok(response);
+            }
+            
+            // Add to favorites
+            System.out.println("Adding to favorites...");
+            favoriteSceneryService.addFavorite(currentUser.getMemberId(), id);
+            System.out.println("Successfully added to favorites!");
+            
+            response.put("success", true);
+            response.put("message", "已加入收藏");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            System.err.println("Error adding favorite: " + e.getMessage());
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "操作失敗");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PostMapping("/frontend/scenery/detail/{id}/favorite/remove")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> removeFavorite(@PathVariable Integer id, 
+                                                             HttpServletRequest request,
+                                                             Authentication authentication) {
+        System.out.println("=== REMOVE FAVORITE DEBUG ===");
+        System.out.println("Scenery ID: " + id);
+        System.out.println("Authentication: " + (authentication != null ? authentication.getName() : "null"));
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // Check authentication
+            if (authentication == null || !authentication.isAuthenticated()) {
+                System.out.println("No authentication - returning unauthorized");
+                response.put("success", false);
+                response.put("message", "請先登入");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            
+            // Get user from authentication
+            String memberAccount = authentication.getName();
+            System.out.println("Member account from auth: " + memberAccount);
+            
+            Optional<memVO> memberOpt = memberService.findByAccount(memberAccount);
+            if (memberOpt.isEmpty()) {
+                System.out.println("Member not found in database");
+                response.put("success", false);
+                response.put("message", "會員資料不存在，請重新登入");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            
+            memVO currentUser = memberOpt.get();
+            System.out.println("Found member: " + currentUser.getMemberAccount() + " (ID: " + currentUser.getMemberId() + ")");
+            
+            // Remove from favorites
+            System.out.println("Removing from favorites...");
+            favoriteSceneryService.removeFavorite(currentUser.getMemberId(), id);
+            System.out.println("Successfully removed from favorites!");
+            
+            response.put("success", true);
+            response.put("message", "已從收藏中移除");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            System.err.println("Error removing favorite: " + e.getMessage());
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "操作失敗");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 }

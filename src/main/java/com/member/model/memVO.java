@@ -8,54 +8,64 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
-@Entity // 告訴Spring這是一個對應資料表的物件
-@Table(name = "member") // 指定對應的資料表名稱(必須要和我的資料庫一致)
+@Entity
+@Table(name = "member")
 public class memVO implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column (name = "member_id")
+	@Column(name = "member_id")
 	private Integer memberId;
 
-	@Column(name = "mem_account", nullable = false, unique = true) // 不允許為null,必須為唯一
+	@NotBlank(message = "帳號不可空白")
+	@Size(min = 6, max = 20, message = "帳號長度需為 6~20 字")
+	@Column(name = "mem_account", nullable = false, unique = true)
 	private String memberAccount;
 
-	@Column(name = "mem_name", nullable = false) // 不允許為null
-	private String memberName;
-
-	@Column(name = "mem_password", nullable = false) // 不允許為null
+	@NotBlank(message = "密碼不可空白")
+	@Size(min = 6, max = 20, message = "密碼長度需為 6~20 字")
+	@Column(name = "mem_password", nullable = false)
 	private String memberPassword;
 
-	@Column(name = "mem_email")
-	private String memberEmail;
+	@NotBlank(message = "姓名不可空白")
+	@Size(max = 20, message = "姓名長度不可超過 20 字")
+	@Column(name = "mem_name", nullable = false)
+	private String memberName;
 
+	@Pattern(regexp = "^09\\d{8}$", message = "請輸入正確的手機格式（09開頭，共10碼）")
 	@Column(name = "mem_phone")
 	private String memberPhone;
+
+	@Size(max = 100, message = "地址長度不可超過 100 字")
+	@Column(name = "mem_address")
+	private String memberAddress;
+
+	@NotBlank(message = "Email 不可空白")
+	@Email(message = "Email 格式不正確")
+	@Column(name = "mem_email", nullable = false)
+	private String memberEmail;
 
 	@Column(name = "mem_status")
 	private Byte memberStatus;
 
-	@Column(name = "mem_address")
-	private String memberAddress;
-	
-
-
 	@Lob
 	@Basic(fetch = FetchType.EAGER)
-	// 這樣在Hibernate查詢會員時，就會自動讀出圖片資
 	private byte[] avatar;
 
 	@Column(updatable = false)
 	@CreationTimestamp
 	private Timestamp createTime;
 
-	//=====驗證功能=======
-	private Boolean emailVerified = false; // 是否以驗證信箱
-	private String verifyToken; // 註冊信箱驗證使用
-	
-	//===更改密碼功能=====
-	private String resetToken; //忘記密碼 token
+	// ===== 驗證與安全相關 =====
+	private Boolean emailVerified = false;
+	private String verifyToken;
+
+	private String resetToken;
 	private LocalDateTime resetTokenCreatedTime; 
 
 	public String getResetToken() {

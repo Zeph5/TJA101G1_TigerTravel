@@ -1,131 +1,391 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>我的收藏</title>
-    <style>
-        body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 0 20px;
-        }
+<meta charset="UTF-8">
+<title>我的收藏</title>
+<style>
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 20px;
+}
 
-        h2 {
-            text-align: center;
-            margin-top: 30px;
-            color: #333;
-        }
+.section-header {
+    color: #2e7d32;
+    font-size: 1.8em;
+    font-weight: bold;
+    margin: 30px 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #4CAF50;
+}
 
-        .nav-buttons, .tab-buttons {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-            gap: 10px;
-        }
+.favorites-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 40px;
+}
 
-        .nav-buttons a, .tab-buttons button {
-            text-decoration: none;
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-size: 16px;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+.scenery-card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    height: 80px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
 
-        .nav-buttons a:hover, .tab-buttons button:hover {
-            background-color: #388e3c;
-        }
+.scenery-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
 
-        .card {
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin: 20px auto;
-            max-width: 600px;
-        }
+.scenery-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
 
-        .banner {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            border-radius: 6px;
-            margin-bottom: 15px;
-        }
+.placeholder-image {
+    width: 80px;
+    height: 80px;
+    background-color: #e0e0e0;
+    color: #999;
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 12px;
+    flex-shrink: 0;
+}
 
-        .placeholder {
-            background-color: #e0e0e0;
-            color: #999;
-            font-style: italic;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 180px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-        }
+.card-content {
+    padding: 0 20px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+}
 
-        .no-fav {
-            text-align: center;
-            margin-top: 40px;
-            color: #666;
-        }
-    </style>
+.scenery-title {
+    margin: 0;
+    color: #2e7d32;
+    font-size: 1.1em;
+    font-weight: bold;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.scenery-title:hover {
+    color: #1b5e20;
+    text-decoration: none;
+}
+
+.favorite-heart {
+    background: none;
+    border: none;
+    font-size: 1.4em;
+    color: #ff6b6b;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 8px;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.favorite-heart:hover {
+    background-color: rgba(255, 182, 193, 0.2);
+    transform: scale(1.1);
+}
+
+.favorite-heart:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.no-fav {
+    text-align: center;
+    margin: 40px 0;
+    color: #666;
+    font-size: 1.1em;
+    grid-column: 1 / -1;
+    width: 100%;
+}
+
+.no-fav p {
+    margin: 20px 0;
+}
+
+.browse-link {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+}
+
+.browse-link:hover {
+    background-color: #388e3c;
+}
+
+.tour-section {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 2px solid #e0e0e0;
+}
+
+.tour-placeholder {
+    text-align: center;
+    margin: 40px 0;
+    color: #999;
+    font-style: italic;
+    background-color: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Notification styles */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    z-index: 10000;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.notification.success {
+    background-color: #4CAF50;
+}
+
+.notification.error {
+    background-color: #f44336;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .favorites-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .scenery-card {
+        height: 70px;
+    }
+    
+    .scenery-image, .placeholder-image {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .card-content {
+        padding: 0 15px;
+    }
+    
+    .scenery-title {
+        font-size: 1em;
+    }
+    
+    .favorite-heart {
+        width: 35px;
+        height: 35px;
+        font-size: 1.2em;
+    }
+    
+    body {
+        padding: 15px;
+    }
+    
+    .section-header {
+        font-size: 1.5em;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .scenery-card {
+        height: 60px;
+    }
+    
+    .scenery-image, .placeholder-image {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .scenery-title {
+        font-size: 0.95em;
+    }
+    
+    .card-content {
+        padding: 0 12px;
+    }
+}
+</style>
 </head>
 <body>
 
-<h2>🧡 我的收藏</h2>
-
-<!-- 🔗 導覽按鈕 -->
-<div class="nav-buttons">
-    <a th:href="@{/index}">🏠 回首頁</a>
-    <a th:href="@{/member/home}">👤 會員中心</a>
-</div>
-
-<!-- 📌 Tab 切換按鈕 -->
-<div class="tab-buttons">
-    <button onclick="showTab('scenery')">📍 收藏景點</button>
-    <button onclick="showTab('tour')">🧳 收藏旅程</button>
-</div>
-
 <!-- 📍 收藏景點區塊 -->
-<div id="tab-scenery">
+<div>
+    <h2 class="section-header">📍 收藏景點</h2>
+    
+    <div class="favorites-container" th:if="${sceneryFavorites.size() > 0}">
+        <div th:each="scenery : ${sceneryFavorites}" class="scenery-card">
+            <!-- 景點圖片 -->
+            <div th:if="${scenery.imageUrl != null}">
+                <img class="scenery-image" th:src="${scenery.imageUrl}" alt="景點圖片" />
+            </div>
+            <div th:unless="${scenery.imageUrl != null}" class="placeholder-image">
+                無圖片
+            </div>
+            
+            <!-- 景點資訊 -->
+            <div class="card-content">
+                <a th:href="@{/frontend/scenery/detail/{id}(id=${scenery.sceneryId})}" 
+                   class="scenery-title" th:text="${scenery.sceneryName}">景點名稱</a>
+                
+                <button class="favorite-heart" 
+                        th:attr="data-scenery-id=${scenery.sceneryId}"
+                        onclick="unfavoriteScenery(this, event)"
+                        title="移除收藏">
+                    ♥
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <div class="no-fav" th:if="${sceneryFavorites.size() == 0}">
         <p>你尚未收藏任何景點。</p>
+        <a href="/index" class="browse-link">🔍 去發現美景</a>
     </div>
-    <div th:each="scenery : ${sceneryFavorites}" class="card">
-	    <h3 th:text="${scenery.sceneryName}">景點名稱</h3>
-	    <p th:text="${scenery.sceneryIntro}">景點介紹</p>
-	    <p th:text="${scenery.sceneryAddress}">景點地址</p>
-	</div>
-
 </div>
 
 <!-- 🧳 收藏旅程區塊 -->
-<div id="tab-tour" style="display: none;">
-    <div class="no-fav" th:if="${tourFavorites.size() == 0}">
-        <p>你尚未收藏任何旅程。</p>
-    </div>
-    <div th:each="plan : ${tourFavorites}" class="card">
-        <div class="placeholder" th:if="${plan.travelPlanBannerUrl == null}">
-            尚未上傳圖片
-        </div>
-        <img class="banner" th:if="${plan.travelPlanBannerUrl != null}"
-             th:src="@{'/images/' + ${plan.travelPlanBannerUrl}}" alt="旅程圖片" />
-        <h3 th:text="${plan.travelTitle}">旅程標題</h3>
-        <p th:text="${plan.travelPlanDescription}">旅程介紹</p>
+<div class="tour-section">
+    <h2 class="section-header">🧳 收藏旅程</h2>
+    
+    <div class="tour-placeholder">
+        <p>旅程收藏功能開發中...</p>
+        <p style="font-size: 0.9em; margin-top: 10px;">敬請期待！</p>
     </div>
 </div>
 
+<!-- Notification -->
+<div id="notification" class="notification"></div>
+
 <script>
-    function showTab(tab) {
-        document.getElementById("tab-scenery").style.display = (tab === 'scenery') ? 'block' : 'none';
-        document.getElementById("tab-tour").style.display = (tab === 'tour') ? 'block' : 'none';
+function unfavoriteScenery(button, event) {
+    // Prevent the click from bubbling up to the card
+    event.stopPropagation();
+    
+    const sceneryId = button.getAttribute('data-scenery-id');
+    
+    // Show confirmation dialog
+    if (!confirm('確定要移除這個景點的收藏嗎？')) {
+        return;
     }
+    
+    // Disable button during request
+    button.disabled = true;
+    
+    fetch(`/member/favorites/scenery/remove/${sceneryId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Remove the card from the page
+            const card = button.closest('.scenery-card');
+            card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(-20px)';
+            
+            setTimeout(() => {
+                card.remove();
+                
+                // Check if there are any scenery cards left
+                const remainingCards = document.querySelectorAll('.scenery-card');
+                if (remainingCards.length === 0) {
+                    // Show "no favorites" message
+                    const container = document.querySelector('.favorites-container');
+                    if (container) {
+                        container.innerHTML = '';
+                        container.style.display = 'none';
+                    }
+                    
+                    // Find or create no-fav div
+                    let noFavDiv = document.querySelector('.no-fav');
+                    if (!noFavDiv) {
+                        noFavDiv = document.createElement('div');
+                        noFavDiv.className = 'no-fav';
+                        noFavDiv.innerHTML = `
+                            <p>你尚未收藏任何景點。</p>
+                            <a href="/index" class="browse-link">🔍 去發現美景</a>
+                        `;
+                        document.querySelector('.favorites-container').parentNode.appendChild(noFavDiv);
+                    }
+                    noFavDiv.style.display = 'block';
+                }
+            }, 300);
+            
+            showNotification('已從收藏中移除', 'success');
+        } else {
+            showNotification(data.message || '操作失敗', 'error');
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('操作失敗，請稍後再試', 'error');
+        button.disabled = false;
+    });
+}
+
+function showNotification(message, type) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.className = `notification ${type}`;
+    notification.classList.add('show');
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
 </script>
 
 </body>

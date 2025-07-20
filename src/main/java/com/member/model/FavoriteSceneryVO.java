@@ -72,4 +72,5 @@ public class FavoriteSceneryVO {
 		this.createTime = createTime;
 	};
 	
+
 }

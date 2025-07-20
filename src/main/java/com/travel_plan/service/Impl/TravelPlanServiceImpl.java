@@ -371,6 +371,10 @@ public class TravelPlanServiceImpl implements TravelPlanService {
     }
 
 
+    @Override //01新增
+    public Optional<TravelPlan> findById(Integer id) {
+        return travelPlanRepository.findById(id);
+    }
 
 
 }
