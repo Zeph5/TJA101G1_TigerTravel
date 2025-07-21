@@ -107,10 +107,8 @@
 						<div class="card h-100 shadow-sm rounded-4 travel-card"
 							th:data-id="${plan.travelPlanId}">
 
-							<img th:if="${plan.travelPlanBannerUrl}"
-								th:src="@{${plan.travelPlanBannerUrl}}"
-								class="card-img-top rounded-top-4 object-fit-cover"
-								style="height: 180px;" alt="Banner" />
+							<img th:src="@{${plan.travelPlanBannerUrl}}" alt="banner"
+     class="card-img-top rounded-top-4 object-fit-cover" style="height: 180px;">
 
 							<div class="card-body">
 								<h5 class="card-title text-primary fw-semibold"

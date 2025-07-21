@@ -201,3 +201,7 @@ body, html {
   object-fit: cover;
   border-radius: 12px;
 }
+a img:hover {
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}

@@ -79,5 +79,7 @@ public interface TravelPlanService {
 
 	void deleteAllByIds(List<Integer> planIds);
 
+
+
 	
 }

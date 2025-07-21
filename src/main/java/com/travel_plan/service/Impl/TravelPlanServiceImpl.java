@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDate;
@@ -48,25 +49,19 @@ public class TravelPlanServiceImpl implements TravelPlanService {
     }
 
     // 圖片儲存輔助
-    private String saveBannerImage(MultipartFile bannerImage) {
-        if (bannerImage == null || bannerImage.isEmpty()) {
-            return null;
-        }
+    private String saveBannerImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) return null;
+
         try {
-            String contentType = bannerImage.getContentType();
-            if (contentType == null || !contentType.startsWith("image/")) {
-                throw new IllegalArgumentException("Invalid file type. Only images allowed.");
-            }
-            long maxFileSize = 5 * 1024 * 1024;
-            if (bannerImage.getSize() > maxFileSize) {
-                throw new IllegalArgumentException("File too large (max 5MB).");
-            }
-            String fileName = System.currentTimeMillis() + "_" + bannerImage.getOriginalFilename();
-            Path filePath = Paths.get(UPLOAD_DIR, fileName);
-            Files.copy(bannerImage.getInputStream(), filePath);
-            return "/images/travelplan_banners/" + fileName;
+            String uploadDir = "C:/TJA101-WebApp/spring boot/images";
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            File savePath = new File(uploadDir, fileName);
+            savePath.getParentFile().mkdirs();
+            file.transferTo(savePath);
+            return "/uploads/" + fileName;
         } catch (IOException e) {
-            throw new RuntimeException("Failed to save banner image: " + e.getMessage(), e);
+            // log 可以記下錯誤
+            return null;
         }
     }
 
@@ -115,14 +110,14 @@ public class TravelPlanServiceImpl implements TravelPlanService {
     @Override
     @Transactional
     public TravelPlan createTravelPlanFromDto(@Valid TravelPlanCreationDTO dto, MultipartFile bannerImage) {
-        TravelPlan travelPlan = convertToEntity(dto);
+        TravelPlan travelPlan = convertToEntity(dto); // 假設你有把 DTO 的欄位轉進 Entity
 
-        String imageUrl = saveBannerImage(bannerImage); // ✅ 使用共用方法
+        String imageUrl = saveBannerImage(bannerImage); // ✅ 呼叫圖片儲存方法
         if (imageUrl != null) {
-            travelPlan.setTravelPlanBannerUrl(imageUrl);
+            travelPlan.setTravelPlanBannerUrl(imageUrl); // 設定圖片網址
         }
 
-        return travelPlanRepository.save(travelPlan);
+        return travelPlanRepository.save(travelPlan); // 存入資料庫
     }
 
     @Override
@@ -398,6 +393,9 @@ public class TravelPlanServiceImpl implements TravelPlanService {
 		travelPlanRepository.deleteAllById(planIds);
 		
 	}
+	
+
+
 
 
 }

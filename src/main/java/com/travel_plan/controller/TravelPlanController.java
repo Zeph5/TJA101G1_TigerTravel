@@ -1,8 +1,11 @@
 package com.travel_plan.controller;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -78,44 +81,51 @@ public class TravelPlanController {
 		model.addAttribute("travelPlanCreationDto", new TravelPlanCreationDTO()); // 假設有一個 TravelPlan 類別
 		return "admin/travelplans/form_step1_plan_details";
 	}
-
-	@PostMapping 
+	
+	
+	// 處理新增/編輯旅行計畫第一步的表單提交
+	@PostMapping("/save")
 	public String createTravelPlan(@Valid @ModelAttribute("travelPlanCreationDto") TravelPlanCreationDTO dto,
-			BindingResult result, RedirectAttributes redirectAttributes,
-			@RequestParam(value = "bannerImage", required = false) MultipartFile bannerImage, HttpSession session,
-			Model model) {
-		 if (result.hasErrors()) {
-		        model.addAttribute("travelPlanCreationDto", dto);		   
-		        model.addAttribute("errorMessage", "資料驗證失敗，請檢查輸入。");
-		        return "admin/travelplans/form_step1_plan_details"; // 返回表單頁面
-		    }
-		
-		TravelPlan savedPlan ; // 用於儲存新建立的旅行計畫實體
-		 if (dto.getTravelPlanId() != null && dto.getTravelPlanId() != 0) {
-	            // 更新現有計畫 (假設 Service 有此方法)
-	            savedPlan = travelPlanService.updateTravelPlan(dto.getTravelPlanId(), dto, bannerImage);
-	            redirectAttributes.addFlashAttribute("successMessage", "計畫基本資訊更新成功，請繼續編輯行程細節。");
-	        } else {
-	            // 創建新計畫 (假設 Service 有此方法)
-	            savedPlan = travelPlanService.createTravelPlanFromDto(dto, bannerImage);
-	            redirectAttributes.addFlashAttribute("successMessage", "計畫基本資訊儲存成功，請繼續編輯行程細節。");
-	        }
-		 if ((dto.getBannerImage() == null || dto.getBannerImage().isEmpty()) 
-				    && (dto.getTravelPlanBannerUrl() == null || dto.getTravelPlanBannerUrl().isBlank())) {
-				    result.rejectValue("bannerImage", "error.bannerImage", "請上傳圖片");
-				    model.addAttribute("errorMessage", "資料驗證失敗，請檢查輸入。");
-				    return "admin/travelplans/form_step1_plan_details";
-				}
+	                               BindingResult result,
+	                               @RequestParam(value = "bannerImage", required = false) MultipartFile bannerImage,
+	                               RedirectAttributes redirectAttributes,
+	                               HttpSession session,
+	                               Model model) {
 
-		// 將新建立的旅行計畫 ID 儲存到 Session 中，供下一步使用
-		session.setAttribute("currentTravelPlanId", savedPlan.getTravelPlanId());
-		session.removeAttribute("currentTravelItineraryId"); // 清除可能存在的行程 ID，因為新增計畫時不需要行程 ID
-		// 添加成功訊息，並在重定向後顯示
-		redirectAttributes.addFlashAttribute("successMessage", "計畫基本資訊儲存成功，請繼續編輯行程細節。");
-		return "redirect:/admin/travelplans";
+	    // 表單驗證失敗時直接回表單
+	    if (result.hasErrors()) {
+	        model.addAttribute("travelPlanCreationDto", dto);
+	        model.addAttribute("errorMessage", "資料驗證失敗，請檢查輸入。");
+	        return "admin/travelplans/form_step1_plan_details";
+	    }
+
+	    // 圖片必填驗證（新建時）
+	    if ((bannerImage == null || bannerImage.isEmpty())
+	        && (dto.getTravelPlanId() == null || dto.getTravelPlanId() == 0)
+	        && (dto.getTravelPlanBannerUrl() == null || dto.getTravelPlanBannerUrl().isBlank())) {
+	        result.rejectValue("bannerImage", "error.bannerImage", "請上傳圖片");
+	        model.addAttribute("errorMessage", "請上傳圖片");
+	        return "admin/travelplans/form_step1_plan_details";
+	    }
+
+	    TravelPlan savedPlan;
+
+	    if (dto.getTravelPlanId() != null && dto.getTravelPlanId() != 0) {
+	        savedPlan = travelPlanService.updateTravelPlan(dto.getTravelPlanId(), dto, bannerImage);
+	        redirectAttributes.addFlashAttribute("successMessage", "計畫已更新，請繼續編輯行程細節");
+	    } else {
+	        savedPlan = travelPlanService.createTravelPlanFromDto(dto, bannerImage);
+	        redirectAttributes.addFlashAttribute("successMessage", "計畫新增成功，請繼續編輯行程細節");
+	    }
+
+	    session.setAttribute("currentTravelPlanId", savedPlan.getTravelPlanId());
+	    session.removeAttribute("currentTravelItineraryId");
+
+	    return "redirect:/admin/travelplans";
 	}
 
-	
+
+	// 顯示編輯旅行計畫的表單
 	@GetMapping("/{id}/edit")
 	public String editTravelPlan(@PathVariable("id") Integer id, Model model, HttpSession session) {
 
@@ -189,6 +199,6 @@ public class TravelPlanController {
 
 	    return "redirect:/admin/travelplans";
 	}
-
-	}
+	
+}
 

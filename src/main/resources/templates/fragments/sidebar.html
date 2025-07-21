@@ -2,16 +2,19 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 	<div th:fragment="sidebar">
-		<div class="bg-dark text-white p-3 position-fixed top-0 start-0 vh-100" style="width: 220px; z-index: 1030;">
+		<div
+			class="bg-dark text-white p-3 position-fixed top-0 start-0 vh-100"
+			style="width: 220px; z-index: 1030;">
 
 			<div class="mb-4">
-				<img th:src="@{/logo_image/Tiger_Travel_Logo_1.png}" alt="logo"
-					style="width: 100%;" class="mb-2" />
+				<a th:href="@{/manager/home}"> <img th:src="@{/images/icon.png}"
+					alt="logo" style="height: 120px; width: auto;" class="mb-2" />
+				</a>
 				<h5 class="text-white">TigerTravel 後台</h5>
 				<link rel="stylesheet" th:href="@{/css/admin-theme.css}" />
-				
+
 			</div>
-	        <!-- 側邊選單 -->
+			<!-- 側邊選單 -->
 			<ul class="nav flex-column gap-1">
 
 				<!-- 首頁 -->
