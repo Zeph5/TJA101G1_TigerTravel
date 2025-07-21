@@ -97,11 +97,11 @@ th:replace="~{layout :: layout (~{::title}, ~{::body}, ~{})}">
   <div class="card-body">
     <h5 class="card-title"><i class="fa-solid fa-users"></i> 旅客資訊</h5>
 
-    <div th:if="${#lists.isEmpty(tourists)}">
+    <div th:if="${#lists.isEmpty(tourist)}">
       <p class="text-muted">此訂單尚未填寫旅客資料。</p>
     </div>
 
-    <div th:unless="${#lists.isEmpty(tourists)}" class="table-responsive">
+    <div th:unless="${#lists.isEmpty(tourist)}" class="table-responsive">
       <table class="table table-bordered align-middle text-center">
         <thead class="table-light">
           <tr>
@@ -112,11 +112,11 @@ th:replace="~{layout :: layout (~{::title}, ~{::body}, ~{})}">
           </tr>
         </thead>
         <tbody>
-          <tr th:each="tourist : ${tourists}">
+          <tr th:each="tourist : ${tourist}">
             <td th:text="${tourist.touristName}">王小明</td>
             <td th:text="${tourist.touristPersonalId}">A123456789</td>
             <td th:text="${tourist.contactNumber}">0912345678</td>
-            <td th:text="${#dates.format(tourist.createTime, 'yyyy-MM-dd HH:mm')}">2025-07-15 12:00</td>
+            <td th:text="${#temporals.format(tourist.createTime, 'yyyy-MM-dd HH:mm')}">2025-07-15 12:00</td>
           </tr>
         </tbody>
       </table>

@@ -146,7 +146,7 @@
 
 		<!-- ✅ 分頁區塊 -->
 		<div
-			th:replace="fragments/pagination :: pagination(${ticketPage}, ${currentPage}, ${pageSize})"></div>
+			th:replace="fragments/pagination :: pagination(${ticketPage}, ${currentPage}, ${pageSize},,${keyword})"></div>
 	</div>
 
 	<!-- JS -->

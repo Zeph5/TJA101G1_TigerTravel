@@ -1,112 +1,141 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant"
-      th:replace="~{layout :: layout (~{::title}, ~{::main}, ~{::cssLinks})}">
-<head>
-    <meta charset="UTF-8">
-    <th:block th:fragment="title">會員清單</th:block>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <th:block th:fragment="cssLinks">
-	<link rel="stylesheet" th:href="@{/css/admin-theme.css}" />
-</th:block>
-    <style>
-        body {
-            background-color: #f9fafb;
-            font-family: 'Segoe UI', 'Noto Sans TC', sans-serif;
-        }
+	<!DOCTYPE html>
+	<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant"
+	      th:replace="~{layout :: layout (~{::title}, ~{::main}, ~{::cssLinks})}">
+	
+	<head>
+	  <meta charset="UTF-8">
+	  <th:block th:fragment="title">會員清單</th:block>
+	  <th:block th:fragment="cssLinks">
+	    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+	    <link rel="stylesheet" th:href="@{/css/admin-theme.css}" />
+	  </th:block>
+	  <style>
+	    .status-active {
+	      background-color: #d1e7dd;
+	      color: #198754;
+	      padding: 4px 12px;
+	      border-radius: 16px;
+	      font-weight: bold;
+	    }
+	
+	    .status-inactive {
+	      background-color: #f8d7da;
+	      color: #dc3545;
+	      padding: 4px 12px;
+	      border-radius: 16px;
+	      font-weight: bold;
+	    }
+	
+	    .top-actions {
+	      display: flex;
+	      justify-content: space-between;
+	      align-items: center;
+	      margin-bottom: 1.5rem;
+	    }
+	
+	    .filter-bar {
+	      margin-bottom: 1rem;
+	      display: flex;
+	      flex-wrap: wrap;
+	      gap: 1rem;
+	      align-items: center;
+	    }
+	
+	    .filter-bar .form-control,
+	    .filter-bar .form-select {
+	      max-width: 220px;
+	    }
+	
+	    .action-buttons .btn {
+	      margin-right: 4px;
+	    }
+	
+	    table.table {
+	      background-color: #fff;
+	      border-radius: 0.5rem;
+	      overflow: hidden;
+	    }
+	
+	    table.table thead th {
+	      background-color: #f1f3f5;
+	      color: #343a40;
+	    }
+	
+	    table.table tbody tr:hover {
+	      background-color: #f9fafb;
+	    }
+	  </style>
+	</head>
+	
+	<main>
+	  <div class="container py-4">
+	    <div class="top-actions">
+	      <h3 class="fw-bold text-white bg-primary px-4 py-2 rounded">會員清單</h3>
+	      <a href="#" class="btn btn-primary"><i class="fa-solid fa-user-plus me-1"></i> 新增會員</a>
+	    </div>
+	
+	    <!-- 🔍 篩選列 -->
+	  <form method="get" th:action="@{/admin/members/list}" class="filter-bar">
+	  <input type="text" class="form-control" name="keyword" placeholder="輸入姓名、電話、帳號" th:value="${keyword}">
+	  
 
-        h2 {
-            font-weight: 600;
-            color: #2f3e46;
-            margin-bottom: 1.5rem;
-        }
+	  
+	  <button type="submit" class="btn btn-outline-secondary">
+	    <i class="fa-solid fa-magnifying-glass me-1"></i> 搜尋
+	  </button>
+	</form>
+	
+	
+	    <!-- 📋 表格 -->
+	    <div class="table-responsive">
+	      <table class="table table-bordered text-center align-middle mt-3">
+	        <thead class="table-light">
+	          <tr>
+	            <th>#</th>
+	            <th>帳號</th>
+	            <th>姓名</th>
+	            <th>Email</th>
+	            <th>電話</th>
+	            <th>狀態</th>
+	            <th>註冊時間</th>
+	            <th>操作</th>
+	          </tr>
+	        </thead>
+	        <tbody>
+	          <tr th:each="member : ${members}">
+	            <td th:text="${member.memberId}">1</td>
+	            <td th:text="${member.memberAccount}">test123</td>
+	            <td th:text="${member.memberName}">王小明</td>
+	            <td th:text="${member.memberEmail}">test@email.com</td>
+	            <td th:text="${member.memberPhone}">0912345678</td>
+	            <td>
+	              <span th:class="${member.memberStatus == 1 ? 'status-active' : 'status-inactive'}"
+	                    th:text="${member.memberStatus == 1 ? '啟用中' : '停用'}">啟用中</span>
+	            </td>
+	            <td th:text="${#dates.format(member.createTime, 'yyyy/MM/dd HH:mm:ss')}">2025/01/22 上午08:38:23</td>
+	            <td class="action-buttons">
+	              <a th:href="@{'/admin/members/' + ${member.memberId}}" class="btn btn-sm btn-outline-primary">
+	                <i class="fa-solid fa-eye"></i> 詳細
+	              </a>
+	              <a th:href="@{'/admin/members/toggle-status/' + ${member.memberId}}"
+	                 th:class="'btn btn-sm ' + (member.memberStatus == 1 ? 'btn-danger' : 'btn-success')">
+	                <i th:class="'fa-solid ' + (member.memberStatus == 1 ? 'fa-ban' : 'fa-check')"></i>
+	                <span th:text="${member.memberStatus == 1 ? '停用' : '啟用'}">停用</span>
+	              </a>
+	            </td>
+	          </tr>
+	        </tbody>
+	      </table>
+	    </div>
+	
+	    <!-- ⏩ 分頁 -->
+	    <div th:replace="fragments/pagination :: pagination( ${memberPage}, ${currentPage}, ${pageSize}, ${keyword})"></div>
 
-        .table {
-            background-color: #ffffff;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
 
-        .table thead {
-            background-color: #e9ecef;
-            font-weight: 600;
-            color: #495057;
-        }
-
-        .btn-info {
-            margin-right: 0.25rem;
-        }
-
-        .status-active {
-            color: #198754;
-            font-weight: bold;
-        }
-
-        .status-inactive {
-            color: #dc3545;
-            font-weight: bold;
-        }
-
-        .table td {
-            vertical-align: middle;
-        }
-
-        .action-buttons a {
-            padding: 0.3rem 0.6rem;
-        }
-    </style>
-</head>
-
-
-<main>
-<div class="container py-5">
-    <h2><i class="fa-solid fa-users"></i> 會員清單</h2>
-
-    <div class="table-responsive">
-        <table class="table table-bordered text-center align-middle">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th><i class="fa-solid fa-user"></i> 帳號</th>
-                    <th><i class="fa-regular fa-id-badge"></i> 姓名</th>
-                    <th><i class="fa-regular fa-envelope"></i> Email</th>
-                    <th><i class="fa-solid fa-phone"></i> 電話</th>
-                    <th><i class="fa-solid fa-toggle-on"></i> 狀態</th>
-                    <th><i class="fa-regular fa-clock"></i> 註冊時間</th>
-                    <th><i class="fa-solid fa-gear"></i> 操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="member : ${members}">
-                    <td th:text="${member.memberId}">1</td>
-                    <td th:text="${member.memberAccount}">test123</td>
-                    <td th:text="${member.memberName}">王小明</td>
-                    <td th:text="${member.memberEmail}">test@email.com</td>
-                    <td th:text="${member.memberPhone}">0912345678</td>
-                    <td>
-                        <span th:text="${member.memberStatus == 1 ? '啟用' : '停用'}"
-                              th:classappend="${member.memberStatus == 1 ? 'status-active' : 'status-inactive'}">
-                            啟用
-                        </span>
-                    </td>
-                    <td th:text="${#dates.format(member.createTime, 'yyyy-MM-dd HH:mm')}">2025-07-17</td>
-                    <td class="action-buttons">
-                        <a th:href="@{'/admin/members/' + ${member.memberId}}" class="btn btn-sm btn-outline-primary">
-                            <i class="fa-solid fa-eye"></i> 詳情
-                        </a>
-                        <a th:href="@{'/admin/members/edit/' + ${member.memberId}}" class="btn btn-sm btn-outline-secondary">
-                            <i class="fa-solid fa-pen"></i> 編輯
-                        </a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</main>
-
-</html>
+	  </div>
+	
+	  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	</main>
+	
+	</html>
