@@ -108,6 +108,7 @@ public class SecurityConfig {
 
                 // ✅ 靜態資源 & 基本公開頁面
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/homepage_images/**", "/logo_image/**").permitAll()
+                .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/", "/index", "/login", "/register", "/error", "/login?error").permitAll()
                 .requestMatchers("/ticketlist").permitAll()
 

@@ -1,0 +1,28 @@
+<!-- fragments/pagination.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+  <th:block th:fragment="pagination(pageObject, currentPage, pageSize)">
+    <nav class="mt-4" th:if="${pageObject.totalPages > 1}">
+      <ul class="pagination justify-content-center">
+        <li class="page-item" th:classappend="${pageObject.first} ? 'disabled'">
+          <a class="page-link"
+             th:href="@{${baseUrl}(page=${currentPage - 1}, size=${pageSize})}">上一頁</a>
+        </li>
+        <li class="page-item"
+            th:each="i : ${#numbers.sequence(0, pageObject.totalPages - 1)}"
+            th:classappend="${i == currentPage} ? 'active'">
+          <a class="page-link"
+             th:href="@{${baseUrl}(page=${i}, size=${pageSize})}"
+             th:text="${i + 1}">1</a>
+        </li>
+        <li class="page-item" th:classappend="${pageObject.last} ? 'disabled'">
+          <a class="page-link"
+             th:href="@{${baseUrl}(page=${currentPage + 1}, size=${pageSize})}">下一頁</a>
+        </li>
+      </ul>
+    </nav>
+  </th:block>
+</body>
+</html>

@@ -13,6 +13,8 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ssl.SslProperties.Bundles.Watch.File;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -69,12 +71,19 @@ public class TravelPlanController {
 
 	// 這是 顯示所有旅行計畫列表 的頁面入口。
 	@GetMapping
-	public String listTravelPlans(Model model) {
-		// 從 Service 獲取數據
-		List<TravelPlan> plans = travelPlanService.getAllTravelPlans(); // 從資料庫中取出所有已存在的旅行計畫資料。
-		model.addAttribute("travelPlans", plans); // 放到 Model 中，以便 Thymeleaf 模板可以使用它們。
-		return "admin/travelplans/list";
+	public String listTravelPlans(Model model, 
+	                              @RequestParam(defaultValue = "0") int page,
+	                              @RequestParam(defaultValue = "9") int size) {
+	    Page<TravelPlan> travelPlanPage = travelPlanService.getTravelPlans(PageRequest.of(page, size));
+
+	    model.addAttribute("travelPlanPage", travelPlanPage); // 分頁物件
+	    model.addAttribute("currentPage", page);              // 當前頁數
+	    model.addAttribute("pageSize", size);                 // 每頁大小
+	    model.addAttribute("travelPlans", travelPlanPage.getContent()); // ✅ 只取這一頁的內容
+
+	    return "admin/travelplans/list";
 	}
+
 
 	@GetMapping("/new") // 在 list.html 頁面點擊「新增計畫」按鈕/連結	
 	public String showNewTPForm(Model model) {
@@ -120,7 +129,7 @@ public class TravelPlanController {
 
 	    session.setAttribute("currentTravelPlanId", savedPlan.getTravelPlanId());
 	    session.removeAttribute("currentTravelItineraryId");
-
+	    
 	    return "redirect:/admin/travelplans";
 	}
 

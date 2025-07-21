@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.travel_plan.dto.DailyItineraryFormDTO;
@@ -78,6 +80,8 @@ public interface TravelPlanService {
 	void deleteById(Integer id);
 
 	void deleteAllByIds(List<Integer> planIds);
+
+	Page<TravelPlan> getTravelPlans(PageRequest of);
 
 
 

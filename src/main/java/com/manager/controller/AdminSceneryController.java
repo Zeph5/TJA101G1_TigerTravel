@@ -57,7 +57,7 @@ public class AdminSceneryController {
 			model.addAttribute("currentPage", page);
 			model.addAttribute("totalPages", sceneryPage.getTotalPages());
 
-			return "scenery/listallscenery";
+			return "scenery/sceneryindex";
 		}
 
 		@GetMapping("/banner/{sceneryId}")

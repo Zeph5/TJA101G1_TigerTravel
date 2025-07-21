@@ -9,6 +9,8 @@ import com.travel_plan.service.TravelPlanService;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -53,7 +55,7 @@ public class TravelPlanServiceImpl implements TravelPlanService {
         if (file == null || file.isEmpty()) return null;
 
         try {
-            String uploadDir = "C:/TJA101-WebApp/spring boot/images";
+            String uploadDir = "C:/TJA101-WebApp/images";
             String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
             File savePath = new File(uploadDir, fileName);
             savePath.getParentFile().mkdirs();
@@ -392,6 +394,11 @@ public class TravelPlanServiceImpl implements TravelPlanService {
 	public void deleteAllByIds(List<Integer> planIds) {
 		travelPlanRepository.deleteAllById(planIds);
 		
+	}
+
+	@Override
+	public Page<TravelPlan> getTravelPlans(PageRequest of) {
+		return travelPlanRepository.findAll(of);
 	}
 	
 

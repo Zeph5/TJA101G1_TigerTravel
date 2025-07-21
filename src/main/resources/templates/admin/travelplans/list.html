@@ -107,8 +107,12 @@
 						<div class="card h-100 shadow-sm rounded-4 travel-card"
 							th:data-id="${plan.travelPlanId}">
 
-							<img th:src="@{${plan.travelPlanBannerUrl}}" alt="banner"
-     class="card-img-top rounded-top-4 object-fit-cover" style="height: 180px;">
+							<img
+								th:src="${plan.travelPlanBannerUrl != null and !plan.travelPlanBannerUrl.isEmpty()} ?
+              @{${plan.travelPlanBannerUrl}} :
+              @{'/uploads/default-banner.jpg'}"
+								alt="banner" class="card-img-top rounded-top-4 object-fit-cover"
+								style="height: 180px; width: 100%; object-fit: cover;">
 
 							<div class="card-body">
 								<h5 class="card-title text-primary fw-semibold"
@@ -154,6 +158,8 @@
 				<p>目前沒有旅行計畫。</p>
 			</div>
 		</div>
+		<div
+			th:replace="fragments/pagination :: pagination(${travelPlanPage}, ${currentPage}, ${pageSize})"></div>
 	</div>
 	</div>
 
@@ -200,5 +206,6 @@
 </script>
 	<script
 		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
