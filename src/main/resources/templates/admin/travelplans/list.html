@@ -1,181 +1,206 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant"
+	th:replace="~{layout :: layout (~{::title}, ~{::body}, ~{})}">
 <head>
-    <title>旅行計畫管理</title>
-    <meta charset="UTF-8">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/css/admin-theme.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f4f6f9;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            padding: 2rem;
-        }
+<th:block th:fragment="title">旅行計畫管理</th:block>
+<meta charset="UTF-8">
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+<link href="/css/admin-theme.css" rel="stylesheet">
 
-        h1 {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #0d6efd;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .top-header {
-            position: relative;
-        }
-
-        .home-btn {
-            position: absolute;
-            right: 0;
-            top: -15px;
-        }
-
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .card-checkbox-wrapper {
-            position: relative;
-        }
-
-        .card-checkbox {
-            position: absolute;
-            top: -10px;
-            left: -10px;
-            z-index: 10;
-        }
-
-        .card {
-            border-radius: 16px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-            transition: transform 0.25s ease;
-            border: none;
-            background-color: #fff;
-        }
-
-        .card:hover {
-            transform: translateY(-6px);
-        }
-
-        .card-img-top {
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
-            object-fit: cover;
-            height: 160px;
-        }
-
-        .card-title {
-            color: #0d6efd;
-            font-weight: 600;
-        }
-
-        .card-footer {
-            font-size: 0.875rem;
-            color: #6c757d;
-            background-color: #f8f9fa;
-            border-top: 1px solid #dee2e6;
-        }
-
-        .btn-sm {
-            font-size: 0.85rem;
-            border-radius: 6px;
-        }
-
-        .alert {
-            border-radius: 0.5rem;
-        }
-    </style>
 </head>
+<style>
+.travel-card {
+	cursor: pointer;
+	transition: transform 0.1s;
+}
+
+.travel-card:hover {
+	transform: scale(1.01);
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+}
+
+.travel-card {
+	cursor: pointer;
+	transition: transform 0.15s ease, box-shadow 0.15s ease,
+		background-color 0.15s ease;
+}
+
+.travel-card:hover {
+	transform: scale(1.01);
+	box-shadow: 0 0 12px rgba(0, 123, 255, 0.3);
+	background-color: #eaf4ff; /* 淺藍背景提示可點擊 */
+}
+
+.travel-card::after {
+	content: "🖱 點擊選取";
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	font-size: 0.75rem;
+	background: #007bff;
+	color: #fff;
+	padding: 2px 6px;
+	border-radius: 5px;
+	opacity: 0;
+	transition: opacity 0.2s;
+	pointer-events: none;
+}
+
+.travel-card:hover::after {
+	opacity: 1;
+}
+
+.card {
+	cursor: pointer;
+}
+</style>
+
 <body>
+	<!-- 主體區塊 -->
+	<div class="flex-grow-1 p-4"
+		style="background-color: #f4f6f9; min-height: 100vh;">
+		<div class="container">
 
-<!-- 🔝 Title 與返回首頁 -->
-<div class="top-header mb-3">
-    <h1>旅行計畫列表</h1>
-    <a th:href="@{/admin/index}" class="btn btn-outline-primary home-btn">🏠 回首頁</a>
-</div>
+			<!-- 🔝 Title 與返回首頁 -->
+			<div class="position-relative mb-4">
+				<h1 class="text-primary text-center fw-bold">旅行計畫列表</h1>
 
-<!-- ✅ 成功或錯誤提示 -->
-<div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-<div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+			</div>
 
-<!-- 🔧 功能操作列 -->
-<div class="top-bar">
-    <a th:href="@{/admin/travelplans/new}" class="btn btn-success">➕ 新增旅行計畫</a>
+			<!-- ✅ 成功或錯誤提示 -->
+			<div th:if="${successMessage}" class="alert alert-success rounded"
+				th:text="${successMessage}"></div>
+			<div th:if="${errorMessage}" class="alert alert-danger rounded"
+				th:text="${errorMessage}"></div>
 
-    <div>
-        <form id="deleteForm" th:action="@{/admin/travelplans/batch-delete}" method="post"
-              onsubmit="return confirm('確定要刪除選取的旅行計畫嗎？');" class="d-inline">
-            <button type="submit" class="btn btn-danger">🗑 刪除選取的旅行計畫</button>
-        </form>
-        <button type="button" id="selectAllBtn" class="btn btn-outline-primary ms-2">✔ 一鍵選取</button>
-    </div>
-</div>
+			<!-- 🔧 功能操作列 -->
+			<div
+				class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+				<a th:href="@{/admin/travelplans/new}" class="btn btn-success">➕
+					新增旅行計畫</a>
 
-<!-- 📦 卡片區塊 -->
-<div class="card-grid">
-    <div class="card-checkbox-wrapper" th:each="plan : ${travelPlans}">
-        <div class="card-checkbox">
-            <input type="checkbox" name="planIds" th:value="${plan.travelPlanId}">
-        </div>
+				<div class="d-flex flex-wrap gap-2">
+					<form id="deleteForm"
+						th:action="@{/admin/travelplans/batch-delete}" method="post"
+						onsubmit="return confirm('確定要刪除選取的旅行計畫嗎？');">
+						<button type="submit" class="btn btn-danger">🗑 刪除選取</button>
+					</form>
+					<button type="button" id="selectAllBtn"
+						class="btn btn-outline-primary">✔ 一鍵選取</button>
+				</div>
+			</div>
 
-        <div class="card">
-            <img th:if="${plan.travelPlanBannerUrl}" th:src="@{${plan.travelPlanBannerUrl}}" class="card-img-top" alt="Banner">
-            <div class="card-body">
-                <h5 class="card-title" th:text="${plan.travelTitle}">旅行標題</h5>
-                <p class="card-text" th:text="${plan.travelPlanDescription}">旅行描述</p>
-            </div>
-            <div class="card-footer">
-                <div>
-                    發布：<span th:text="${#temporals.format(plan.publishedDate, 'yyyy-MM-dd')}">2025-01-01</span>，
-                    修改：<span th:text="${#temporals.format(plan.lastModifiedDate, 'yyyy-MM-dd')}">2025-01-02</span>
-                </div>
-                <div class="card-actions mt-2">
-                    <a th:href="@{/admin/travelplans/{id}/edit(id=${plan.travelPlanId})}" class="btn btn-sm btn-outline-primary">編輯</a>
-                    <form th:action="@{/admin/travelplans/{id}/delete(id=${plan.travelPlanId})}" method="post"
-                          style="display:inline;" onsubmit="return confirm('您確定要刪除這個旅行計畫嗎？');">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">刪除</button>
-                    </form>
-                    <a th:href="@{/admin/travelplans/{id}/itinerary(id=${plan.travelPlanId})}" class="btn btn-sm btn-outline-secondary">詳情</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+			<!-- 📦 卡片區塊 -->
+			<div class="row g-4">
+				<div class="col-md-6 col-lg-4" th:each="plan : ${travelPlans}">
+					<div class="position-relative selectable-card">
 
-<!-- 空狀態提示 -->
-<div th:if="${#lists.isEmpty(travelPlans)}" class="text-center text-muted mt-4">
-    <p>目前沒有旅行計畫。</p>
-</div>
+						<!-- ✅ 只保留這一個 checkbox -->
+						<label
+							class="card-checkbox-wrapper position-absolute top-0 start-0 m-2 z-3">
+							<input type="checkbox" name="planIds"
+							th:value="${plan.travelPlanId}" class="form-check-input" />
+						</label>
 
-<!-- JS -->
-<script>
-    let allSelected = false;
-    document.getElementById('selectAllBtn').addEventListener('click', function () {
-        const checkboxes = document.querySelectorAll('input[name="planIds"]');
-        allSelected = !allSelected;
-        checkboxes.forEach(cb => cb.checked = allSelected);
-        this.textContent = allSelected ? '✖ 取消全選' : '✔ 一鍵選取';
-    });
+						<div class="card h-100 shadow-sm rounded-4 travel-card"
+							th:data-id="${plan.travelPlanId}">
 
-    document.getElementById('deleteForm').addEventListener('submit', function (e) {
-        const checked = document.querySelectorAll('input[name="planIds"]:checked');
-        if (checked.length === 0) {
-            alert('請先選取要刪除的旅行計畫');
-            e.preventDefault();
-        }
-    });
+							<img th:if="${plan.travelPlanBannerUrl}"
+								th:src="@{${plan.travelPlanBannerUrl}}"
+								class="card-img-top rounded-top-4 object-fit-cover"
+								style="height: 180px;" alt="Banner" />
+
+							<div class="card-body">
+								<h5 class="card-title text-primary fw-semibold"
+									th:text="${plan.travelTitle}">標題</h5>
+								<p class="card-text text-secondary"
+									th:text="${plan.travelPlanDescription}">描述</p>
+							</div>
+
+							<div
+								class="card-footer bg-light text-muted small d-flex flex-column gap-2">
+								<div>
+									發布：<span
+										th:text="${#temporals.format(plan.publishedDate, 'yyyy-MM-dd')}">-</span>，
+									修改：<span
+										th:text="${#temporals.format(plan.lastModifiedDate, 'yyyy-MM-dd')}">-</span>
+								</div>
+
+								<div class="btn-group gap-1" role="group">
+									<a
+										th:href="@{/admin/travelplans/{id}/edit(id=${plan.travelPlanId})}"
+										class="btn btn-sm btn-outline-primary">編輯</a>
+
+									<form
+										th:action="@{/admin/travelplans/{id}/delete(id=${plan.travelPlanId})}"
+										method="post" onsubmit="return confirm('確定要刪除嗎？');">
+										<button type="submit" class="btn btn-sm btn-outline-danger">刪除</button>
+									</form>
+
+									<a
+										th:href="@{/admin/travelplans/{id}/itinerary(id=${plan.travelPlanId})}"
+										class="btn btn-sm btn-outline-secondary">詳情</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+			<!-- 空狀態 -->
+			<div th:if="${#lists.isEmpty(travelPlans)}"
+				class="text-center text-muted mt-5 fs-5">
+				<p>目前沒有旅行計畫。</p>
+			</div>
+		</div>
+	</div>
+	</div>
+
+	<!-- JS -->
+	<script>
+	// 點選卡片時切換選取狀態
+	document.querySelectorAll('.selectable-card').forEach(card => {
+	  card.addEventListener('click', function (e) {
+	    // 如果點擊的是按鈕、連結、或 checkbox 本身，就不要切換選取
+	    if (
+	      e.target.closest('a') ||
+	      e.target.closest('button') ||
+	      e.target.tagName === 'INPUT'
+	    ) return;
+
+	    const checkbox = this.querySelector('input[type="checkbox"]');
+	    checkbox.checked = !checkbox.checked;
+	    this.classList.toggle('selected', checkbox.checked);
+	  });
+	});
+
+	// 一鍵選取/取消
+	let allSelected = false;
+	document.getElementById('selectAllBtn').addEventListener('click', function () {
+	  const cards = document.querySelectorAll('.selectable-card');
+	  allSelected = !allSelected;
+	  cards.forEach(card => {
+	    const checkbox = card.querySelector('input[type="checkbox"]');
+	    checkbox.checked = allSelected;
+	    card.classList.toggle('selected', allSelected);
+	  });
+	  this.textContent = allSelected ? '✖ 取消全選' : '✔ 一鍵選取';
+	});
+
+	// 表單送出時驗證有無選取項目
+	document.getElementById('deleteForm').addEventListener('submit', function (e) {
+	  const checked = document.querySelectorAll('input[name="planIds"]:checked');
+	  if (checked.length === 0) {
+	    alert('請先選取要刪除的旅行計畫');
+	    e.preventDefault();
+	  }
+	});
+
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

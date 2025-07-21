@@ -1,202 +1,169 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant">
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant"
+	th:replace="~{layout :: layout (~{::title}, ~{::body}, ~{::cssLinks})}">
 <head>
-  <meta charset="UTF-8" />
-  <title>每日行程列表（可拖曳排序）</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <style>
-    body {
-      padding: 2rem;
-      background-color: #f0f2f5;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .handle {
-      cursor: move;
-      text-align: center;
-      width: 40px;
-    }
-    h2 {
-      margin-bottom: 1rem;
-      font-weight: bold;
-      color: #0d6efd;
-    }
-    .date-select {
-      margin-bottom: 1.5rem;
-    }
-    .table thead {
-      background-color: #e9ecef;
-    }
-    .btn-success, .btn-primary, .btn-danger {
-      border-radius: 20px;
-    }
-    .d-flex.gap-2 > * {
-      white-space: nowrap;
-    }
-    .flex-wrap {
-      flex-wrap: wrap;
-    }
-    .btn-sm {
-      padding: 0.25rem 0.75rem;
-      font-size: 0.875rem;
-    }
-    .section-title {
-      font-size: 1.25rem;
-      color: #495057;
-      margin-bottom: 1rem;
-      border-left: 4px solid #0d6efd;
-      padding-left: 10px;
-    }
-  </style>
+	<meta charset="UTF-8" />
+
+	<!-- ✅ 頁面標題 -->
+	<th:block th:fragment="title">每日行程列表</th:block>
+
+	<!-- ✅ 額外 CSS（包含拖曳樣式） -->
+	<th:block th:fragment="cssLinks">
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+		<style>
+			.handle,
+			.handle * {
+				cursor: move !important;
+			}
+		</style>
+	</th:block>
 </head>
+
 <body>
-  <div class="container bg-white shadow rounded p-4">
-    <!-- 上排：左右分別放返回上一頁與首頁 -->
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-      <!-- 左上：返回上一頁 & 行程列表 -->
-      <div class="d-flex gap-2 flex-wrap">
-       <a th:href="@{/admin/travelplans/{planId}/itinerary(planId=${travelPlanId})}" class="btn btn-outline-secondary btn-sm">🔙 返回行程梯次</a>
-        <a th:href="@{/admin/travelplans}" class="btn btn-outline-secondary btn-sm">📋 返回行程列表</a>
-      </div>
-      <!-- 右上：返回首頁 -->
-      <div class="d-flex gap-2 flex-wrap">
-        <a th:href="@{/manager/home}" class="btn btn-outline-primary btn-sm">🏠 返回首頁</a>
-      </div>
-    </div>
+	<div class="container bg-white shadow rounded p-4">
 
-    <h2 class="text-center">每日行程列表</h2>
+		<!-- 上排返回按鈕 -->
+		<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+			<div class="d-flex gap-2 flex-wrap">
+				<a th:href="@{/admin/travelplans/{planId}/itinerary(planId=${travelPlanId})}" class="btn btn-outline-secondary btn-sm">🔙 返回行程梯次</a>
+				<a th:href="@{/admin/travelplans}" class="btn btn-outline-secondary btn-sm">📋 返回行程列表</a>
+			</div>
+			<div class="d-flex gap-2 flex-wrap">
+				<a th:href="@{/manager/home}" class="btn btn-outline-primary btn-sm">🏠 返回首頁</a>
+			</div>
+		</div>
 
-    <p class="text-center text-muted mb-4">
-      旅程期間：<strong th:text="${startDate}">2025-07-01</strong> ~ <strong th:text="${endDate}">2025-07-07</strong>
-    </p>
+		<h2 class="text-center">每日行程列表</h2>
+		<p class="text-center text-muted mb-4">
+			旅程期間：<strong th:text="${startDate}">2025-07-01</strong> ~ <strong th:text="${endDate}">2025-07-07</strong>
+		</p>
 
-    <!-- 日期選擇 -->
-    <form method="get" th:action="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days(planId=${travelPlanId}, itineraryId=${travelItineraryId})}">
-      <div class="row mb-4 align-items-center date-select">
-        <div class="col-auto">
-          <label for="dateSelect" class="form-label mb-0 fw-bold">選擇日期編輯行程：</label>
-        </div>
-        <div class="col">
-          <select id="dateSelect" name="date" class="form-select" onchange="this.form.submit()">
-            <option th:each="date : ${itineraryDates}" th:value="${date}" th:text="${date}" th:selected="${date == currentEditDate}"></option>
-          </select>
-        </div>
-      </div>
-    </form>
+		<!-- 日期選擇 -->
+		<form method="get" th:action="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days(planId=${travelPlanId}, itineraryId=${travelItineraryId})}">
+			<div class="row mb-4 align-items-center date-select">
+				<div class="col-auto">
+					<label for="dateSelect" class="form-label mb-0 fw-bold">選擇日期編輯行程：</label>
+				</div>
+				<div class="col">
+					<select id="dateSelect" name="date" class="form-select" onchange="this.form.submit()">
+						<option th:each="date : ${itineraryDates}" th:value="${date}" th:text="${date}" th:selected="${date == currentEditDate}"></option>
+					</select>
+				</div>
+			</div>
+		</form>
 
-    <!-- 操作按鈕區塊 -->
-    <div class="d-flex justify-content-end gap-2 mb-4 flex-wrap">
-      <a th:href="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/new(date=${currentEditDate}, planId=${travelPlanId}, itineraryId=${travelItineraryId})}" class="btn btn-success">➕ 新增每日行程</a>
-      <button class="btn btn-outline-danger" onclick="deleteSelected()" type="button">🗑 刪除選取行程</button>
-    </div>
+		<!-- 操作按鈕 -->
+		<div class="d-flex justify-content-end gap-2 mb-4 flex-wrap">
+			<a th:href="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/new(date=${currentEditDate}, planId=${travelPlanId}, itineraryId=${travelItineraryId})}" class="btn btn-success">➕ 新增每日行程</a>
+			<button class="btn btn-outline-danger" onclick="deleteSelected()" type="button">🗑 刪除選取行程</button>
+		</div>
 
-    <!-- 表格標題 -->
-    <div class="section-title">📌 每日行程清單</div>
+		<!-- 行程清單表格 -->
+		<div class="section-title">📌 每日行程清單</div>
+		<table class="table table-bordered table-hover text-center align-middle">
+			<thead class="table-light">
+				<tr>
+					<th><input type="checkbox" id="checkAll" /></th>
+					<th>拖曳</th>
+					<th>天數</th>
+					<th>序號</th>
+					<th>日期</th>
+					<th>景點名稱</th>
+					<th>建立時間</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody id="sortableList">
+				<tr th:each="day : ${travelPlanDays}" th:attr="data-id=${day.travelPlanDayId}">
+					<td><input type="checkbox" class="row-checkbox" th:value="${day.travelPlanDayId}" /></td>
+					<td class="handle"><i class="bi bi-list fs-4"></i></td>
+					<td th:text="${day.travelDayNumber}">1</td>
+					<td th:text="${day.travelSequenceNumber}">1</td>
+					<td th:text="${#temporals.format(day.traveltime, 'yyyy-MM-dd')}">2025-07-12</td>
+					<td th:text="${day.scenery != null ? day.scenery.sceneryName : '無'}">日月潭</td>
+					<td th:text="${#temporals.format(day.createtime, 'yyyy-MM-dd HH:mm')}">2025-07-01 12:00</td>
+					<td>
+						<a th:href="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/{id}/delete(planId=${travelPlanId}, itineraryId=${travelItineraryId}, id=${day.travelPlanDayId})}" class="btn btn-sm btn-danger" onclick="return confirm('確定刪除？')">刪除</a>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
 
-    <table class="table table-bordered table-hover text-center align-middle">
-      <thead class="table-light">
-        <tr>
-          <th><input type="checkbox" id="checkAll" /></th>
-          <th>拖曳</th>
-          <th>天數</th>
-          <th>序號</th>
-          <th>日期</th>
-          <th>景點名稱</th>
-          <th>建立時間</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody id="sortableList">
-        <tr th:each="day : ${travelPlanDays}" th:attr="data-id=${day.travelPlanDayId}">
-          <td><input type="checkbox" class="row-checkbox" th:value="${day.travelPlanDayId}" /></td>
-          <td class="handle"><i class="bi bi-list fs-4"></i></td>
-          <td th:text="${day.travelDayNumber}">1</td>
-          <td th:text="${day.travelSequenceNumber}">1</td>
-          <td th:text="${#temporals.format(day.traveltime, 'yyyy-MM-dd')}">2025-07-12</td>
-          <td th:text="${day.scenery != null ? day.scenery.sceneryName : '無'}">日月潭</td>
-          <td th:text="${#temporals.format(day.createtime, 'yyyy-MM-dd HH:mm')}">2025-07-01 12:00</td>
-          <td>
-            <a th:href="@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/{id}/delete(planId=${travelPlanId}, itineraryId=${travelItineraryId}, id=${day.travelPlanDayId})}" class="btn btn-sm btn-danger" onclick="return confirm('確定刪除？')">刪除</a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+	<!-- ✅ 拖曳與刪除功能 -->
+	<script th:inline="javascript">
+		document.addEventListener('DOMContentLoaded', function () {
+			let updateUrl = /*[[@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/update-order(planId=${travelPlanId}, itineraryId=${travelItineraryId})}]]*/"";
+			let deleteUrl = /*[[@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/delete-multiple(planId=${travelPlanId}, itineraryId=${travelItineraryId})}]]*/"";
 
-  <script th:inline="javascript">
-    let updateUrl = /*[[@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/update-order(planId=${travelPlanId}, itineraryId=${travelItineraryId})}]]*/ "";
-    let deleteUrl = /*[[@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/delete-multiple(planId=${travelPlanId}, itineraryId=${travelItineraryId})}]]*/ "";
+			$("#sortableList").sortable({
+				handle: ".handle",
+				update: function () {
+					let order = [];
+					$("#sortableList tr").each(function (index) {
+						const row = $(this);
+						const id = row.data("id");
+						order.push(id);
+						row.find("td:nth-child(4)").text(index + 1);
+					});
+					$.ajax({
+						url: updateUrl,
+						method: "POST",
+						contentType: "application/json",
+						data: JSON.stringify(order),
+						success: function () {
+							const toastEl = document.getElementById('saveToast');
+							if (toastEl) {
+								const toast = new bootstrap.Toast(toastEl);
+								toast.show();
+							}
+						},
+						error: function () {
+							alert("更新失敗");
+						}
+					});
+				}
+			});
 
-    function deleteSelected() {
-      const selectedIds = $('.row-checkbox:checked').map(function () {
-        return $(this).val();
-      }).get();
+			$('#checkAll').on('click', function () {
+				$('.row-checkbox').prop('checked', this.checked);
+			});
 
-      if (selectedIds.length === 0) {
-        alert("請先勾選要刪除的行程！");
-        return;
-      }
+			window.deleteSelected = function () {
+				const selectedIds = $('.row-checkbox:checked').map(function () {
+					return $(this).val();
+				}).get();
 
-      if (!confirm(`確定要刪除 ${selectedIds.length} 筆行程嗎？`)) {
-        return;
-      }
+				if (selectedIds.length === 0) {
+					alert("請先勾選要刪除的行程！");
+					return;
+				}
 
-      $.ajax({
-        url: deleteUrl,
-        method: "POST",
-        contentType: "application/json",
-        data: JSON.stringify(selectedIds),
-        success: function () {
-          location.reload();
-        },
-        error: function () {
-          alert("刪除失敗");
-        }
-      });
-    }
+				if (!confirm(`確定要刪除 ${selectedIds.length} 筆行程嗎？`)) {
+					return;
+				}
 
-    $(function () {
-      $("#sortableList").sortable({
-        handle: ".handle",
-        update: function () {
-          let order = [];
-          $("#sortableList tr").each(function (index) {
-            const row = $(this);
-            const id = row.data("id");
-            order.push(id);
-            row.find("td:nth-child(4)").text(index + 1);
-          });
+				$.ajax({
+					url: deleteUrl,
+					method: "POST",
+					contentType: "application/json",
+					data: JSON.stringify(selectedIds),
+					success: function () {
+						location.reload();
+					},
+					error: function () {
+						alert("刪除失敗");
+					}
+				});
+			};
+		});
+	</script>
 
-          $.ajax({
-            url: updateUrl,
-            method: "POST",
-            contentType: "application/json",
-            data: JSON.stringify(order),
-            success: function () {
-              const toastEl = document.getElementById('saveToast');
-              const toast = new bootstrap.Toast(toastEl);
-              toast.show();
-            },
-            error: function () {
-              alert("更新失敗");
-            }
-          });
-        }
-      });
-
-      $('#checkAll').on('click', function () {
-        $('.row-checkbox').prop('checked', this.checked);
-      });
-    });
-  </script>
-
-  <div id="saveToast" class="toast align-items-center text-bg-success border-0 position-fixed bottom-0 end-0 m-4" role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="d-flex">
-      <div class="toast-body">✅ 順序已儲存</div>
-    </div>
-  </div>
+	<!-- ✅ 成功提示 -->
+	<div id="saveToast" class="toast align-items-center text-bg-success border-0 position-fixed bottom-0 end-0 m-4" role="alert" aria-live="assertive" aria-atomic="true">
+		<div class="d-flex">
+			<div class="toast-body">✅ 順序已儲存</div>
+		</div>
+	</div>
 </body>
 </html>

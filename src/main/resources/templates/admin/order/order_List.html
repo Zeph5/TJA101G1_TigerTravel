@@ -1,9 +1,9 @@
-
 <!DOCTYPE html>
-<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant"
+th:replace="~{layout :: layout (~{::title}, ~{::body}, ~{})}">
 <head>
 <meta charset="UTF-8">
-<title>訂單管理</title>
+<th:block th:fragment="title">訂單管理</th:block>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- Bootstrap -->

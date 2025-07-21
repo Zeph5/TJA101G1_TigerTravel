@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant"
+      th:fragment="layout(title, bodyContent, cssLinks)">
+<head>
+    <meta charset="UTF-8">
+    <title th:insert="${title}">TravelTiger 後台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ✅ Bootstrap + Icons + FontAwesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- ✅ 預設樣式 -->
+    <link rel="stylesheet" th:href="@{/css/admin-theme.css}">
+
+    <!-- ✅ 額外頁面指定 CSS -->
+    <th:block th:if="${cssLinks != null}" th:replace="${cssLinks}"></th:block>
+</head>
+
+<body>
+<div class="d-flex">
+
+    <!-- 側邊欄 -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+    <!-- 主內容 -->
+    <div class="main-content" style="margin-left: 220px;">
+        <div class="flex-grow-1 p-4" style="min-height: 100vh; background-color: #f8fafc;">
+            <main th:replace="${bodyContent}"></main>
+        </div>
+    </div>
+
+</div>
+
+<!-- ✅ JS 放這裡就好 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

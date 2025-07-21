@@ -116,10 +116,12 @@ public class TravelPlanServiceImpl implements TravelPlanService {
     @Transactional
     public TravelPlan createTravelPlanFromDto(@Valid TravelPlanCreationDTO dto, MultipartFile bannerImage) {
         TravelPlan travelPlan = convertToEntity(dto);
-        String imageUrl = saveBannerImage(bannerImage);
+
+        String imageUrl = saveBannerImage(bannerImage); // ✅ 使用共用方法
         if (imageUrl != null) {
             travelPlan.setTravelPlanBannerUrl(imageUrl);
         }
+
         return travelPlanRepository.save(travelPlan);
     }
 
@@ -130,13 +132,17 @@ public class TravelPlanServiceImpl implements TravelPlanService {
             existingPlan.setTravelTitle(dto.getTravelTitle());
             existingPlan.setTravelPlanDescription(dto.getTravelPlanDescription());
 
-            if (bannerImage != null && !bannerImage.isEmpty()) {
-                String newImageUrl = saveBannerImage(bannerImage);
-                existingPlan.setTravelPlanBannerUrl(newImageUrl);
+            // 如果有新上傳圖片，就覆蓋
+            String imageUrl = saveBannerImage(bannerImage);
+            if (imageUrl != null) {
+                existingPlan.setTravelPlanBannerUrl(imageUrl);
             }
+
             return travelPlanRepository.save(existingPlan);
-        }).orElseThrow(() -> new IllegalArgumentException("找不到要更新的旅行計畫，ID: " + travelPlanId));
+        }).orElseThrow(() -> new IllegalArgumentException("找不到 TravelPlan ID: " + travelPlanId));
     }
+
+
 
     @Override
     public List<LocalDate> generateDatesBetween(LocalDate startDate, LocalDate endDate) {
@@ -379,6 +385,18 @@ public class TravelPlanServiceImpl implements TravelPlanService {
 	@Override //01新增
 	public List<TravelItinerary> findItinerariesByPlanId(Integer planId) {
 		return travelItineraryRepository.findByTravelPlan_TravelPlanId(planId);
+	}
+
+	@Override
+	public void deleteById(Integer id) {
+		travelPlanRepository.deleteById(id);
+		
+	}
+
+	@Override
+	public void deleteAllByIds(List<Integer> planIds) {
+		travelPlanRepository.deleteAllById(planIds);
+		
 	}
 
 

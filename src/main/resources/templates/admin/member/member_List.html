@@ -1,42 +1,112 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant"
+      th:replace="~{layout :: layout (~{::title}, ~{::main}, ~{::cssLinks})}">
 <head>
     <meta charset="UTF-8">
-    <title>會員清單</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <th:block th:fragment="title">會員清單</th:block>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <th:block th:fragment="cssLinks">
+	<link rel="stylesheet" th:href="@{/css/admin-theme.css}" />
+</th:block>
+    <style>
+        body {
+            background-color: #f9fafb;
+            font-family: 'Segoe UI', 'Noto Sans TC', sans-serif;
+        }
+
+        h2 {
+            font-weight: 600;
+            color: #2f3e46;
+            margin-bottom: 1.5rem;
+        }
+
+        .table {
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .table thead {
+            background-color: #e9ecef;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .btn-info {
+            margin-right: 0.25rem;
+        }
+
+        .status-active {
+            color: #198754;
+            font-weight: bold;
+        }
+
+        .status-inactive {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .action-buttons a {
+            padding: 0.3rem 0.6rem;
+        }
+    </style>
 </head>
-<body>
-<div class="container mt-4">
-    <h2 class="mb-4">會員清單</h2>
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>帳號</th>
-                <th>姓名</th>
-                <th>Email</th>
-                <th>電話</th>
-                <th>狀態</th>
-                <th>註冊時間</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="member : ${members}">
-                <td th:text="${member.memberId}">1</td>
-                <td th:text="${member.memberAccount}">test123</td>
-                <td th:text="${member.memberName}">王小明</td>
-                <td th:text="${member.memberEmail}">test@email.com</td>
-                <td th:text="${member.memberPhone}">0912345678</td>
-                <td th:text="${member.memberStatus == 1 ? '啟用' : '停用'}">啟用</td>
-                <td th:text="${#dates.format(member.createTime, 'yyyy-MM-dd HH:mm')}">2025-07-17</td>
-                <td>
-                    <a th:href="@{'/admin/members/' + ${member.memberId}}" class="btn btn-sm btn-info">詳情</a>
-                    <a th:href="@{'/admin/members/edit/' + ${member.memberId}}" class="btn btn-sm btn-info">編輯</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+
+
+<main>
+<div class="container py-5">
+    <h2><i class="fa-solid fa-users"></i> 會員清單</h2>
+
+    <div class="table-responsive">
+        <table class="table table-bordered text-center align-middle">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th><i class="fa-solid fa-user"></i> 帳號</th>
+                    <th><i class="fa-regular fa-id-badge"></i> 姓名</th>
+                    <th><i class="fa-regular fa-envelope"></i> Email</th>
+                    <th><i class="fa-solid fa-phone"></i> 電話</th>
+                    <th><i class="fa-solid fa-toggle-on"></i> 狀態</th>
+                    <th><i class="fa-regular fa-clock"></i> 註冊時間</th>
+                    <th><i class="fa-solid fa-gear"></i> 操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="member : ${members}">
+                    <td th:text="${member.memberId}">1</td>
+                    <td th:text="${member.memberAccount}">test123</td>
+                    <td th:text="${member.memberName}">王小明</td>
+                    <td th:text="${member.memberEmail}">test@email.com</td>
+                    <td th:text="${member.memberPhone}">0912345678</td>
+                    <td>
+                        <span th:text="${member.memberStatus == 1 ? '啟用' : '停用'}"
+                              th:classappend="${member.memberStatus == 1 ? 'status-active' : 'status-inactive'}">
+                            啟用
+                        </span>
+                    </td>
+                    <td th:text="${#dates.format(member.createTime, 'yyyy-MM-dd HH:mm')}">2025-07-17</td>
+                    <td class="action-buttons">
+                        <a th:href="@{'/admin/members/' + ${member.memberId}}" class="btn btn-sm btn-outline-primary">
+                            <i class="fa-solid fa-eye"></i> 詳情
+                        </a>
+                        <a th:href="@{'/admin/members/edit/' + ${member.memberId}}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fa-solid fa-pen"></i> 編輯
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
-</body>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</main>
+
 </html>
