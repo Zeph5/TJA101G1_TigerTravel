@@ -29,7 +29,7 @@ public class TicketOrderController {
     private TicketRepository ticketRepository;
 
     @Autowired
-    private MemberRepository memberRepository; // 你要確認這個 repository 有引入
+    private MemberRepository memberRepository;
 
     // step 1: 顯示下單頁
     @PostMapping("/ticketorder")
@@ -60,7 +60,7 @@ public class TicketOrderController {
         return "redirect:/ticket/detail/" + orderId;
     }
 
-    // step 3: 顯示訂單明細（已優化！）
+    // step 3: 顯示訂單明細（修正版）
     @GetMapping("/detail/{orderId}")
     public String orderDetail(@PathVariable Integer orderId, Model model) {
         TicketOrder order = ticketOrderService.getOrderDetail(orderId);
@@ -77,15 +77,30 @@ public class TicketOrderController {
             memberName = member.getMemberName(); // 根據你的會員名稱欄位名稱調整
         }
 
-        // 組訂單明細清單（含品項名稱與數量）
+        // 組訂單明細清單（含品項名稱、數量、單價、小計）
         List<Map<String, Object>> orderItems = new ArrayList<>();
         for (TicketOrderReceipt receipt : order.getTicketOrderReceipts()) {
             Optional<Ticket> ticketOpt = ticketRepository.findById(receipt.getTicketId());
-            String ticketName = ticketOpt.map(Ticket::getTicketName).orElse("未知票券");
-            Map<String, Object> item = new HashMap<>();
-            item.put("name", ticketName);
-            item.put("quantity", receipt.getTicketCount());
-            orderItems.add(item);
+            if (ticketOpt.isPresent()) {
+                Ticket ticket = ticketOpt.get();
+                BigDecimal unitPrice = ticket.getTicketPrice();
+                BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(receipt.getTicketCount()));
+                
+                Map<String, Object> item = new HashMap<>();
+                item.put("name", ticket.getTicketName());
+                item.put("quantity", receipt.getTicketCount());
+                item.put("unitPrice", unitPrice.intValue());
+                item.put("subtotal", subtotal.intValue());
+                orderItems.add(item);
+            } else {
+                // 如果找不到票券資訊，仍然要顯示基本資訊
+                Map<String, Object> item = new HashMap<>();
+                item.put("name", "未知票券");
+                item.put("quantity", receipt.getTicketCount());
+                item.put("unitPrice", 0);
+                item.put("subtotal", 0);
+                orderItems.add(item);
+            }
         }
 
         // 塞進 Model 對應前端模板欄位
@@ -93,7 +108,7 @@ public class TicketOrderController {
         model.addAttribute("totalAmount", order.getOrderPrice().intValue());
         model.addAttribute("memberName", memberName);
 
-        // 時間格式轉字串（如你 template 頁要）
+        // 時間格式轉字串
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         String orderTimeStr = order.getOrderDatetime().format(formatter);
         model.addAttribute("orderTime", orderTimeStr);

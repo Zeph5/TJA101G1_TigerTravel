@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -250,17 +250,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>台北101觀景台門票</td>
-                        <td>2</td>
-                    </tr>
-                    <tr>
-                        <td>故宮博物院門票</td>
-                        <td>1</td>
-                    </tr>
-                    <tr>
-                        <td>陽明山國家公園導覽</td>
-                        <td>3</td>
+                    <!-- 動態顯示訂單項目 -->
+                    <tr th:each="item : ${orderItems}">
+                        <td th:text="${item.name}">票券名稱</td>
+                        <td th:text="${item.quantity}">數量</td>
                     </tr>
                 </tbody>
             </table>
@@ -268,15 +261,15 @@
             <div class="order-summary">
                 <div class="info-row">
                     <span class="info-label">總金額：</span>
-                    <span class="info-value total-amount">1,250 元</span>
+                    <span class="info-value total-amount" th:text="${totalAmount} + ' 元'">總金額</span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">會員帳號：</span>
-                    <span class="info-value">張小明</span>
+                    <span class="info-value" th:text="${memberName}">會員名稱</span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">下單時間：</span>
-                    <span class="info-value">2025-07-16 14:30</span>
+                    <span class="info-value" th:text="${orderTime}">下單時間</span>
                 </div>
             </div>
 
@@ -288,6 +281,7 @@
     
     <script>
         // 清空購物車資料 (使用變數儲存而非localStorage)
+        localStorage.removeItem('cartTickets');
         window.cartTickets = null;
         console.log('購物車已清空');
     </script>
