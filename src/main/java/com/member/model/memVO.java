@@ -65,6 +65,7 @@ public class memVO implements Serializable {
 	// ===== 驗證與安全相關 =====
 	private Boolean emailVerified = false;
 	private String verifyToken;
+	private LocalDateTime verifyTokenCreatedTime;
 
 	private String resetToken;
 	private LocalDateTime resetTokenCreatedTime; 
@@ -107,7 +108,7 @@ public class memVO implements Serializable {
 
 	public memVO(Integer memberId, String memberAccount, String memberName, String memberPassword, String memberEmail,
 			String memberPhone, Byte memberStatus, String memberAddress, Boolean emailVerified, String verifyToken,
-			byte[] avatar, Timestamp createTime) {
+			byte[] avatar, Timestamp createTime, LocalDateTime verifyTokenCreatedTime) {
 
 		super();
 		this.memberId = memberId;
@@ -122,6 +123,7 @@ public class memVO implements Serializable {
 		this.verifyToken = verifyToken;
 		this.avatar = avatar;
 		this.createTime = createTime;
+		this.verifyTokenCreatedTime = verifyTokenCreatedTime;
 	}
 
 	public String getMemberAddress() {
@@ -202,6 +204,18 @@ public class memVO implements Serializable {
 
 	public void setCreateTime(Timestamp createTime) {
 		this.createTime = createTime;
+	}
+	
+	public boolean isEmailVerified() {
+	    return Boolean.TRUE.equals(this.emailVerified);
+	}
+	
+	public LocalDateTime getVerifyTokenCreatedTime() {
+		return verifyTokenCreatedTime;
+	}
+
+	public void setVerifyTokenCreatedTime(LocalDateTime verifyTokenCreatedTime) {
+		this.verifyTokenCreatedTime = verifyTokenCreatedTime;
 	}
 
 }

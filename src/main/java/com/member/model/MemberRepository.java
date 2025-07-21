@@ -23,4 +23,5 @@ public interface MemberRepository extends JpaRepository<memVO, Integer> {
 
 	Optional<memVO> findByMemberEmail(String email);
 	
+	
 }

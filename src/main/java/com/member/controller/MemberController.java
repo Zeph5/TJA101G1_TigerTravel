@@ -1,6 +1,7 @@
 package com.member.controller;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
@@ -120,62 +122,110 @@ public class MemberController {
 	// =============註冊註冊註冊註冊註冊註冊====================
 	// 處理註冊流程
 	@PostMapping("/register")
-	public String processRegister(@Valid @ModelAttribute("member") memVO member, BindingResult result,
-			@RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile,
-			@RequestParam(value = "code", required = false) String inputCode, @RequestParam("action") String action,
-			HttpSession session, Model model) {
+	public String processRegister(@Valid @ModelAttribute("member") memVO member,
+	                              BindingResult result,
+	                              @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile,
+	                              @RequestParam("action") String action,
+	                              HttpSession session, Model model) {
 
-		// ✅ 若欄位格式驗證不通過
-		if (result.hasErrors()) {
-			model.addAttribute("member", member);
-			return "member/register";
-		}
+	    if (result.hasErrors()) {
+	        model.addAttribute("member", member);
+	        return "member/register";
+	    }
 
-		try {
-			if ("register".equals(action)) {
+	    try {
+	        if ("register".equals(action)) {
 
-				// 檢查帳號是否已存在
-				Optional<memVO> existing = memberService.findByAccount(member.getMemberAccount());
-				if (existing.isPresent()) {
-					model.addAttribute("error", "此帳號已有人使用，請更換帳號");
-					model.addAttribute("member", member);
-					return "member/register";
-				}
+	            // 檢查帳號是否已存在
+	            Optional<memVO> existing = memberService.findByAccount(member.getMemberAccount());
+	            if (existing.isPresent()) {
+	                model.addAttribute("error", "此帳號已有人使用，請更換帳號");
+	                model.addAttribute("member", member);
+	                return "member/register";
+	            }
 
-				// 處理頭像
-				if (!avatarFile.isEmpty()) {
-					member.setAvatar(avatarFile.getBytes());
-				}
+	            // 處理頭像
+	            if (avatarFile != null && !avatarFile.isEmpty()) {
+	                member.setAvatar(avatarFile.getBytes());
+	            }
 
-				// 從 session 還原頭像（保險起見）
-				byte[] avatarBytes = (byte[]) session.getAttribute("avatarBytes");
-				if (avatarBytes != null) {
-					member.setAvatar(avatarBytes);
-				}
+	            byte[] avatarBytes = (byte[]) session.getAttribute("avatarBytes");
+	            if (avatarBytes != null) {
+	                member.setAvatar(avatarBytes);
+	            }
 
-				// 儲存會員（未啟用）
-				member.setEmailVerified(false);
-				member.setMemberStatus((byte) 0);
-				memberService.save(member);
+	            // 設定初始狀態與驗證資訊
+	            member.setEmailVerified(false);
+	            member.setMemberStatus((byte) 0);
+	            member.setVerifyToken(UUID.randomUUID().toString());
+	            member.setVerifyTokenCreatedTime(LocalDateTime.now());
+	            memberService.save(member);
 
-				// ✅ 改用統一的 Service 方法處理驗證流程
-				memberService.sendVerificationalEmail(member);
+	            // 寄出驗證信
+	            memberService.sendVerificationalEmail(member);
 
-				session.invalidate();
+	            // 準備畫面資料
+	            model.addAttribute("member", member);
+	            model.addAttribute("secondsLeft", 900L); // 初始 15 分鐘
+	            session.invalidate();
 
-				return "member/register_result";
-			}
+	            return "member/register_result";
+	        }
 
-			model.addAttribute("error", "操作錯誤，請重新操作。");
-			model.addAttribute("member", member);
-			return "member/register";
+	        model.addAttribute("error", "操作錯誤，請重新操作。");
+	        model.addAttribute("member", member);
+	        return "member/register";
 
-		} catch (Exception e) {
-			model.addAttribute("error", "註冊發生錯誤：" + e.getMessage());
-			model.addAttribute("member", member);
-			return "member/register";
-		}
+	    } catch (Exception e) {
+	        model.addAttribute("error", "註冊發生錯誤：" + e.getMessage());
+	        model.addAttribute("member", member);
+	        return "member/register";
+	    }
 	}
+
+	@GetMapping("/resend-verification")
+	public String resendVerification(@RequestParam("email") String email, Model model) {
+	    Optional<memVO> optionalMember = memberService.findByEmail(email);
+
+	    if (optionalMember.isEmpty()) {
+	        model.addAttribute("error", "找不到此信箱的帳號");
+	        return "member/register";
+	    }
+
+	    memVO member = optionalMember.get();
+
+	    if (member.isEmailVerified()) {
+	        model.addAttribute("message", "您的帳號已完成驗證，請直接登入。");
+	        return "member/login";
+	    }
+
+	    // 檢查是否已超過 15 分鐘
+	    Duration duration = Duration.between(member.getVerifyTokenCreatedTime(), LocalDateTime.now());
+	    long secondsLeft = 900 - duration.getSeconds(); // 15分鐘 = 900秒
+
+	    if (secondsLeft > 0) {
+	        model.addAttribute("error", "請等待倒數結束後再重新發送驗證信");
+	    } else {
+	        // 重發驗證信並更新時間與 token
+	        member.setVerifyToken(UUID.randomUUID().toString());
+	        member.setVerifyTokenCreatedTime(LocalDateTime.now());
+	        memberService.save(member);
+	        memberService.sendVerificationalEmail(member);
+	        model.addAttribute("message", "驗證信已重新寄出，請前往信箱查看。");
+	        secondsLeft = 900;
+	    }
+	    
+	    System.out.println("token 建立時間: " + member.getVerifyTokenCreatedTime());
+	    System.out.println("現在時間: " + LocalDateTime.now());
+	    System.out.println("相差分鐘: " + duration.toMinutes());
+
+	    model.addAttribute("member", member);
+	    model.addAttribute("secondsLeft", Math.max(secondsLeft, 0));
+
+	    return "member/register_result";
+	}
+
+
 
 	@InitBinder
 	public void initBinder(WebDataBinder binder) {
@@ -183,28 +233,37 @@ public class MemberController {
 	}
 
 	// 顯示驗證碼輸入頁面
+	@Transactional
 	@GetMapping("/verify")
-	public String verifyEmail(@RequestParam("account") String account, @RequestParam("token") String token,
-			Model model) {
+	public String verifyEmail(@RequestParam("account") String account,
+	                          @RequestParam("token") String token,
+	                          Model model) {
+	    boolean isValid = memberService.checkVerifyTokenFromRedis(account, token);
+	    if (!isValid) {
+	        model.addAttribute("error", "驗證碼錯誤或已過期，請重新發送驗證信");
+	        return "member/verify/verify_fail";
+	    }
 
-		boolean isValid = memberService.checkVerifyTokenFromRedis(account, token);
+	    Optional<memVO> opt = memberService.findByAccount(account);
+	    if (opt.isEmpty()) {
+	        model.addAttribute("error", "找不到會員帳號");
+	        return "member/verify/verify_fail";
+	    }
 
-		if (isValid) {
-			Optional<memVO> optionalMember = memberService.findByAccount(account);
-			if (optionalMember.isPresent()) {
-				memVO member = optionalMember.get();
-				member.setEmailVerified(true);
-				member.setMemberStatus((byte) 1); // 啟用帳號
-				memberService.save(member);
-			}
+	    memVO member = opt.get();
+	    if (member.isEmailVerified()) {
+	        model.addAttribute("message", "帳號已啟用，請直接登入");
+	        return "redirect:/login";
+	    }
 
-			model.addAttribute("message", "✅ 驗證成功，請重新登入系統");
-			return "member/verify/verify_success";
-		} else {
-			model.addAttribute("error", "❌ 驗證碼錯誤或已過期，請重新註冊");
-			return "member/verify/verify_fail";
-		}
+	    // ✅ 設定啟用狀態
+	    member.setEmailVerified(true);
+	    member.setMemberStatus((byte) 1);
+	    memberService.save(member); // 這會觸發 EntityManager.flush()
+
+	    return "redirect:/login?registerSuccess";
 	}
+
 
 	// 導向errorpage動作
 	@Controller
@@ -218,6 +277,7 @@ public class MemberController {
 		}
 	}
 
+	//===============會員登入後可使用的功能=======================
 	// 進入編輯畫面
 	@GetMapping("/edit")
 	public String showEditForm(Model model, @AuthenticationPrincipal MemberUserDetails loginUser) {
