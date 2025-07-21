@@ -103,19 +103,20 @@ public class MemberService {
     }
     
     //註冊後產生驗證信連結
-    public void sendVerificationalEmail (memVO member) {
-    	String token = UUID.randomUUID().toString();
-        // ✅ 把驗證碼存進 Redis，而不是存到資料表
+    public void sendVerificationalEmail(memVO member) {
+        String token = member.getVerifyToken(); // ✅ 改這裡：用已有的 token
+
+        // 存入 Redis（有效 10 分鐘）
         saveVerifyTokenToRedis(member.getMemberAccount(), token);
 
-        // ✅ 把 account 一起放進網址參數，讓 controller 能比對
-        String verifyUrl = "http://localhost:8080/member/verify?account=" 
-                           + member.getMemberAccount() + "&token=" + token;
-        
-        System.out.println("[DEBUG] Redis 寫入：verify:" + member.getMemberAccount() + " → " + token);
+        // 組合驗證連結
+        String verifyUrl = "http://localhost:8080/member/verify?account="
+                         + member.getMemberAccount() + "&token=" + token;
 
+        System.out.println("📧 發送驗證連結: " + verifyUrl);
         mailService.sendVerificationEmail(member, verifyUrl);
     }
+
     
     //點擊信箱連結驗證
 //    public boolean verifyEmail(String token) {
@@ -216,6 +217,11 @@ public class MemberService {
     		return false;
     	}
     }
+    
+    public Optional<memVO> findByEmail(String email) {
+        return memberRepository.findByMemberEmail(email);
+    }
+    
     
 }
 
