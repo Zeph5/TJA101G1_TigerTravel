@@ -101,7 +101,7 @@ public class SecurityConfig {
     	
     	http.securityMatcher("/**")
             // ❗ 關閉 CSRF（如果沒有表單驗證需求）
-            .csrf(csrf -> csrf.disable())
+//            .csrf(csrf -> csrf.disable())
 
             // ✅ 授權路徑規則
             .authorizeHttpRequests(auth -> auth
@@ -152,15 +152,22 @@ public class SecurityConfig {
 
                 // ✅ 一般會員功能（需要登入）
                 .requestMatchers(
-                    "/member/edit", "/member/home", "/member/favorites",
-                    "/member/receipt/**",
-                    "/member/ticketOrders", "/member/ticket/orders",
-                    "/member/order/**", "/member/ticketOrderDetail",
-                    "/member/detail/**",
-                    "/member/orders", // ✅ ⬅️ 加這行，允許登入會員看訂單整合頁
-                    "/member/travel/orders", // 若有這路徑建議也加
-                    "/member/tour-order/detail/**"
-                ).authenticated()
+                        "/member/edit", "/member/home", "/member/favorites","/member/favorites/**",
+                        "/member/receipt/**",
+                        "/member/ticketOrders", "/member/ticket/orders",
+                        "/member/order/**", "/member/ticketOrderDetail",
+                        "/member/detail/**",
+                        "/member/orders", // ✅ ⬅️ 加這行，允許登入會員看訂單整合頁
+                        "/member/travel/orders", // 若有這路徑建議也加
+                        "/member/tour-order/detail/**","/member/travel/**",
+                        "/tour-order/create","/member/tour-order/create","/member/travel/list/**",
+                        "/member/simulate-payment","/member/simulate-payment/**",
+                        "/member/payment-success","/member/password/change","/member/tour-order/create",
+                        "/tour-order/create","member/simulate-payment","/simulate-payment",
+                        "/member/member-tour-order-form",
+                        "/member/favorites/add/**","/favorites/tour/add/**",
+                        "/favorites/tour/remove/**","/favorites/scenery/remove/**"
+                    ).authenticated()
 
                 // ✅ 票券功能（也要登入）
                 .requestMatchers("/ticket/**", "/ticketOrders").authenticated()
