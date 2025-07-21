@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant"
-th:replace="~{layout :: layout (~{::title}, ~{::body}, ~{})}">
+	th:replace="~{layout :: layout (~{::title}, ~{::body}, ~{})}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -49,7 +49,7 @@ h2 {
 		<div th:if="${errorMessage}" class="alert alert-danger" role="alert"
 			th:text="${errorMessage}"></div>
 
-		<form th:action="@{/admin/travelplans}"
+		<form th:action="@{/admin/travelplans/save}"
 			th:object="${travelPlanCreationDto}" method="post"
 			enctype="multipart/form-data">
 			<input type="hidden" th:field="*{travelPlanId}" />
@@ -74,35 +74,32 @@ h2 {
 			</div>
 
 			<div class="mb-3">
-	<label for="bannerImage" class="form-label">橫幅圖片:</label>
+				<label for="bannerImage" class="form-label">橫幅圖片:</label>
 
-	<!-- 顯示原本已上傳的圖片（來自 DTO 的屬性） -->
-	<div th:if="${travelPlanCreationDto.travelPlanBannerUrl != null}">
-		<p class="mt-2">目前圖片:</p>
-		<img th:src="@{${travelPlanCreationDto.travelPlanBannerUrl}}"
-			 alt="目前橫幅圖"
-			 class="img-thumbnail"
-			 style="max-width: 200px; height: auto;"
-			 id="existingBannerPreview" />
+				<!-- 顯示原本已上傳的圖片（可有可無） -->
+				<img th:src="@{${travelPlanCreationDto.travelPlanBannerUrl}}"
+					alt="目前橫幅圖" class="img-thumbnail"
+					style="max-width: 200px; height: auto;" id="existingBannerPreview" />
 
-		
 
-	<!-- 上傳新圖的欄位 -->
-	<input type="file" id="bannerImage" name="bannerImage"
-		   class="form-control mt-3" accept="image/*"
-		   onchange="previewNewBannerImage()" />
-	<div class="form-text">支援格式：JPG, PNG, GIF (最大 5MB)</div>
+				<!-- 一定出現的圖片上傳欄位 -->
+				<label for="bannerImage" class="form-label mt-3">橫幅圖片上傳:</label> <input
+					type="file" id="bannerImage" name="bannerImage"
+					class="form-control" accept="image/*"
+					onchange="previewNewBannerImage()" />
+				<div class="form-text">支援格式：JPG, PNG, GIF (最大 5MB)</div>
 
-	<!-- 即時預覽新圖片 -->
-	<div class="mt-2" id="newBannerPreviewBlock" style="display: none;">
-		<p>新圖片預覽：</p>
-		<img id="newBannerPreview" class="img-thumbnail" style="max-width: 200px;">
-	</div>
+				<!-- 即時預覽新圖片 -->
+				<div class="mt-2" id="newBannerPreviewBlock" style="display: none;">
+					<p>新圖片預覽：</p>
+					<img id="newBannerPreview" class="img-thumbnail"
+						style="max-width: 200px;">
+				</div>
 
-	<!-- 錯誤訊息 -->
-	<p th:if="${#fields.hasErrors('bannerImage')}"
-	   th:errors="*{bannerImage}" class="error-message"></p>
-</div>
+				<!-- 錯誤訊息 -->
+				<p th:if="${#fields.hasErrors('bannerImage')}"
+					th:errors="*{bannerImage}" class="error-message"></p>
+			</div>
 
 
 			<div class="d-grid gap-2 mt-4">
@@ -115,7 +112,21 @@ h2 {
 	<script
 		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 	<script>
-		
+		function previewNewBannerImage() {
+			const input = document.getElementById('bannerImage');
+			const previewBlock = document
+					.getElementById('newBannerPreviewBlock');
+			const previewImg = document.getElementById('newBannerPreview');
+
+			if (input.files && input.files[0]) {
+				const reader = new FileReader();
+				reader.onload = function(e) {
+					previewImg.src = e.target.result;
+					previewBlock.style.display = 'block';
+				};
+				reader.readAsDataURL(input.files[0]);
+			}
+		}
 	</script>
 </body>
 </html>
