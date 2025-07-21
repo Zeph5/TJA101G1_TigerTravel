@@ -2,7 +2,11 @@ package com.ticket.controller;
 
 import com.ticket.model.Ticket;
 import com.ticket.repository.TicketRepository;
+import com.ticket.service.TicketService;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,11 +20,19 @@ public class AdminTicketController {
 
     @Autowired
     private TicketRepository ticketRepository;
+    @Autowired
+    private TicketService ticketService;
 
     // 管理票券清單
     @GetMapping("/admin/ticket/list")
-    public String list(Model model) {
-        model.addAttribute("tickets", ticketRepository.findAll());
+    public String list(Model model,@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "9") int size) {
+    	// 全部票券（分頁）
+		Page<Ticket> ticketPage = ticketService.getTickets(PageRequest.of(page, size));
+		model.addAttribute("ticketPage", ticketPage);
+		model.addAttribute("currentPage", page);
+		model.addAttribute("pageSize", size);
+		
         return "admin/mticketlist";
     }
 
