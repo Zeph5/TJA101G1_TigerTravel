@@ -126,7 +126,8 @@ public class TravelPlanDayController {
 		
 	}
 	@PostMapping("/update-order")
-	public ResponseEntity<Void> updateOrder(@RequestBody List<Integer> sortedIds){
+	public ResponseEntity<Void> updateOrder(@RequestBody List<Integer> sortedIds,@PathVariable Integer planId, 
+			@PathVariable Integer itineraryId){
 		travelPlanDayService.updateOrder(sortedIds);
 		System.out.println("更新排序順序: " + sortedIds);
 	    return ResponseEntity.ok().build();
