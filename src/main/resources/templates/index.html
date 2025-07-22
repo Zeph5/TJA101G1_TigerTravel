@@ -973,7 +973,7 @@ footer {
 					<div class="dropdown-menu-custom" id="userDropdown">
 						<a th:href="@{/member/home}" class="dropdown-item-custom">會員中心</a>
 						<a th:href="@{/member/favorites}" class="dropdown-item-custom">⭐ 我的收藏</a>
-						<a th:href="@{/member/orders}" class="dropdown-item-custom">🎫 我的票券訂單</a>
+						<a th:href="@{/member/orders}" class="dropdown-item-custom">🎫 我的訂單</a>
 						<div class="dropdown-divider-custom"></div>
 						<form th:action="@{/logout}" method="post" style="margin: 0;">
 							<input type="hidden" name="_csrf" th:if="${_csrf}" th:value="${_csrf.token}">

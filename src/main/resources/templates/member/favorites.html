@@ -12,35 +12,125 @@ body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f8f9fa;
     margin: 0;
+    padding: 0;
+}
+
+/* 頂部搜尋區 (藍色調淺，加漸變) */
+.header {
+    background: linear-gradient(to right, #66b2ff, #99ccff); /* 淺藍漸變，更柔和好看 */
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 加陰影，讓立體 */
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-bar select, .search-bar input {
+    padding: 8px;
+    border: none;
+    border-radius: 8px; /* 圓角多點，好看 */
+    background-color: rgba(255, 255, 255, 0.8); /* 半透白，融入漸變 */
+}
+
+.search-bar button {
+    background-color: #5cb85c; /* 綠調淺，柔和 */
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.search-bar button:hover {
+    background-color: #4cae4c;
+    transform: scale(1.05); /* hover 放大，好玩 */
+}
+
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-menu a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+.user-menu a:hover {
+    color: #ffeb3b; /* 黃色hover，活潑 */
+}
+
+/* 主要內容區域 */
+.main-content {
     padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-title {
+    text-align: center;
+    color: #2e7d32;
+    font-size: 2.2em;
+    font-weight: bold;
+    margin: 20px 0 40px 0;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #4CAF50;
+}
+
+/* 並排容器 */
+.favorites-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+.favorites-section {
+    background-color: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border: 1px solid #e9f7ff;
 }
 
 .section-header {
     color: #2e7d32;
-    font-size: 1.8em;
+    font-size: 1.6em;
     font-weight: bold;
-    margin: 30px 0 20px 0;
+    margin: 0 0 25px 0;
     padding-bottom: 10px;
     border-bottom: 3px solid #4CAF50;
+    text-align: center;
 }
 
 .favorites-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 15px;
-    margin-bottom: 40px;
 }
 
 .scenery-card {
-    background-color: white;
+    background-color: #f8fcff;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     overflow: hidden;
     display: flex;
     align-items: center;
     height: 80px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
+    border: 1px solid #e1f3ff;
 }
 
 .scenery-card:hover {
@@ -124,8 +214,6 @@ body {
     margin: 40px 0;
     color: #666;
     font-size: 1.1em;
-    grid-column: 1 / -1;
-    width: 100%;
 }
 
 .no-fav p {
@@ -145,23 +233,6 @@ body {
 
 .browse-link:hover {
     background-color: #388e3c;
-}
-
-.tour-section {
-    margin-top: 60px;
-    padding-top: 20px;
-    border-top: 2px solid #e0e0e0;
-}
-
-.tour-placeholder {
-    text-align: center;
-    margin: 40px 0;
-    color: #999;
-    font-style: italic;
-    background-color: white;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 /* Notification styles */
@@ -193,9 +264,21 @@ body {
 }
 
 /* Responsive design */
-@media (max-width: 768px) {
-    .favorites-container {
+@media (max-width: 1024px) {
+    .favorites-wrapper {
         grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .main-content {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 15px;
     }
     
     .scenery-card {
@@ -221,13 +304,12 @@ body {
         font-size: 1.2em;
     }
     
-    body {
-        padding: 15px;
+    .page-title {
+        font-size: 1.8em;
     }
     
     .section-header {
-        font-size: 1.5em;
-        text-align: center;
+        font-size: 1.4em;
     }
 }
 
@@ -248,86 +330,111 @@ body {
     .card-content {
         padding: 0 12px;
     }
+    
+    .favorites-section {
+        padding: 20px;
+    }
 }
 </style>
 </head>
 <body>
 
-<!-- 📍 收藏景點區塊 -->
-<div>
-    <h2 class="section-header">📍 收藏景點</h2>
+<!-- 頂部搜尋功能 -->
+<div class="header">
+    <div class="search-bar">
+        <select>
+            <option>景點</option>
+            <option>票券</option>
+        </select>
+        <input type="text" placeholder="搜尋">
+        <button>搜尋</button>
+    </div>
+    <div class="user-menu">
+        <a href="/member/home">會員中心</a>
+        <a href="/index">首頁</a>
+       
+    </div>
+</div>
+
+<!-- 主要內容 -->
+<div class="main-content">
+    <h1 class="page-title">我的收藏</h1>
     
-    <div class="favorites-container" th:if="${sceneryFavorites.size() > 0}">
-        <div th:each="scenery : ${sceneryFavorites}" class="scenery-card">
-            <!-- 景點圖片 -->
-            <div th:if="${scenery.imageUrl != null}">
-                <img class="scenery-image" th:src="${scenery.imageUrl}" alt="景點圖片" />
-            </div>
-            <div th:unless="${scenery.imageUrl != null}" class="placeholder-image">
-                無圖片
+    <div class="favorites-wrapper">
+        <!-- 📍 收藏景點區塊 -->
+        <div class="favorites-section">
+            <h2 class="section-header">📍 收藏景點</h2>
+            
+            <div class="favorites-container" th:if="${sceneryFavorites.size() > 0}">
+                <div th:each="scenery : ${sceneryFavorites}" class="scenery-card">
+                    <!-- 景點圖片 -->
+                    <div th:if="${scenery.imageUrl != null}">
+                        <img class="scenery-image" th:src="${scenery.imageUrl}" alt="景點圖片" />
+                    </div>
+                    <div th:unless="${scenery.imageUrl != null}" class="placeholder-image">
+                        無圖片
+                    </div>
+                    
+                    <!-- 景點資訊 -->
+                    <div class="card-content">
+                        <a th:href="@{/frontend/scenery/detail/{id}(id=${scenery.sceneryId})}" 
+                           class="scenery-title" th:text="${scenery.sceneryName}">景點名稱</a>
+                        
+                        <button class="favorite-heart" 
+                                th:attr="data-scenery-id=${scenery.sceneryId}"
+                                onclick="unfavoriteScenery(this, event)"
+                                title="移除收藏">
+                            ♥
+                        </button>
+                    </div>
+                </div>
             </div>
             
-            <!-- 景點資訊 -->
-            <div class="card-content">
-                <a th:href="@{/frontend/scenery/detail/{id}(id=${scenery.sceneryId})}" 
-                   class="scenery-title" th:text="${scenery.sceneryName}">景點名稱</a>
-                
-                <button class="favorite-heart" 
-                        th:attr="data-scenery-id=${scenery.sceneryId}"
-                        onclick="unfavoriteScenery(this, event)"
-                        title="移除收藏">
-                    ♥
-                </button>
+            <div class="no-fav" th:if="${sceneryFavorites.size() == 0}">
+                <p>你尚未收藏任何景點。</p>
+                <a href="/index" class="browse-link">🔍 去發現美景</a>
+            </div>
+        </div>
+
+        <!-- 🧳 收藏旅程區塊 -->
+        <div class="favorites-section">
+            <h2 class="section-header">🧳 收藏旅程</h2>
+
+            <div class="favorites-container" th:if="${tourFavorites.size() > 0}">
+                <div th:each="plan : ${tourFavorites}" class="scenery-card">
+                    <!-- 圖片（若無圖則放預設） -->
+                    <div th:if="${plan.travelPlanBannerUrl != null}">
+                        <img class="scenery-image" th:src="${plan.travelPlanBannerUrl}" alt="旅程圖片" />
+                    </div>
+                    <div th:unless="${plan.travelPlanBannerUrl != null}" class="placeholder-image">
+                        無圖片
+                    </div>
+
+                    <!-- 內容 -->
+                    <div class="card-content">
+                        <a th:href="@{/member/travel/detail/{id}(id=${plan.travelPlanId})}"
+                           class="scenery-title"
+                           th:text="${plan.travelTitle}">旅程標題</a>
+
+                        <form th:action="@{/member/favorites/tour/remove/{id}(id=${plan.travelPlanId})}"
+                              method="post" th:object="${plan}">
+                            <button type="button"
+                                    th:attr="data-plan-id=${plan.travelPlanId}"
+                                    onclick="unfavoriteTour(this, event)"
+                                    class="favorite-heart"
+                                    title="移除收藏">♥</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="no-fav" th:if="${tourFavorites.size() == 0}">
+                <p>你尚未收藏任何旅程。</p>
+                <a href="/member/travel/list" class="browse-link">🔍 去探索旅程</a>
             </div>
         </div>
     </div>
-    
-    <div class="no-fav" th:if="${sceneryFavorites.size() == 0}">
-        <p>你尚未收藏任何景點。</p>
-        <a href="/index" class="browse-link">🔍 去發現美景</a>
-    </div>
 </div>
-
-<!-- 🧳 收藏旅程區塊 -->
-<div class="tour-section">
-    <h2 class="section-header">🧳 收藏旅程</h2>
-
-    <div class="favorites-container" th:if="${tourFavorites.size() > 0}">
-        <div th:each="plan : ${tourFavorites}" class="scenery-card">
-            <!-- 圖片（若無圖則放預設） -->
-            <div th:if="${plan.travelPlanBannerUrl != null}">
-                <img class="scenery-image" th:src="${plan.travelPlanBannerUrl}" alt="旅程圖片" />
-            </div>
-            <div th:unless="${plan.travelPlanBannerUrl != null}" class="placeholder-image">
-                無圖片
-            </div>
-
-            <!-- 內容 -->
-            <div class="card-content">
-                <a th:href="@{/member/travel/detail/{id}(id=${plan.travelPlanId})}"
-                   class="scenery-title"
-                   th:text="${plan.travelTitle}">旅程標題</a>
-
-                <form th:action="@{/member/favorites/tour/remove/{id}(id=${plan.travelPlanId})}"
-                      method="post" th:object="${plan}">
-                    <button type="button"
-					        th:attr="data-plan-id=${plan.travelPlanId}"
-					        onclick="unfavoriteTour(this, event)"
-					        class="favorite-heart"
-					        title="移除收藏">♥</button>
-
-
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="no-fav" th:if="${tourFavorites.size() == 0}">
-        <p>你尚未收藏任何旅程。</p>
-        <a href="/member/travel/list" class="browse-link">🔍 去探索旅程</a>
-    </div>
-</div>
-
 
 <!-- Notification -->
 <div id="notification" class="notification"></div>
@@ -378,7 +485,7 @@ function unfavoriteScenery(button, event) {
                 card.remove();
                 
                 // Check if there are any scenery cards left
-                const remainingCards = document.querySelectorAll('.scenery-card');
+                const remainingCards = document.querySelectorAll('.favorites-container .scenery-card');
                 if (remainingCards.length === 0) {
                     // Show "no favorites" message
                     const container = document.querySelector('.favorites-container');
@@ -436,11 +543,11 @@ function unfavoriteTour(button, event) {
         credentials: 'same-origin'
     })
     .then(response => {
-    	console.log("HTTP status:", response.status);
-    	return response.json()
-    	})
+        console.log("HTTP status:", response.status);
+        return response.json()
+    })
     .then(data => {
-    	console.log("Response data:", data);
+        console.log("Response data:", data);
         if (data.success) {
             alert("已取消收藏！");
             const card = button.closest('.scenery-card');
@@ -454,8 +561,6 @@ function unfavoriteTour(button, event) {
         console.error("Fetch error:", error);
     });
 }
-
-
 
 function showNotification(message, type) {
     const notification = document.getElementById('notification');
@@ -471,4 +576,4 @@ function showNotification(message, type) {
 </script>
 
 </body>
-</html>]
+</html>
