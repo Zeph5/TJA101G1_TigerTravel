@@ -65,5 +65,14 @@ public interface SceneryRepository extends JpaRepository<SceneryVO, Integer> {
     	                       @Param("totalScore") Integer totalScore, 
     	                       @Param("totalCount") Integer totalCount);
     	
+    	Page<SceneryVO> findBySceneryAddressContainingIgnoreCaseAndSceneryStatus(
+    		    String address, Integer sceneryStatus, Pageable pageable);
+
+    		// Alternative method using @Query for more flexible search
+    		@Query("SELECT s FROM SceneryVO s WHERE s.sceneryStatus = :status AND " +
+    		       "LOWER(s.sceneryAddress) LIKE LOWER(CONCAT('%', :address, '%'))")
+    		Page<SceneryVO> findByAddressWithStatus(@Param("address") String address, 
+    		                                       @Param("status") Integer status, 
+    		                                       Pageable pageable);
 
 }

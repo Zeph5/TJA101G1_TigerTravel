@@ -10,7 +10,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
@@ -71,6 +73,18 @@ public class SceneryVO implements java.io.Serializable {
     
     @OneToMany(mappedBy = "scenery", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<SceneryImageVO> sceneryImages = new HashSet<>();
+    
+    @ManyToOne
+    @JoinColumn(name = "tagsdb_id") // or the correct FK column
+    private TagsdbVO tagsdbVO;
+    
+    public TagsdbVO getTagsdbVO() {
+        return tagsdbVO;
+    }
+
+    public void setTagsdbVO(TagsdbVO tagsdbVO) {
+        this.tagsdbVO = tagsdbVO;
+    }
     
     @Transient
     private String imageUrl;

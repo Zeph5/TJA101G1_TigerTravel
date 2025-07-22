@@ -233,4 +233,23 @@ public class SceneryService {
             }
         }
     }
+    
+    public Page<SceneryVO> searchSceneryByAddress(String address, Pageable pageable) {
+        try {
+            System.out.println("Searching sceneries by address: " + address);
+            
+            // Use the corrected repository method that matches your field naming
+            Page<SceneryVO> result = sceneryRepository.findBySceneryAddressContainingIgnoreCaseAndSceneryStatus(
+                address, 1, pageable);
+            
+            System.out.println("Found " + result.getTotalElements() + " sceneries matching address: " + address);
+            return result;
+            
+        } catch (Exception e) {
+            System.err.println("Error searching sceneries by address: " + e.getMessage());
+            e.printStackTrace();
+            // Return empty page on error
+            return Page.empty(pageable);
+        }
+    }
 }

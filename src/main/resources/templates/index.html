@@ -79,6 +79,75 @@ h1, h2, h4, h5 {
 	margin-left: auto; /* Push to the right */
 }
 
+/* Regional Navigation Dropdown Styles */
+.regional-nav {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	display: flex;
+	gap: 30px;
+}
+
+.region-dropdown {
+	position: relative;
+	display: inline-block;
+}
+
+.region-link {
+	color: #333;
+	text-decoration: none;
+	font-weight: 500;
+	font-size: 16px;
+	padding: 8px 12px;
+	border-radius: 5px;
+	transition: all 0.3s ease;
+	cursor: pointer;
+	display: block;
+	white-space: nowrap;
+}
+
+.region-link:hover,
+.region-dropdown:hover .region-link {
+	background-color: rgba(255, 255, 255, 0.2);
+	color: var(--earth-yellow);
+	text-decoration: none;
+}
+
+.region-dropdown-menu {
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: var(--white);
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	min-width: 180px;
+	padding: 8px 0;
+	margin-top: 5px;
+	display: none;
+	z-index: 1001;
+}
+
+/* JavaScript will handle the hover behavior with 1-second delay for all tabs */
+
+.region-dropdown-item {
+	display: block;
+	padding: 8px 16px;
+	text-decoration: none;
+	color: #333;
+	font-size: 14px;
+	transition: background-color 0.2s;
+	cursor: pointer;
+}
+
+.region-dropdown-item:hover {
+	background-color: var(--light-gray);
+	text-decoration: none;
+	color: var(--earth-yellow);
+}
+
 /* Fixed search bar styling */
 .search-bar-fixed {
 	position: fixed;
@@ -232,44 +301,6 @@ h1, h2, h4, h5 {
 	margin: 5px 0;
 }
 
-/* Fixed logo section styling */
-.logo-section-fixed {
-	position: fixed;
-	top: 0; /* Now at the very top */
-	left: 0;
-	right: 0;
-	background-color: var(--sky-blue);
-	z-index: 1000; /* Higher z-index since it's on top */
-	padding: 15px 0;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	border-bottom: 1px solid var(--border-color);
-}
-
-.logo-section-fixed .logo-container {
-	display: flex;
-	align-items: center;
-	justify-content: space-between; /* Space between logo and user menu */
-	padding: 0 20px;
-	position: relative;
-}
-
-.logo-section-fixed .logo-img {
-	height: 50px;
-	margin-right: 15px;
-}
-
-.logo-section-fixed .logo-text {
-	font-family: 'Noto Sans TC', sans-serif;
-	font-weight: bold;
-	font-size: 32px;
-	color: #333;
-}
-
-.logo-section-fixed .user-menu {
-	position: static; /* Remove absolute positioning */
-	margin-left: auto; /* Push to the right */
-}
-
 /* 精選景點卡片 */
 .border.rounded {
 	background-color: var(--light-gray);
@@ -303,6 +334,10 @@ h1, h2, h4, h5 {
 	.two-column-layout {
 		flex-direction: column;
 		gap: 15px;
+	}
+	
+	.regional-nav {
+		display: none; /* Hide regional nav on mobile */
 	}
 }
 
@@ -856,11 +891,71 @@ footer {
 </head>
 <body>
 
-	<!-- Fixed Logo Section with User Menu -->
+	<!-- Fixed Logo Section with User Menu and Regional Navigation -->
 	<div class="logo-section-fixed">
 		<div class="logo-container">
 			<img th:src="@{/logo_image/Tiger_Travel_Logo_1.png}" alt="Tiger Travel Logo" class="logo-img" onerror="this.style.display='none'">
 			<span class="logo-text">臺鴿旅遊</span>
+			
+			<!-- Regional Navigation Dropdowns -->
+			<div class="regional-nav">
+				<!-- 北台灣景點 -->
+				<div class="region-dropdown">
+					<span class="region-link">北台灣景點</span>
+					<div class="region-dropdown-menu">
+						<a href="/scenery/search?address=台北市" class="region-dropdown-item">台北市</a>
+						<a href="/scenery/search?address=新北市" class="region-dropdown-item">新北市</a>
+						<a href="/scenery/search?address=基隆市" class="region-dropdown-item">基隆市</a>
+						<a href="/scenery/search?address=桃園市" class="region-dropdown-item">桃園市</a>
+						<a href="/scenery/search?address=新竹市" class="region-dropdown-item">新竹市</a>
+						<a href="/scenery/search?address=新竹縣" class="region-dropdown-item">新竹縣</a>
+					</div>
+				</div>
+				
+				<!-- 中台灣景點 -->
+				<div class="region-dropdown">
+					<span class="region-link">中台灣景點</span>
+					<div class="region-dropdown-menu">
+						<a href="/scenery/search?address=苗栗縣" class="region-dropdown-item">苗栗縣</a>
+						<a href="/scenery/search?address=台中市" class="region-dropdown-item">台中市</a>
+						<a href="/scenery/search?address=彰化縣" class="region-dropdown-item">彰化縣</a>
+						<a href="/scenery/search?address=南投縣" class="region-dropdown-item">南投縣</a>
+						<a href="/scenery/search?address=雲林縣" class="region-dropdown-item">雲林縣</a>
+					</div>
+				</div>
+				
+				<!-- 南台灣景點 -->
+				<div class="region-dropdown">
+					<span class="region-link">南台灣景點</span>
+					<div class="region-dropdown-menu">
+						<a href="/scenery/search?address=嘉義市" class="region-dropdown-item">嘉義市</a>
+						<a href="/scenery/search?address=嘉義縣" class="region-dropdown-item">嘉義縣</a>
+						<a href="/scenery/search?address=台南市" class="region-dropdown-item">台南市</a>
+						<a href="/scenery/search?address=高雄市" class="region-dropdown-item">高雄市</a>
+						<a href="/scenery/search?address=屏東縣" class="region-dropdown-item">屏東縣</a>
+					</div>
+				</div>
+				
+				<!-- 東台灣景點 -->
+				<div class="region-dropdown">
+					<span class="region-link">東台灣景點</span>
+					<div class="region-dropdown-menu">
+						<a href="/scenery/search?address=宜蘭縣" class="region-dropdown-item">宜蘭縣</a>
+						<a href="/scenery/search?address=花蓮縣" class="region-dropdown-item">花蓮縣</a>
+						<a href="/scenery/search?address=台東縣" class="region-dropdown-item">台東縣</a>
+					</div>
+				</div>
+				
+				<!-- 台灣外島景點 -->
+				<div class="region-dropdown">
+					<span class="region-link">台灣外島景點</span>
+					<div class="region-dropdown-menu">
+						<a href="/scenery/search?address=澎湖縣" class="region-dropdown-item">澎湖縣</a>
+						<a href="/scenery/search?address=金門縣" class="region-dropdown-item">金門縣</a>
+						<a href="/scenery/search?address=連江縣" class="region-dropdown-item">連江縣</a>
+					</div>
+				</div>
+			</div>
 			
 			<!-- User Menu for Authenticated Users -->
 			<div sec:authorize="isAuthenticated()" class="user-menu">
@@ -878,7 +973,7 @@ footer {
 					<div class="dropdown-menu-custom" id="userDropdown">
 						<a th:href="@{/member/home}" class="dropdown-item-custom">會員中心</a>
 						<a th:href="@{/member/favorites}" class="dropdown-item-custom">⭐ 我的收藏</a>
-						<a th:href="@{/member/ticketOrders}" class="dropdown-item-custom">🎫 我的票券訂單</a>
+						<a th:href="@{/member/orders}" class="dropdown-item-custom">🎫 我的票券訂單</a>
 						<div class="dropdown-divider-custom"></div>
 						<form th:action="@{/logout}" method="post" style="margin: 0;">
 							<input type="hidden" name="_csrf" th:if="${_csrf}" th:value="${_csrf.token}">
@@ -1167,6 +1262,48 @@ footer {
 		台鴿旅遊 Tiger Travel. All rights reserved. </footer>
 
 	<script>
+		// Enhanced regional dropdown hover delay for all regional navigation tabs
+		document.addEventListener('DOMContentLoaded', function() {
+		    const regionDropdowns = document.querySelectorAll('.region-dropdown');
+		    
+		    regionDropdowns.forEach((dropdown, index) => {
+		        // Apply quarter-second delay to all regional dropdown tabs
+		        const menu = dropdown.querySelector('.region-dropdown-menu');
+		        let hideTimeout;
+		        
+		        dropdown.addEventListener('mouseenter', function() {
+		            // Clear any existing timeout
+		            if (hideTimeout) {
+		                clearTimeout(hideTimeout);
+		                hideTimeout = null;
+		            }
+		            // Show menu immediately
+		            menu.style.display = 'block';
+		        });
+		        
+		        dropdown.addEventListener('mouseleave', function() {
+		            // Set timeout to hide menu after 0.25 seconds
+		            hideTimeout = setTimeout(function() {
+		                menu.style.display = 'none';
+		            }, 250); // 0.25 second delay for all tabs
+		        });
+		        
+		        // Also handle mouse re-entering the menu itself
+		        menu.addEventListener('mouseenter', function() {
+		            if (hideTimeout) {
+		                clearTimeout(hideTimeout);
+		                hideTimeout = null;
+		            }
+		        });
+		        
+		        menu.addEventListener('mouseleave', function() {
+		            hideTimeout = setTimeout(function() {
+		                menu.style.display = 'none';
+		            }, 250); // 0.25 second delay for all tabs
+		        });
+		    });
+		});
+		
 		// Debug: Log tour data from server
 		console.log('=== HOMEPAGE DEBUG ===');
 		console.log('Tour list data from server:', /*[[${tourList}]]*/ []);

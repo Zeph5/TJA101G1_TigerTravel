@@ -711,4 +711,86 @@ public class IndexController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+    
+    @GetMapping("/scenery/search")
+    public String searchSceneryByAddress(@RequestParam(required = false) String address,
+                                       @RequestParam(required = false) String keyword,
+                                       @RequestParam(defaultValue = "1") int page,
+                                       Model model,
+                                       Authentication authentication) {
+        try {
+            System.out.println("=== SCENERY SEARCH BY ADDRESS DEBUG ===");
+            System.out.println("Address: " + address);
+            System.out.println("Keyword: " + keyword);
+            System.out.println("Page: " + page);
+            System.out.println("User authenticated: " + (authentication != null && authentication.isAuthenticated()));
+            
+            // Determine search term - prioritize address over keyword
+            String searchTerm = null;
+            boolean isAddressSearch = false;
+            
+            if (address != null && !address.trim().isEmpty()) {
+                searchTerm = address.trim();
+                isAddressSearch = true;
+            } else if (keyword != null && !keyword.trim().isEmpty()) {
+                searchTerm = keyword.trim();
+                isAddressSearch = false;
+            }
+            
+            // Validate search term
+            if (searchTerm == null || searchTerm.isEmpty()) {
+                model.addAttribute("error", "搜尋條件不能為空");
+                model.addAttribute("sceneryPage", Page.empty());
+                model.addAttribute("keyword", "");
+                return "frontend/scenery/scenerysearch";
+            }
+            
+            if (page < 1) {
+                page = 1;
+            }
+            
+            int pageSize = 10;
+            Pageable pageable = PageRequest.of(page - 1, pageSize);
+
+            // Perform search using your existing service methods
+            Page<SceneryVO> sceneryPage;
+            if (isAddressSearch) {
+                // Search by address using the new method
+                sceneryPage = sceneryService.searchSceneryByAddress(searchTerm, pageable);
+                System.out.println("Searching by address: " + searchTerm);
+            } else {
+                // Search by keyword using your existing method
+                sceneryPage = sceneryService.searchSceneryByNameOrTag(searchTerm, pageable);
+                System.out.println("Searching by keyword: " + searchTerm);
+            }
+            
+            System.out.println("Found " + sceneryPage.getTotalElements() + " results");
+
+            // Encode images and ratings using your existing method
+            encodeImagesAndRatings(sceneryPage.getContent());
+
+            // Add attributes to model
+            model.addAttribute("sceneryPage", sceneryPage);
+            model.addAttribute("keyword", searchTerm); // Use searchTerm for display
+            
+            // Add pagination info for the view
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", sceneryPage.getTotalPages());
+            model.addAttribute("totalElements", sceneryPage.getTotalElements());
+            
+            // Add user authentication status for the template
+            model.addAttribute("isAuthenticated", authentication != null && authentication.isAuthenticated());
+            
+            System.out.println("Returning template: frontend/scenery/scenerysearch");
+            return "frontend/scenery/scenerysearch";
+            
+        } catch (Exception e) {
+            System.err.println("Error in scenery address search: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "搜尋時發生錯誤，請稍後再試");
+            model.addAttribute("sceneryPage", Page.empty());
+            model.addAttribute("keyword", "");
+            return "frontend/scenery/scenerysearch";
+        }
+    }
 }

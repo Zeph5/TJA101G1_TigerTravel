@@ -15,11 +15,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.scenery.model.SceneryRepository;
 import com.scenery.model.TagsService;
 import com.scenery.model.TagsdbRepository;
 import com.scenery.model.DTO.TagsForm;
+
+import jakarta.annotation.PostConstruct;
 
 @Controller
 @RequestMapping("/tags")
@@ -36,6 +39,9 @@ public class TagsController {
 	    
 	    @Autowired
 	    private TagsRepository tagsRepository;
+	    
+	    @Autowired
+	    private SceneryTaggingService sceneryTaggingService;
 
 	    @GetMapping("/add")
 	    public String showAddTagForm(Model model) {
@@ -151,5 +157,23 @@ public class TagsController {
 	            return "tags/updatetagsuccess";
 	        }
 	    }
-	   
+	    
+//	    @PostConstruct
+//	    public void init() {
+//	        sceneryTaggingService.assignTagsToSceneries();
+//	    }
+	    
+	    @RestController
+	    @RequestMapping("/tagging")
+	    public class SceneryTaggingController {
+
+	        @Autowired
+	        private SceneryTaggingService sceneryTaggingService;
+
+	        @PostMapping("/assign")
+	        public String assignTags() {
+	            sceneryTaggingService.assignTagsToSceneries();
+	            return "Tag assignment complete.";
+	        }
+	    }
 }
