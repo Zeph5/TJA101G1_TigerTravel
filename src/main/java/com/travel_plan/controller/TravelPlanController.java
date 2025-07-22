@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -71,15 +72,18 @@ public class TravelPlanController {
 
 	// 這是 顯示所有旅行計畫列表 的頁面入口。
 	@GetMapping
-	public String listTravelPlans(Model model, 
+	public String listTravelPlans(Model model,
 	                              @RequestParam(defaultValue = "0") int page,
 	                              @RequestParam(defaultValue = "9") int size) {
-	    Page<TravelPlan> travelPlanPage = travelPlanService.getTravelPlans(PageRequest.of(page, size));
 
-	    model.addAttribute("travelPlanPage", travelPlanPage); // 分頁物件
-	    model.addAttribute("currentPage", page);              // 當前頁數
-	    model.addAttribute("pageSize", size);                 // 每頁大小
-	    model.addAttribute("travelPlans", travelPlanPage.getContent()); // ✅ 只取這一頁的內容
+	    // ✨ 指定依照 lastModifiedDate 倒序排序
+	    Sort sort = Sort.by(Sort.Direction.DESC, "lastModifiedDate");
+	    Page<TravelPlan> travelPlanPage = travelPlanService.getTravelPlans(PageRequest.of(page, size, sort));
+	    
+	    model.addAttribute("travelPlanPage", travelPlanPage);
+	    model.addAttribute("travelPlans", travelPlanPage.getContent());
+	    model.addAttribute("currentPage", page);
+	    model.addAttribute("pageSize", size);
 
 	    return "admin/travelplans/list";
 	}
