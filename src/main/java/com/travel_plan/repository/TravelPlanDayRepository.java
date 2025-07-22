@@ -28,4 +28,6 @@ public interface TravelPlanDayRepository extends JpaRepository<TravelPlanDay, In
  // ✅ Repository 方法
     List<TravelPlanDay> findByTravelItinerary_TravelItineraryIdOrderByTravelSequenceNumber(Integer itineraryId);
 
+    List<TravelPlanDay> findByTravelItinerary_TravelItineraryIdAndTraveltimeOrderByTravelSequenceNumber
+(Integer itineraryId, LocalDate traveltime);
 }

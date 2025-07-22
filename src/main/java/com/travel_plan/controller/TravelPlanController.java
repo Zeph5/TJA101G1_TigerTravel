@@ -189,7 +189,7 @@ public class TravelPlanController {
 
 	    if (file != null && !file.isEmpty()) {
 	        try {
-	            String uploadDir = "src/main/resources/static/uploads/";
+	        	String uploadDir = "uploads/";
 	            String newFileName = UUID.randomUUID().toString(); // 避免重複檔名
 	            String imageUrl = imageService.saveAndResizeImage(file, uploadDir, newFileName);
 

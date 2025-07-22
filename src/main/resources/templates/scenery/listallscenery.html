@@ -135,31 +135,6 @@ th:replace="~{layout :: layout (~{::title}, ~{::body}, ~{})}">
 </head>
 <body>
 
-<!-- Left Sidebar -->
-<div class="sidebar">
-    <div class="logo-wrapper">
-        <img th:src="@{/images/logo.png}" alt="Tiger Travel Logo" class="logo-img" />
-        <span class="site-title">後台管理系統</span>
-    </div>
-    <h3>景點管理</h3>
-    <ul class="nav-list">
-        <li>
-            <a href="/scenery/listallscenery" class="btn btn-primary">景點</a>
-        </li>
-        <li>
-            <a href="/sceneryscore/findAll" class="btn btn-primary">景點評價</a>
-        </li>
-        <li>
-            <a th:href="@{/tags/list}" class="btn btn-primary">景點標籤</a>
-        </li>
-        <li>
-            <a th:href="@{/tagsdb/listall}" class="btn btn-primary">標籤列</a>
-        </li>
-        <li>
-            <a href="/manager/home" class="btn btn-secondary">🏠 返回管理首頁</a>
-        </li>
-    </ul>
-</div>
 
 <!-- Main Content -->
 <div class="main-content">
