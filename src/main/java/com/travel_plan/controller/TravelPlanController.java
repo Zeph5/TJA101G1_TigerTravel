@@ -2,7 +2,7 @@ package com.travel_plan.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.ssl.SslProperties.Bundles.Watch.File;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -189,11 +189,15 @@ public class TravelPlanController {
 
 	    if (file != null && !file.isEmpty()) {
 	        try {
-	        	String uploadDir = "C:/TJA101-WebApp/images/";
-	            String newFileName = UUID.randomUUID().toString(); // 避免重複檔名
+	            // 專案內部的 uploads 資料夾
+	            String uploadDir = System.getProperty("user.dir") + File.separator + "uploads" + File.separator;
+	            String newFileName = UUID.randomUUID().toString();
+	            
+
+	            // 儲存圖片並取得圖片網址
 	            String imageUrl = imageService.saveAndResizeImage(file, uploadDir, newFileName);
 
-	            // 設定圖片 URL 存到資料庫
+	            // 儲存資料
 	            TravelPlan plan = new TravelPlan();
 	            plan.setTravelTitle(dto.getTravelTitle());
 	            plan.setTravelPlanDescription(dto.getTravelPlanDescription());
@@ -205,9 +209,11 @@ public class TravelPlanController {
 	            return "upload-failed";
 	        }
 	    }
-
+	    System.getProperty("user.dir");
+	   
 	    return "redirect:/admin/travelplans";
 	}
+
 	
 }
 
