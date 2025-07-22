@@ -2,33 +2,111 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>註冊完成</title>
-
-    <!-- SweetAlert2 CDN -->
+    <title>請驗證您的電子信件</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <script>
-        window.onload = function () {
-            Swal.fire({
-                icon: 'success',
-                title: '註冊成功！',
-                text: '請至信箱點擊驗證連結完成帳號啟用',
-                confirmButtonText: '前往登入',
-                allowOutsideClick: false,
-                allowEscapeKey: false
-            }).then(() => {
-                window.location.href = '/login';
-            });
-        };
-    </script>
-
     <style>
         body {
             background-color: #f2f6fc;
             font-family: "Microsoft JhengHei", sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .card {
+            padding: 30px;
+            border-radius: 15px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .icon {
+            font-size: 48px;
+            color: #4a90e2;
+        }
+
+        .email {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .btn-custom {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 25px;
+            margin-top: 15px;
+        }
+
+        .btn-custom:hover {
+            background-color: #357abd;
+        }
+
+        .countdown-text {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .success-text {
+            color: green;
+            margin-top: 10px;
+        }
+
+        .error-text {
+            color: red;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
+
+<div class="card">
+    <div class="icon mb-3">📧</div>
+    <h4>請驗證您的電子信件</h4>
+    <p class="email" th:text="${member.memberEmail}">example@mail.com</p>
+    <p>我們已將驗證連結寄送至您的信箱，請於 15 分鐘內點擊完成驗證。</p>
+
+    <form th:action="@{/resend-verification}" method="get" id="resendForm">
+        <input type="hidden" name="email" th:value="${member.memberEmail}"/>
+        <button type="submit" id="resendBtn" class="btn btn-custom" disabled>請稍候...</button>
+    </form>
+
+    <div class="countdown-text">
+        驗證信剩餘時間 <span id="countdown" th:text="${secondsLeft}">900</span> 秒
+    </div>
+
+    <div class="success-text" th:if="${message}" th:text="${message}"></div>
+    <div class="error-text" th:if="${error}" th:text="${error}"></div>
+</div>
+
+<script>
+    const countdownEl = document.getElementById('countdown');
+    const resendBtn = document.getElementById('resendBtn');
+    let seconds = parseInt(countdownEl?.textContent || "0");
+
+    if (resendBtn && countdownEl && seconds > 0) {
+        const timer = setInterval(() => {
+            seconds--;
+            countdownEl.textContent = seconds;
+
+            if (seconds <= 0) {
+                resendBtn.disabled = false;
+                resendBtn.textContent = "重新發送驗證信件";
+                clearInterval(timer);
+            }
+        }, 1000);
+    }
+</script>
+
 </body>
 </html>

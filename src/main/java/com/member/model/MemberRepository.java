@@ -28,4 +28,5 @@ public interface MemberRepository extends JpaRepository<memVO, Integer> {
 
 	Page<memVO> findAll(Specification<memVO> spec, Pageable pageable);
 	
+	
 }
