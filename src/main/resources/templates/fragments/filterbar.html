@@ -1,0 +1,37 @@
+<!-- fragments/filterbar.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+</head>
+<body>
+
+<!-- 
+  共用篩選排序搜尋工具列
+  - formAction：form 提交路徑（必填）
+  - keywordField：搜尋欄位 slot（可省略）
+  - filterField：篩選欄位 slot（如狀態、付款等）
+  - sortField：排序欄位 slot
+-->
+<div th:fragment="filterbar(formAction, keywordField, filterField, sortField)">
+  <form th:action="${formAction}" method="get" class="d-flex flex-wrap gap-3 align-items-center mb-3">
+
+    <!-- 🔍 關鍵字搜尋欄位 -->
+    <div th:replace="${keywordField}"></div>
+
+    <!-- 🔽 篩選條件 -->
+    <div th:replace="${filterField}"></div>
+
+    <!-- ⬇️ 排序條件 -->
+    <div th:replace="${sortField}"></div>
+
+    <!-- ✅ 查詢按鈕 -->
+    <button type="submit" class="btn btn-primary">
+      <i class="bi bi-search"></i> 搜尋
+    </button>
+
+  </form>
+</div>
+
+</body>
+</html>

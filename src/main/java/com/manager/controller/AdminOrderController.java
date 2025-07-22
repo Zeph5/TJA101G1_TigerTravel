@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.manager.model.DTO.OrderListDTO;
 import com.manager.model.DTO.TouristListDTO;
@@ -26,26 +27,27 @@ public class AdminOrderController {
 		this.adminOrderService = adminOrderService;
 	}
 	@GetMapping("/list")
-	public String showOrderList(Model model) {
+	public String showOrderList(Model model,
+			@RequestParam (value = "page", defaultValue = "0") int page,
+			@RequestParam(value = "size", defaultValue = "9") int size
+			) {
 		List<OrderListDTO> orderList = adminOrderService.findAllOrders();
 		model.addAttribute("orders", orderList);
 		return "admin/order/order_List"; // 返回訂單列表頁面
 	}
 	@GetMapping("/{id}")
-	public String showOrderDetail(@PathVariable Integer id, Model model) {		
-		OrderListDTO order = adminOrderService.findOrderById(id);// 查訂單 DTO
-		TourOrderVO tourOrderVO = adminOrderService.findOrderEntityById(id); // 查實體（為了取旅客）		
-		Set<TouristIdVO> tourist= tourOrderVO.getTourists(); // 取得訂單中的旅客列表
-		
-		model.addAttribute("tourists", tourOrderVO.getTourists());
-		model.addAttribute("order", order);
-		System.out.println("旅客數：" + tourOrderVO.getTourists().size());
-		for (TouristIdVO t : tourOrderVO.getTourists()) {
-		    System.out.println(t.getTouristName());
-		}
-		
-		return "admin/order/order_Detail"; 
+	public String showOrderDetail(@PathVariable Integer id, Model model) {
+	    OrderListDTO order = adminOrderService.findOrderById(id); // DTO 資料
+	    TourOrderVO tourOrder = adminOrderService.findOrderEntityById(id); // 實體
+
+	    TouristVO tourist = tourOrder.getTourist(); // 抓主旅客
+
+	    model.addAttribute("tourist", tourist);
+	    model.addAttribute("order", order);
+
+	    return "admin/order/order_Detail";
 	}
+
 	
 	@GetMapping("/edit/{id}")
 	public String showEditForm(@PathVariable Integer id, Model model) {

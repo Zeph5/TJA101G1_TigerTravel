@@ -1,24 +1,35 @@
 package com.manager.service.Impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import com.manager.model.Manager;
+
 import com.manager.model.DTO.MemberListDTO;
+import com.manager.repository.ManagerRepository;
 import com.manager.service.AdminMemberService;
 import com.member.model.MemberRepository;
 import com.member.model.memVO;
 
+import jakarta.persistence.criteria.Predicate;
+
 @Service
 public class AdminMemberServiceImpl implements AdminMemberService {
 
-	public final MemberRepository memberRepository;
+	private final MemberRepository memberRepository;
+	private final ManagerRepository managerRepository;
 
-	public AdminMemberServiceImpl(MemberRepository memberRepository) {
+	public AdminMemberServiceImpl(MemberRepository memberRepository, ManagerRepository managerRepository) {
 		this.memberRepository = memberRepository;
+		this.managerRepository = managerRepository;
 	}
 	
 	@Override
@@ -28,17 +39,7 @@ public class AdminMemberServiceImpl implements AdminMemberService {
 		return dto;
 	}
 	
-	@Override
-	public List<MemberListDTO> findAllMembers() {
-		List<memVO> members = memberRepository.findAll();
-		// 將 List 轉為 Stream，然後進行映射
-		return members.stream().map(member -> {
-			MemberListDTO dto = new MemberListDTO();
-			BeanUtils.copyProperties(member, dto);
-			return dto;
-		}).toList();
 
-	}
 
 	@Override
 	public MemberListDTO findMemberById(Integer id) {		
@@ -70,4 +71,42 @@ public class AdminMemberServiceImpl implements AdminMemberService {
 		});
 		
 	}
+
+	@Override
+	public Page<MemberListDTO> searchAndFilter(String keyword, String status, Pageable pageable) {
+		Specification<memVO> spec = (root, query, cb) -> {
+	        List<Predicate> predicates = new ArrayList<>();
+	        // 模糊搜尋：帳號、姓名、電話
+	        if (keyword != null && !keyword.isBlank()) {
+	            String likePattern = "%" + keyword.trim() + "%";
+	            Predicate accountLike = cb.like(root.get("memberAccount"), likePattern);
+	            Predicate nameLike = cb.like(root.get("memberName"), likePattern);
+	            Predicate phoneLike = cb.like(root.get("memberPhone"), likePattern);
+	            predicates.add(cb.or(accountLike, nameLike, phoneLike));
+	        }
+
+	        // 狀態篩選
+	        if (status != null && !status.isBlank()){try {
+	            Byte statusValue = Byte.parseByte(status.trim());
+	            predicates.add(cb.equal(root.get("memberStatus"), statusValue));
+	        } catch (NumberFormatException e) {
+	            System.out.println("⚠️ 無法解析 status 值為 Byte：" + status);
+	        }}
+
+	        return cb.and(predicates.toArray(new Predicate[0]));
+	    };
+
+	    Page<memVO> memberPage = memberRepository.findAll(spec, pageable);
+
+	    // 實體轉 DTO
+	    return memberPage.map(member -> {
+	        MemberListDTO dto = new MemberListDTO();
+	        BeanUtils.copyProperties(member, dto);
+	        return dto;
+	    });
+	}
+
+	
+
+
 }

@@ -37,6 +37,9 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 		 if (order.getMember() != null) {
 		        dto.setMemberName(order.getMember().getMemberName()); // 假設是 memName
 		    }
+		 if (order.getTravelItinerary() != null) {
+		        dto.setTravelItineraryId(order.getTravelItinerary().getTravelItineraryId()); // ⬅️ 補上這行！
+		    }
 		return dto;
 	}	
 
@@ -81,9 +84,17 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 
 	@Override
 	public TourOrderVO findOrderEntityById(Integer id) {
-	    return adminOrderRepository.findOrderWithTouristsById(id)
-	        .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
-	    
+		 TourOrderVO order = adminOrderRepository.findById(id)
+			        .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+
+			    System.out.println("=== 測試主旅客是否存在 ===");
+			    if (order.getTourist() != null) {
+			        System.out.println("主旅客姓名：" + order.getTourist().getTouristName());
+			    } else {
+			        System.out.println("主旅客為 null！");
+			    }
+
+			    return order;
 	}
 
 

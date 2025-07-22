@@ -26,6 +26,10 @@ public class LoginPageController {
 			model.addAttribute("errorMessage", "帳號或密碼錯誤，請再試一次");
 		}
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		
+		 if (auth != null && auth.isAuthenticated() && !auth.getPrincipal().equals("anonymousUser")) {
+		        return "redirect:/manager/home"; // 🔁 自動導向首頁
+		    }
 		System.out.println("目前登入帳號：" + auth.getName());
 		System.out.println("目前角色：" + auth.getAuthorities());
 		return "manager/login"; 
