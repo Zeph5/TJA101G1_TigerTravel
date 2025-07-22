@@ -3,57 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <title>我的收藏</title>
+<!-- Add favicon to prevent 404 error -->
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
 
 <meta name="_csrf" th:content="${_csrf.token}" />
 <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 
 <style>
 body {
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', 'Noto Sans TC', sans-serif;
     background-color: #f8f9fa;
     margin: 0;
     padding: 0;
 }
 
-/* 頂部搜尋區 (藍色調淺，加漸變) */
+/* 頂部 LOGO 區 (與 index 相同的樣式) */
 .header {
-    background: linear-gradient(to right, #66b2ff, #99ccff); /* 淺藍漸變，更柔和好看 */
+    background: linear-gradient(to right, #B3E5FC, #99ccff); /* 使用與 index 相同的天藍色 */
     color: white;
-    padding: 15px;
+    padding: 15px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 加陰影，讓立體 */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.search-bar {
+/* LOGO 容器樣式 (與 index 一致) */
+.logo-container {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
 }
 
-.search-bar select, .search-bar input {
-    padding: 8px;
-    border: none;
-    border-radius: 8px; /* 圓角多點，好看 */
-    background-color: rgba(255, 255, 255, 0.8); /* 半透白，融入漸變 */
+.logo-img {
+    height: 50px;
+    width: auto;
+    transition: transform 0.3s ease;
 }
 
-.search-bar button {
-    background-color: #5cb85c; /* 綠調淺，柔和 */
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 8px;
+.logo-img:hover {
+    transform: scale(1.05);
+}
+
+.logo-text {
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: bold;
+    font-size: 32px;
+    color: #333;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
     cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
+    transition: color 0.3s ease;
 }
 
-.search-bar button:hover {
-    background-color: #4cae4c;
-    transform: scale(1.05); /* hover 放大，好玩 */
+.logo-text:hover {
+    color: #D9A441; /* 使用與 index 相同的土黃色 */
 }
 
+/* 用戶菜單樣式 */
 .user-menu {
     display: flex;
     align-items: center;
@@ -65,10 +71,33 @@ body {
     text-decoration: none;
     font-weight: bold;
     transition: color 0.3s;
+    padding: 8px 15px;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .user-menu a:hover {
-    color: #ffeb3b; /* 黃色hover，活潑 */
+    color: #D9A441; /* 土黃色 hover */
+    background-color: rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+}
+
+/* 返回首頁按鈕樣式 */
+.home-link {
+    background-color: #D9A441;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.home-link:hover {
+    background-color: #c4932a;
+    color: white;
+    text-decoration: none;
+    transform: scale(1.05);
 }
 
 /* 主要內容區域 */
@@ -233,6 +262,8 @@ body {
 
 .browse-link:hover {
     background-color: #388e3c;
+    text-decoration: none;
+    color: white;
 }
 
 /* Notification styles */
@@ -279,6 +310,24 @@ body {
     .header {
         flex-direction: column;
         gap: 15px;
+        text-align: center;
+    }
+    
+    .logo-container {
+        justify-content: center;
+    }
+    
+    .logo-text {
+        font-size: 24px;
+    }
+    
+    .logo-img {
+        height: 40px;
+    }
+    
+    .user-menu {
+        justify-content: center;
+        flex-wrap: wrap;
     }
     
     .scenery-card {
@@ -339,20 +388,19 @@ body {
 </head>
 <body>
 
-<!-- 頂部搜尋功能 -->
+<!-- 頂部 LOGO 區 (替換原本的搜尋功能) -->
 <div class="header">
-    <div class="search-bar">
-        <select>
-            <option>景點</option>
-            <option>票券</option>
-        </select>
-        <input type="text" placeholder="搜尋">
-        <button>搜尋</button>
+    <div class="logo-container">
+        <img th:src="@{/logo_image/Tiger_Travel_Logo_1.png}" 
+             alt="Tiger Travel Logo" 
+             class="logo-img" 
+             onclick="window.location.href='/'"
+             onerror="this.style.display='none'">
+        <span class="logo-text" onclick="window.location.href='/'">臺鴿旅遊</span>
     </div>
     <div class="user-menu">
         <a href="/member/home">會員中心</a>
-        <a href="/index">首頁</a>
-       
+        <a th:href="@{/}" class="home-link">返回首頁</a>
     </div>
 </div>
 

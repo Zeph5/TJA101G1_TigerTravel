@@ -2,77 +2,479 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>訂單明細</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>票券訂單明細 - 臺鴿旅遊</title>
+    <!-- Add favicon to prevent 404 error -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Noto Sans TC', sans-serif;
+            background-color: #f0f8ff; /* 淡藍背景，清新如藍天 */
+            color: #333;
+            margin: 0;
+            padding: 0;
+            padding-top: 80px; /* Add padding for fixed header */
+        }
+
+        /* 主色系設定 */
+        :root {
+            --sky-blue: #B3E5FC;
+            --egg-shell: #FDF6EC;
+            --earth-yellow: #D9A441;
+            --white: #ffffff;
+            --light-gray: #f0f0f0;
+            --border-color: #ccc;
+        }
+
+        /* Fixed logo section styling - 從 index.html 複製過來 */
+        .logo-section-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--sky-blue);
+            z-index: 1000;
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo-section-fixed .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        .logo-section-fixed .logo-img {
+            height: 50px;
+            margin-right: 15px;
+        }
+
+        .logo-section-fixed .logo-text {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-weight: bold;
+            font-size: 32px;
+            color: #333;
+        }
+
+        .logo-section-fixed .user-menu {
+            position: static;
+            margin-left: auto;
+        }
+
+        /* User menu styling - 從 index.html 改良 */
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-menu a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 8px;
+            background-color: var(--earth-yellow);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .user-menu a:hover {
+            background-color: #c4932a;
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: white;
+        }
+
+        /* 主要內容區域 */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9f7ff;
+        }
+
+        .page-header {
+            font-size: 28px;
+            color: #66b2ff;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #99ccff;
+            padding-bottom: 15px;
+            text-align: center;
+        }
+
+        /* 訂單詳情卡片 */
+        .order-detail-card {
+            background: linear-gradient(to right, #e3f2fd, #f8fcff);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e1f3ff;
+        }
+
+        .order-detail-title {
+            color: #66b2ff;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 1px solid #cceeff;
+            padding-bottom: 10px;
+        }
+
+        .detail-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e9f7ff;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #66b2ff;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            color: #333;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .status-paid { background-color: #d1edff; color: #0c5460; }
+        .status-cancelled { background-color: #f8d7da; color: #721c24; }
+
+        /* 票券明細區域 */
+        .tickets-section {
+            background-color: #f8fcff;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e1f3ff;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #66b2ff;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 1px solid #cceeff;
+            padding-bottom: 10px;
+        }
+
+        /* 票券卡片設計 */
+        .ticket-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 2px solid #e9f7ff;
+            transition: box-shadow 0.3s ease, transform 0.2s ease;
+        }
+
+        .ticket-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .ticket-content {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .ticket-image {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid #e9f7ff;
+        }
+
+        .placeholder-image {
+            width: 200px;
+            height: 150px;
+            background-color: #e9f7ff;
+            color: #66b2ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 14px;
+            border-radius: 10px;
+            border: 2px solid #cceeff;
+        }
+
+        .ticket-info {
+            flex: 1;
+        }
+
+        .ticket-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #66b2ff;
+            margin-bottom: 10px;
+        }
+
+        .ticket-quantity {
+            font-size: 16px;
+            color: #333;
+            background-color: #e9f7ff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        /* 返回按鈕 */
+        .back-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .btn-back {
+            background: linear-gradient(to right, #99ccff, #66b2ff);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: inline-block;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-back:hover {
+            background: linear-gradient(to right, #66b2ff, #5aa3e6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
+            color: white;
+        }
+
+        /* 空狀態 */
+        .empty-state {
+            text-align: center;
+            color: #999;
+            font-size: 16px;
+            padding: 40px 20px;
+        }
+
+        .empty-state p {
+            margin: 15px 0;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .logo-section-fixed .logo-container {
+                flex-direction: column;
+                gap: 15px;
+                padding: 10px 15px;
+            }
+
+            .logo-section-fixed .logo-text {
+                font-size: 24px;
+            }
+
+            .logo-section-fixed .logo-img {
+                height: 40px;
+                margin-right: 10px;
+            }
+
+            body {
+                padding-top: 120px; /* Increased padding for mobile */
+            }
+
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+
+            .detail-info {
+                grid-template-columns: 1fr;
+            }
+
+            .ticket-content {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .ticket-image, .placeholder-image {
+                width: 100%;
+                max-width: 300px;
+                margin: 0 auto;
+            }
+
+            .page-header {
+                font-size: 24px;
+            }
+
+            .user-menu {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .user-menu a {
+                padding: 6px 12px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .ticket-image, .placeholder-image {
+                height: 120px;
+            }
+
+            .page-header {
+                font-size: 22px;
+            }
+
+            .order-detail-title, .section-title {
+                font-size: 18px;
+            }
+
+            .logo-section-fixed .logo-text {
+                font-size: 20px;
+            }
+
+            .logo-section-fixed .logo-img {
+                height: 35px;
+            }
+        }
+    </style>
 </head>
-<body class="container mt-5">
-
-    <h2>🧾 訂單明細</h2>
-
-    <div th:if="${order != null}">
-        <p>訂單編號：<span th:text="${order.ticketOrderId}">1001</span></p>
-        <p>訂單金額：<span th:text="${order.orderPrice}">3000</span> 元</p>
-        <p>狀態：
-            <span th:switch="${order.orderStatus}">
-                <span th:case="0" class="text-warning">待付款</span>
-                <span th:case="1" class="text-success">已付款</span>
-                <span th:case="2" class="text-danger">已取消</span>
-                <span th:case="*">未知</span>
-            </span>
-        </p>
-        <p th:if="${order.orderDatetime != null}">
-		    下單時間：
-		    <span th:text="${#temporals.format(order.orderDatetime, 'yyyy/MM/dd HH:mm')}"></span>
-
-		</p>
-		
-		<p th:if="${order.orderDatetime == null}" class="text-muted">
-		    下單時間：資料尚未提供
-		</p>
-
-
-
+<body>
+    <!-- Fixed Logo Section with User Menu - 從 index.html 移植過來 -->
+    <div class="logo-section-fixed">
+        <div class="logo-container">
+            <div style="display: flex; align-items: center;">
+                <img th:src="@{/logo_image/Tiger_Travel_Logo_1.png}" alt="Tiger Travel Logo" class="logo-img" onerror="this.style.display='none'">
+                <span class="logo-text">臺鴿旅遊</span>
+            </div>
+            
+            <!-- User Menu -->
+            <div class="user-menu">
+                <a href="/member/home">會員中心</a>
+                <a href="/index">首頁</a>
+            </div>
+        </div>
     </div>
 
-    <hr>
+    <!-- 主要內容 -->
+    <div class="container">
+        <h2 class="page-header">🧾 票券訂單明細</h2>
 
-    <div th:if="${#lists.isEmpty(receipts)}">
-        <p class="text-muted">此訂單尚無票券明細。</p>
+        <!-- 訂單詳情卡片 -->
+        <div class="order-detail-card" th:if="${order != null}">
+            <div class="order-detail-title">📋 訂單資訊</div>
+            <div class="detail-info">
+                <div class="info-item">
+                    <div class="info-label">📄 訂單編號</div>
+                    <div class="info-value" th:text="${order.ticketOrderId}">1001</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">💰 訂單金額</div>
+                    <div class="info-value" th:text="${order.orderPrice + ' 元'}">3000 元</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">📊 訂單狀態</div>
+                    <div class="info-value">
+                        <span class="status-badge" 
+                              th:classappend="${order.orderStatus == 0 ? 'status-pending' : (order.orderStatus == 1 ? 'status-paid' : 'status-cancelled')}">
+                            <span th:switch="${order.orderStatus}">
+                                <span th:case="0">待付款</span>
+                                <span th:case="1">已付款</span>
+                                <span th:case="2">已取消</span>
+                                <span th:case="*">未知</span>
+                            </span>
+                        </span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">🕒 下單時間</div>
+                    <div class="info-value">
+                        <span th:if="${order.orderDatetime != null}" 
+                              th:text="${#temporals.format(order.orderDatetime, 'yyyy/MM/dd HH:mm')}"></span>
+                        <span th:if="${order.orderDatetime == null}" class="text-muted">資料尚未提供</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 票券明細區域 -->
+        <div class="tickets-section">
+            <div class="section-title">🎫 票券明細</div>
+
+            <!-- 空狀態 -->
+            <div class="empty-state" th:if="${#lists.isEmpty(receipts)}">
+                <p>🎫 此訂單尚無票券明細</p>
+                <p>請聯繫客服或稍後再試</p>
+            </div>
+
+            <!-- 票券列表 -->
+            <div th:if="${!#lists.isEmpty(receipts)}">
+                <div th:each="receipt : ${receipts}" class="ticket-card">
+                    <div class="ticket-content">
+                        <!-- 票券圖片 -->
+                        <div>
+                            <img th:if="${ticketImageMap[receipt.ticketOrderReceiptId] != null}"
+                                 th:src="'data:image/jpeg;base64,' + ${ticketImageMap[receipt.ticketOrderReceiptId]}"
+                                 class="ticket-image"
+                                 alt="票券圖片" />
+                                 
+                            <div th:if="${ticketImageMap[receipt.ticketOrderReceiptId] == null}" 
+                                 class="placeholder-image">
+                                🎫<br>尚無圖片
+                            </div>
+                        </div>
+
+                        <!-- 票券資訊 -->
+                        <div class="ticket-info">
+                            <div class="ticket-name">
+                                <span th:if="${ticketMap[receipt.ticketOrderReceiptId] != null}"
+                                      th:text="${ticketMap[receipt.ticketOrderReceiptId].ticketName}">票券名稱</span>
+                                <span th:if="${ticketMap[receipt.ticketOrderReceiptId] == null}">未命名票券</span>
+                            </div>
+                            
+                            <div class="ticket-quantity">
+                                📊 數量：<span th:text="${receipt.ticketCount + ' 張'}">1 張</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 返回按鈕 -->
+        <div class="back-section">
+            <a th:href="@{/member/orders}" class="btn-back">🔙 返回訂單列表</a>
+        </div>
     </div>
-
-    <div th:each="receipt : ${receipts}" class="mb-4 border p-3 rounded shadow-sm">
-	    <h5 class="mb-3">🎫 票券資訊</h5>
-	
-	    <!-- 圖片 -->
-	    <div class="mb-2">
-	        <img th:if="${ticketImageMap[receipt.ticketOrderReceiptId] != null}"
-	             th:src="'data:image/jpeg;base64,' + ${ticketImageMap[receipt.ticketOrderReceiptId]}"
-	             style="max-width: 200px; border: 1px solid #ccc; border-radius: 5px;"
-	             alt="票券圖片" />
-	
-	        <p th:if="${ticketImageMap[receipt.ticketOrderReceiptId]} == null" class="text-muted">尚無圖片</p>
-	    </div>
-	
-	    <!-- 名稱與數量 -->
-	    <p class="mb-1">
-	        <strong>票券名稱：</strong>
-	        <span th:if="${ticketMap[receipt.ticketOrderReceiptId] != null}"
-	              th:text="${ticketMap[receipt.ticketOrderReceiptId].ticketName}"></span>
-	    </p>
-	
-	    <p>
-		    <strong>數量：</strong>
-		    <span th:text="${receipt.ticketCount} + ' 張'">1 張</span>
-		</p>
-
-
-	</div>
-
-
-    <div class="text-end">
-	    <a th:href="@{/member/orders}" class="btn btn-secondary">← 返回訂單列表</a>
-	</div>
-
-
 </body>
 </html>
