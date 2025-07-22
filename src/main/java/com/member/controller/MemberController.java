@@ -395,22 +395,24 @@ public class MemberController {
 	// Step 4: 提交新密碼
 	@PostMapping("/resetPassword")
 	public String processResetPassword(@RequestParam("token") String token,
-			@RequestParam("newPassword") String newPassword, RedirectAttributes redirectAttributes) {
+	        @RequestParam("newPassword") String newPassword, RedirectAttributes redirectAttributes) {
 
-		Optional<memVO> member = memberService.findByResetToken(token);
+	    Optional<memVO> member = memberService.findByResetToken(token);
 
-		if (member.isPresent()) {
-			memberService.resetPassword(member.get(), newPassword);
-			redirectAttributes.addFlashAttribute("msg", "密碼已重設，請重新登入！");
-			return "redirect:/member/reset-password-success"; // ✅ 要用 redirect!
-		} else {
-			redirectAttributes.addFlashAttribute("error", "Token 無效或已過期！");
-			return "redirect:/member/reset-password-fail"; // ✅ 同樣使用 redirect
-		}
+	    if (member.isPresent()) {
+	        memberService.resetPassword(member.get(), newPassword);
+	        redirectAttributes.addFlashAttribute("msg", "密碼已重設，請重新登入！");
+	        System.out.println("✅ 成功重設密碼後準備導轉！");
+	        return "redirect:/member/password/reset-password-success";
+	    } else {
+	        redirectAttributes.addFlashAttribute("error", "Token 無效或已過期！");
+	        return "redirect:/member/password/reset-password-fail";
+	    }
 	}
 
+
 	// VV 顯示成功葉面(供SweetAlert 彈窗後導轉)
-	@GetMapping("/reset-password-success")
+	@GetMapping("/password/reset-password-success")
 	public String resetPasswordSuccess(Model model, @ModelAttribute("msg") String msg) {
 		System.out.println("✅ 成功進入 reset-password-success controller");
 
@@ -423,7 +425,7 @@ public class MemberController {
 	}
 
 	// XX 顯示失敗葉面(供 SweetAlert 彈窗顯示錯誤)
-	@GetMapping("/reset-password-fail")
+	@GetMapping("/password/reset-password-fail")
 	public String resetPasswordFail() {
 		return "member/password/reset-password-fail";
 	}
