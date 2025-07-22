@@ -6,11 +6,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
-	 public void addResourceHandlers(ResourceHandlerRegistry registry) {
-	        // 對外開放 uploads 資料夾（放在專案根目錄）
-	        registry.addResourceHandler("/uploads/**")
-	                .addResourceLocations("file:uploads/");
-	    }	
-
-	
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 讓 /uploads/** 對應到實際硬碟上的 uploads 資料夾
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:" + System.getProperty("user.dir") + "/uploads/");
+    }
 }
+

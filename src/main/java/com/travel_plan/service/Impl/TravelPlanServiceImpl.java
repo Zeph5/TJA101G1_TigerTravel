@@ -4,6 +4,7 @@ import com.scenery.model.SceneryRepository;
 import com.travel_plan.dto.*;
 import com.travel_plan.model.*;
 import com.travel_plan.repository.*;
+import com.travel_plan.service.ImageService;
 import com.travel_plan.service.TravelPlanService;
 
 import jakarta.validation.Valid;
@@ -30,42 +31,27 @@ public class TravelPlanServiceImpl implements TravelPlanService {
     private final TravelItineraryRepository travelItineraryRepository;
     private final TravelPlanDayRepository travelPlanDayRepository;
     private final SceneryRepository sceneryRepository;
+    private final ImageService imageService;
+    
 
-    private final String UPLOAD_DIR = "src/main/resources/static/images/travelplan_banners/";
+   
+
 
     @Autowired
     public TravelPlanServiceImpl(TravelPlanRepository travelPlanRepository,
                                  TravelItineraryRepository travelItineraryRepository,
                                  TravelPlanDayRepository travelPlanDayRepository,
-                                 SceneryRepository sceneryRepository) {
+                                 SceneryRepository sceneryRepository,
+                                 ImageService imageService) {
         this.travelPlanRepository = travelPlanRepository;
         this.travelItineraryRepository = travelItineraryRepository;
         this.travelPlanDayRepository = travelPlanDayRepository;
         this.sceneryRepository = sceneryRepository;
-
-        try {
-            Files.createDirectories(Paths.get(UPLOAD_DIR));
-        } catch (IOException e) {
-            throw new RuntimeException("Could not create upload directory!", e);
+        this.imageService = imageService;        
         }
-    }
+    
 
-    // 圖片儲存輔助
-    private String saveBannerImage(MultipartFile file) {
-        if (file == null || file.isEmpty()) return null;
 
-        try {
-            String uploadDir = "C:/TJA101-WebApp/images";
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            File savePath = new File(uploadDir, fileName);
-            savePath.getParentFile().mkdirs();
-            file.transferTo(savePath);
-            return "/uploads/" + fileName;
-        } catch (IOException e) {
-            // log 可以記下錯誤
-            return null;
-        }
-    }
 
     // Entity <-> DTO 轉換
     @Override
@@ -114,9 +100,15 @@ public class TravelPlanServiceImpl implements TravelPlanService {
     public TravelPlan createTravelPlanFromDto(@Valid TravelPlanCreationDTO dto, MultipartFile bannerImage) {
         TravelPlan travelPlan = convertToEntity(dto); // 假設你有把 DTO 的欄位轉進 Entity
 
-        String imageUrl = saveBannerImage(bannerImage); // ✅ 呼叫圖片儲存方法
-        if (imageUrl != null) {
-            travelPlan.setTravelPlanBannerUrl(imageUrl); // 設定圖片網址
+        if (bannerImage != null && !bannerImage.isEmpty()) {
+            try {
+                String uploadDir = System.getProperty("user.dir") + File.separator + "uploads" + File.separator;
+                String fileName = UUID.randomUUID().toString();
+                String imageUrl = imageService.saveAndResizeImage(bannerImage, uploadDir, fileName);
+                travelPlan.setTravelPlanBannerUrl(imageUrl);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         return travelPlanRepository.save(travelPlan); // 存入資料庫
@@ -129,12 +121,16 @@ public class TravelPlanServiceImpl implements TravelPlanService {
             existingPlan.setTravelTitle(dto.getTravelTitle());
             existingPlan.setTravelPlanDescription(dto.getTravelPlanDescription());
 
-            // 如果有新上傳圖片，就覆蓋
-            String imageUrl = saveBannerImage(bannerImage);
-            if (imageUrl != null) {
-                existingPlan.setTravelPlanBannerUrl(imageUrl);
+            if (bannerImage != null && !bannerImage.isEmpty()) {
+                try {
+                    String uploadDir = System.getProperty("user.dir") + File.separator + "uploads" + File.separator;
+                    String fileName = UUID.randomUUID().toString();
+                    String imageUrl = imageService.saveAndResizeImage(bannerImage, uploadDir, fileName);
+                    existingPlan.setTravelPlanBannerUrl(imageUrl);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-
             return travelPlanRepository.save(existingPlan);
         }).orElseThrow(() -> new IllegalArgumentException("找不到 TravelPlan ID: " + travelPlanId));
     }
