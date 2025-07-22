@@ -2,69 +2,472 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>旅程訂單明細</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"> <!-- 加 Bootstrap icon -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅程訂單明細 - 臺鴿旅遊</title>
     <style>
-        body { background-color: #f8f9fa; } /* 淺灰背景，讓頁面清爽 */
-        .order-header { background-color: #e3f2fd; border-radius: 10px; padding: 20px; } /* 藍色卡片背景 */
-        .day-card { border-color: #4caf50; margin-bottom: 20px; padding: 15px; border-radius: 8px; background-color: #f9fff9; } /* 綠色邊框區塊，代表一天 */
-        .img-thumbnail { max-height: 200px; object-fit: cover; } /* 圖片固定高度，自動調整 */
-        .scenery-row { margin-bottom: 15px; } /* 每個景點row間距 */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff; /* 淡藍背景，清新如藍天 */
+            color: #333;
+            margin: 0;
+            padding: 0;
+            padding-top: 90px; /* 為固定頂部留出空間 */
+        }
+
+        /* 固定頂部 LOGO 區域 - 從 index.html 移植過來 */
+        .logo-section-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #B3E5FC; /* 天藍色背景 */
+            z-index: 1000;
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid #ccc;
+        }
+
+        .logo-section-fixed .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        .logo-section-fixed .logo-img {
+            height: 50px;
+            margin-right: 15px;
+        }
+
+        .logo-section-fixed .logo-text {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-weight: bold;
+            font-size: 32px;
+            color: #333;
+        }
+
+        /* 用戶菜單樣式 */
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-menu a {
+            color: #333;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+            padding: 8px 12px;
+            border-radius: 5px;
+            background-color: #D9A441; /* 土黃色背景 */
+            color: white;
+        }
+
+        .user-menu a:hover {
+            background-color: #c4932a;
+            text-decoration: none;
+            color: white;
+        }
+
+        /* 主要內容區域 */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 15px; /* 圓角多點，好看 */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9f7ff; /* 加淡藍邊框，精緻 */
+        }
+
+        .page-header {
+            font-size: 28px;
+            color: #66b2ff; /* 藍調淺 */
+            margin-bottom: 25px;
+            border-bottom: 2px solid #99ccff; /* 邊框調淺 */
+            padding-bottom: 15px;
+            text-align: center;
+        }
+
+        /* 訂單詳情卡片 */
+        .order-detail-card {
+            background: linear-gradient(to right, #e3f2fd, #f8fcff); /* 淡藍漸變背景 */
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e1f3ff;
+        }
+
+        .order-detail-title {
+            color: #66b2ff;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 1px solid #cceeff;
+            padding-bottom: 10px;
+        }
+
+        .detail-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e9f7ff;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #66b2ff;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .info-value {
+            color: #333;
+        }
+
+        /* 行程表區域 */
+        .itinerary-section {
+            background-color: #f8fcff; /* 淡藍背景區塊 */
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e1f3ff;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #66b2ff;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 1px solid #cceeff;
+            padding-bottom: 10px;
+        }
+
+        /* 每日行程卡片 */
+        .day-card {
+            background-color: white;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 2px solid #e9f7ff;
+            overflow: hidden;
+            transition: box-shadow 0.3s ease, transform 0.2s ease;
+        }
+
+        .day-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .day-header {
+            background: linear-gradient(to right, #99ccff, #cceeff);
+            color: white;
+            padding: 15px 20px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .day-date {
+            background-color: #e9f7ff;
+            color: #66b2ff;
+            padding: 10px 20px;
+            font-weight: bold;
+            border-bottom: 1px solid #cceeff;
+        }
+
+        /* 景點內容 */
+        .scenery-content {
+            padding: 20px;
+        }
+
+        .scenery-row {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f8ff;
+        }
+
+        .scenery-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .scenery-image {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid #e9f7ff;
+        }
+
+        .placeholder-image {
+            width: 200px;
+            height: 150px;
+            background-color: #e9f7ff;
+            color: #66b2ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 14px;
+            border-radius: 10px;
+            border: 2px solid #cceeff;
+        }
+
+        .scenery-info {
+            flex: 1;
+        }
+
+        .scenery-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #66b2ff;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .scenery-details {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .scenery-details p {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 返回按鈕 */
+        .back-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .btn-back {
+            background: linear-gradient(to right, #99ccff, #66b2ff);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: inline-block;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-back:hover {
+            background: linear-gradient(to right, #66b2ff, #5aa3e6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
+            color: white;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .logo-section-fixed .logo-container {
+                flex-direction: column;
+                gap: 10px;
+                padding: 0 15px;
+            }
+
+            .logo-section-fixed .logo-text {
+                font-size: 28px;
+            }
+
+            body {
+                padding-top: 120px; /* 為移動端較高的頂部留出更多空間 */
+            }
+
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+
+            .detail-info {
+                grid-template-columns: 1fr;
+            }
+
+            .scenery-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .scenery-image, .placeholder-image {
+                width: 100%;
+                max-width: 300px;
+                margin: 0 auto;
+            }
+
+            .page-header {
+                font-size: 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-section-fixed .logo-text {
+                font-size: 24px;
+            }
+
+            .logo-section-fixed .logo-img {
+                height: 40px;
+            }
+
+            .scenery-image, .placeholder-image {
+                height: 120px;
+            }
+
+            .page-header {
+                font-size: 22px;
+            }
+
+            .order-detail-title, .section-title {
+                font-size: 18px;
+            }
+
+            .day-header {
+                font-size: 14px;
+            }
+
+            .user-menu a {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+        }
     </style>
 </head>
-<body class="container mt-5">
-
-    <h2 class="mb-4 text-primary">🧳 旅程訂單明細</h2> <!-- 加藍色文字 -->
-
-    <div class="order-header mb-4 shadow-sm">
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item"><strong><i class="bi bi-ticket-perforated"></i> 訂單編號：</strong> <span th:text="${order.tourOrderId}"></span></li>
-            <li class="list-group-item"><strong><i class="bi bi-map"></i> 旅程標題：</strong> <span th:text="${order.travelItinerary.travelPlan.travelTitle}"></span></li>
-            <li class="list-group-item"><strong><i class="bi bi-calendar-event"></i> 出發日期：</strong> <span th:text="${order.travelItinerary.startDate != null ? #temporals.format(order.travelItinerary.startDate, 'yyyy-MM-dd') : '-'}"></span></li>
-            <li class="list-group-item"><strong><i class="bi bi-calendar-check"></i> 結束日期：</strong> <span th:text="${order.travelItinerary.endDate != null ? #temporals.format(order.travelItinerary.endDate, 'yyyy-MM-dd') : '-'}"></span></li> <!-- 加結束日期 -->
-            <li class="list-group-item"><strong><i class="bi bi-currency-dollar"></i> 總金額：</strong> <span th:text="${order.totalAmount + ' 元'}"></span></li>
-            <li class="list-group-item"><strong><i class="bi bi-people"></i> 人數：</strong> <span th:text="${order.peopleCount + ' 人'}"></span></li>
-        </ul>
-    </div>
-    
-    <hr class="my-4">
-
-    <h4 class="mb-3 text-success">📅 多天行程表</h4> <!-- 加綠色文字 -->
-
-    <!-- 按天分組顯示行程，每天一個區塊 -->
-    <div th:each="day, stat : ${travelPlanDays}">
-        <!-- 如果是新的一天或第一筆，顯示天數標題和日期，並開新區塊 -->
-        <div th:if="${stat.first or day.travelDayNumber != travelPlanDays[stat.index - 1].travelDayNumber}" class="day-card shadow-sm">
-            <h5 th:text="'第 ' + ${day.travelDayNumber} + ' 天'" class="fw-bold text-secondary mb-3"></h5>
-            <p class="mb-3"><i class="bi bi-calendar-check"></i> 旅遊日期：<span th:text="${#temporals.format(day.traveltime, 'yyyy-MM-dd')}"></span></p>
-        </div>
-
-        <!-- 每個景點的row，放在同一天區塊內 -->
-        <div class="row scenery-row">
-            <div class="col-md-4">
-                <img th:if="${day.scenery.sceneryBanner != null}"
-                     th:src="'data:image/jpeg;base64,' + ${T(org.apache.tomcat.util.codec.binary.Base64).encodeBase64String(day.scenery.sceneryBanner)}"
-                     class="img-fluid rounded img-thumbnail"
-                     alt="景點圖片">
-                     
-                <img th:if="${day.scenery.sceneryBanner == null}"
-                     th:src="@{/images/bannerSample.jpg}"
-                     class="img-fluid rounded img-thumbnail"
-                     alt="預設圖片">
+<body>
+    <!-- 固定頂部 LOGO 區域 - 替換原來的搜尋區域 -->
+    <div class="logo-section-fixed">
+        <div class="logo-container">
+            <!-- LOGO 和標題區域 -->
+            <div style="display: flex; align-items: center;">
+                <img th:src="@{/logo_image/Tiger_Travel_Logo_1.png}" alt="Tiger Travel Logo" class="logo-img" onerror="this.style.display='none'">
+                <span class="logo-text">臺鴿旅遊</span>
             </div>
-
-            <div class="col-md-8">
-                <p><strong><i class="bi bi-pin-map-fill"></i> 景點名稱：</strong><span th:text="${day.scenery.sceneryName}"></span></p>
-                <p><strong><i class="bi bi-geo-alt-fill"></i> 景點地址：</strong><span th:text="${day.scenery.sceneryAddress}"></span></p>
-                <p><strong><i class="bi bi-tags-fill"></i> 景點編號：</strong><span th:text="${day.scenery.sceneryId}"></span></p>
+            
+            <!-- 用戶菜單 -->
+            <div class="user-menu">
+                <a href="/member/home">會員中心</a>
+                <a href="/index">首頁</a>
             </div>
         </div>
     </div>
 
-    <div class="d-flex justify-content-between mt-4">
-        <a th:href="@{/member/orders}" class="btn btn-secondary"><i class="bi bi-arrow-left-circle"></i> 返回訂單列表</a>
-    </div>
+    <!-- 主要內容 -->
+    <div class="container">
+        <h2 class="page-header">🧳 旅程訂單明細</h2>
 
+        <!-- 訂單詳情卡片 -->
+        <div class="order-detail-card">
+            <div class="order-detail-title">📋 訂單資訊</div>
+            <div class="detail-info">
+                <div class="info-item">
+                    <div class="info-label">🎫 訂單編號</div>
+                    <div class="info-value" th:text="${order.tourOrderId}">T001</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">🗺️ 旅程標題</div>
+                    <div class="info-value" th:text="${order.travelItinerary.travelPlan.travelTitle}">精彩旅程</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">📅 出發日期</div>
+                    <div class="info-value" th:text="${order.travelItinerary.startDate != null ? #temporals.format(order.travelItinerary.startDate, 'yyyy-MM-dd') : '-'}">2025-01-01</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">📅 結束日期</div>
+                    <div class="info-value" th:text="${order.travelItinerary.endDate != null ? #temporals.format(order.travelItinerary.endDate, 'yyyy-MM-dd') : '-'}">2025-01-03</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">💰 總金額</div>
+                    <div class="info-value" th:text="${order.totalAmount + ' 元'}">5000 元</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">👥 參與人數</div>
+                    <div class="info-value" th:text="${order.peopleCount + ' 人'}">2 人</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 多日行程表區域 -->
+        <div class="itinerary-section">
+            <div class="section-title">📅 多天行程表</div>
+
+            <!-- 按天分組顯示行程 -->
+            <div th:each="day, stat : ${travelPlanDays}">
+                <!-- 如果是新的一天或第一筆，顯示天數標題和日期，並開新區塊 -->
+                <div th:if="${stat.first or day.travelDayNumber != travelPlanDays[stat.index - 1].travelDayNumber}" class="day-card">
+                    <div class="day-header">
+                        <span th:text="'第 ' + ${day.travelDayNumber} + ' 天'">第 1 天</span>
+                    </div>
+                    <div class="day-date">
+                        📅 旅遊日期：<span th:text="${#temporals.format(day.traveltime, 'yyyy-MM-dd')}">2025-01-01</span>
+                    </div>
+                    
+                    <div class="scenery-content">
+                        <!-- 當天的所有景點 -->
+                        <div th:each="dayScenery : ${travelPlanDays}" 
+                             th:if="${dayScenery.travelDayNumber == day.travelDayNumber}"
+                             class="scenery-row">
+                            
+                            <!-- 景點圖片 -->
+                            <div>
+                                <img th:if="${dayScenery.scenery.sceneryBanner != null}"
+                                     th:src="'data:image/jpeg;base64,' + ${T(org.apache.tomcat.util.codec.binary.Base64).encodeBase64String(dayScenery.scenery.sceneryBanner)}"
+                                     class="scenery-image"
+                                     alt="景點圖片">
+                                     
+                                <div th:if="${dayScenery.scenery.sceneryBanner == null}" 
+                                     class="placeholder-image">
+                                    🏞️<br>預設圖片
+                                </div>
+                            </div>
+
+                            <!-- 景點資訊 -->
+                            <div class="scenery-info">
+                                <div class="scenery-name">
+                                    📍 <span th:text="${dayScenery.scenery.sceneryName}">景點名稱</span>
+                                </div>
+                                
+                                <div class="scenery-details">
+                                    <p>🗺️ <strong>景點地址：</strong><span th:text="${dayScenery.scenery.sceneryAddress}">景點地址</span></p>
+                                    <p>🏷️ <strong>景點編號：</strong><span th:text="${dayScenery.scenery.sceneryId}">S001</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 返回按鈕 -->
+        <div class="back-section">
+            <a th:href="@{/member/orders}" class="btn-back">🔙 返回訂單列表</a>
+        </div>
+    </div>
 </body>
 </html>
