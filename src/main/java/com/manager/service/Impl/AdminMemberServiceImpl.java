@@ -86,9 +86,12 @@ public class AdminMemberServiceImpl implements AdminMemberService {
 	        }
 
 	        // 狀態篩選
-	        if (status != null && !status.isBlank()) {
-	            predicates.add(cb.equal(root.get("memberStatus"), Integer.parseInt(status)));
-	        }
+	        if (status != null && !status.isBlank()){try {
+	            Byte statusValue = Byte.parseByte(status.trim());
+	            predicates.add(cb.equal(root.get("memberStatus"), statusValue));
+	        } catch (NumberFormatException e) {
+	            System.out.println("⚠️ 無法解析 status 值為 Byte：" + status);
+	        }}
 
 	        return cb.and(predicates.toArray(new Predicate[0]));
 	    };

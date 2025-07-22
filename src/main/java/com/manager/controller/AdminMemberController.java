@@ -30,7 +30,7 @@ public class AdminMemberController {
 
 	@GetMapping("/list")
 	public String showPage(Model model,
-			@RequestParam(value = "page", defaultValue = "0") int page,
+			@RequestParam(value = "page", defaultValue = "1") int page,
 			@RequestParam(value = "size", defaultValue = "9") int size,
 			@RequestParam(required = false) String keyword,
 			@RequestParam(required = false) String status,
@@ -72,7 +72,7 @@ public class AdminMemberController {
 	@PostMapping("/disable/{id}")
 	public String disableMember(@PathVariable Integer id) {
 		adminMemberService.toggleMemberStatus(id);
-		return "redirect:/admin/members/" + id; // 重定向到會員列表頁面
+		return "redirect:/admin/members/list"; // 重定向到會員列表頁面
 	}
 }
 
