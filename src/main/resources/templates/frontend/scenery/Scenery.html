@@ -6,6 +6,8 @@
 <meta name="_csrf" th:content="${_csrf?.token}" th:if="${_csrf}"/>
 <meta name="_csrf_header" th:content="${_csrf?.headerName}" th:if="${_csrf}"/>
 <title th:text="${scenery.sceneryName}">Scenery Details</title>
+<!-- Add favicon to prevent 404 error -->
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
 <style>
   /* 主色系設定 */
   :root {
@@ -22,7 +24,217 @@
     font-family: 'Segoe UI', 'Noto Sans TC', sans-serif;
     color: #333;
     margin: 0;
-    padding: 20px;
+    padding-top: 100px; /* Space for fixed header */
+  }
+
+  /* Fixed logo section styling */
+  .logo-section-fixed {
+  	position: fixed;
+  	top: 0;
+  	left: 0;
+  	right: 0;
+  	background-color: var(--sky-blue);
+  	z-index: 1000;
+  	padding: 15px 0;
+  	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  	border-bottom: 1px solid var(--border-color);
+  }
+
+  .logo-section-fixed .logo-container {
+  	display: flex;
+  	align-items: center;
+  	justify-content: space-between;
+  	padding: 0 20px;
+  	position: relative;
+  }
+
+  .logo-section-fixed .logo-img {
+  	height: 50px;
+  	margin-right: 15px;
+  }
+
+  .logo-section-fixed .logo-text {
+  	font-family: 'Noto Sans TC', sans-serif;
+  	font-weight: bold;
+  	font-size: 32px;
+  	color: #333;
+  }
+
+  .logo-section-fixed .user-menu {
+  	position: static;
+  	margin-left: auto;
+  }
+
+  /* Regional Navigation Dropdown Styles */
+  .regional-nav {
+  	position: absolute;
+  	left: 50%;
+  	top: 50%;
+  	transform: translate(-50%, -50%);
+  	display: flex;
+  	gap: 30px;
+  }
+
+  .region-dropdown {
+  	position: relative;
+  	display: inline-block;
+  }
+
+  .region-link {
+  	color: #333;
+  	text-decoration: none;
+  	font-weight: 500;
+  	font-size: 16px;
+  	padding: 8px 12px;
+  	border-radius: 5px;
+  	transition: all 0.3s ease;
+  	cursor: pointer;
+  	display: block;
+  	white-space: nowrap;
+  }
+
+  .region-link:hover,
+  .region-dropdown:hover .region-link {
+  	background-color: rgba(255, 255, 255, 0.2);
+  	color: var(--earth-yellow);
+  	text-decoration: none;
+  }
+
+  .region-dropdown-menu {
+  	position: absolute;
+  	top: 100%;
+  	left: 50%;
+  	transform: translateX(-50%);
+  	background-color: var(--white);
+  	border: 1px solid var(--border-color);
+  	border-radius: 8px;
+  	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  	min-width: 180px;
+  	padding: 8px 0;
+  	margin-top: 5px;
+  	display: none;
+  	z-index: 1001;
+  }
+
+  .region-dropdown-item {
+  	display: block;
+  	padding: 8px 16px;
+  	text-decoration: none;
+  	color: #333;
+  	font-size: 14px;
+  	transition: background-color 0.2s;
+  	cursor: pointer;
+  }
+
+  .region-dropdown-item:hover {
+  	background-color: var(--light-gray);
+  	text-decoration: none;
+  	color: var(--earth-yellow);
+  }
+
+  .user-menu {
+  	display: flex;
+  	align-items: center;
+  	gap: 10px;
+  }
+
+  .user-dropdown {
+  	position: relative;
+  	display: inline-block;
+  }
+
+  .user-info {
+  	display: flex;
+  	align-items: center;
+  	gap: 8px;
+  	cursor: pointer;
+  	padding: 5px 10px;
+  	border-radius: 5px;
+  	transition: background-color 0.2s;
+  }
+
+  .user-info:hover {
+  	background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  .user-avatar {
+  	width: 35px;
+  	height: 35px;
+  	border-radius: 50%;
+  	border: 2px solid var(--border-color);
+  }
+
+  .user-name {
+  	font-weight: 500;
+  	color: #333;
+  	font-size: 14px;
+  }
+
+  .user-info-anonymous {
+  	display: flex;
+  	align-items: center;
+  	cursor: pointer;
+  	padding: 8px 15px;
+  	border-radius: 5px;
+  	transition: background-color 0.2s;
+  	background-color: var(--earth-yellow);
+  	color: white;
+  	font-weight: 500;
+  }
+
+  .user-info-anonymous:hover {
+  	background-color: #c4932a;
+  }
+
+  .dropdown-menu-custom {
+  	position: absolute;
+  	top: 100%;
+  	right: 0;
+  	background-color: var(--white);
+  	border: 1px solid var(--border-color);
+  	border-radius: 8px;
+  	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  	min-width: 200px;
+  	padding: 8px 0;
+  	margin-top: 5px;
+  	display: none;
+  	z-index: 1001;
+  }
+
+  .dropdown-menu-custom.show {
+  	display: block;
+  }
+
+  .dropdown-item-custom {
+  	display: block;
+  	padding: 10px 16px;
+  	text-decoration: none;
+  	color: #333;
+  	font-size: 14px;
+  	border: none;
+  	background: none;
+  	width: 100%;
+  	text-align: left;
+  	cursor: pointer;
+  	transition: background-color 0.2s;
+  }
+
+  .dropdown-item-custom:hover {
+  	background-color: var(--light-gray);
+  	text-decoration: none;
+  	color: #333;
+  }
+
+  .dropdown-divider-custom {
+  	height: 1px;
+  	background-color: var(--border-color);
+  	margin: 5px 0;
+  }
+
+  @media (max-width: 768px) {
+  	.regional-nav {
+  		display: none;
+  	}
   }
 
   h1, h2, h3, h4, h5 {
@@ -36,7 +248,7 @@
     padding: 30px;
     box-shadow: 0 0 12px rgba(0,0,0,0.05);
     max-width: 900px;
-    margin: auto;
+    margin: 20px auto;
   }
 
   .banner-img {
@@ -394,6 +606,116 @@
 </head>
 <body>
 
+	<!-- Fixed Logo Section with User Menu and Regional Navigation -->
+	<div class="logo-section-fixed">
+		<div class="logo-container">
+			<a th:href="@{/index}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+				<img th:src="@{/logo_image/Tiger_Travel_Logo_1.png}" alt="Tiger Travel Logo" class="logo-img" onerror="this.style.display='none'">
+				<span class="logo-text">臺鴿旅遊</span>
+			</a>
+			
+			<!-- Regional Navigation Dropdowns -->
+			<div class="regional-nav">
+				<!-- 北台灣景點 -->
+				<div class="region-dropdown">
+					<span class="region-link">北台灣景點</span>
+					<div class="region-dropdown-menu">
+						<a href="/scenery/search?address=台北市" class="region-dropdown-item">台北市</a>
+						<a href="/scenery/search?address=新北市" class="region-dropdown-item">新北市</a>
+						<a href="/scenery/search?address=基隆市" class="region-dropdown-item">基隆市</a>
+						<a href="/scenery/search?address=桃園市" class="region-dropdown-item">桃園市</a>
+						<a href="/scenery/search?address=新竹市" class="region-dropdown-item">新竹市</a>
+						<a href="/scenery/search?address=新竹縣" class="region-dropdown-item">新竹縣</a>
+					</div>
+				</div>
+				
+				<!-- 中台灣景點 -->
+				<div class="region-dropdown">
+					<span class="region-link">中台灣景點</span>
+					<div class="region-dropdown-menu">
+						<a href="/scenery/search?address=苗栗縣" class="region-dropdown-item">苗栗縣</a>
+						<a href="/scenery/search?address=台中市" class="region-dropdown-item">台中市</a>
+						<a href="/scenery/search?address=彰化縣" class="region-dropdown-item">彰化縣</a>
+						<a href="/scenery/search?address=南投縣" class="region-dropdown-item">南投縣</a>
+						<a href="/scenery/search?address=雲林縣" class="region-dropdown-item">雲林縣</a>
+					</div>
+				</div>
+				
+				<!-- 南台灣景點 -->
+				<div class="region-dropdown">
+					<span class="region-link">南台灣景點</span>
+					<div class="region-dropdown-menu">
+						<a href="/scenery/search?address=嘉義市" class="region-dropdown-item">嘉義市</a>
+						<a href="/scenery/search?address=嘉義縣" class="region-dropdown-item">嘉義縣</a>
+						<a href="/scenery/search?address=台南市" class="region-dropdown-item">台南市</a>
+						<a href="/scenery/search?address=高雄市" class="region-dropdown-item">高雄市</a>
+						<a href="/scenery/search?address=屏東縣" class="region-dropdown-item">屏東縣</a>
+					</div>
+				</div>
+				
+				<!-- 東台灣景點 -->
+				<div class="region-dropdown">
+					<span class="region-link">東台灣景點</span>
+					<div class="region-dropdown-menu">
+						<a href="/scenery/search?address=宜蘭縣" class="region-dropdown-item">宜蘭縣</a>
+						<a href="/scenery/search?address=花蓮縣" class="region-dropdown-item">花蓮縣</a>
+						<a href="/scenery/search?address=台東縣" class="region-dropdown-item">台東縣</a>
+					</div>
+				</div>
+				
+				<!-- 台灣外島景點 -->
+				<div class="region-dropdown">
+					<span class="region-link">台灣外島景點</span>
+					<div class="region-dropdown-menu">
+						<a href="/scenery/search?address=澎湖縣" class="region-dropdown-item">澎湖縣</a>
+						<a href="/scenery/search?address=金門縣" class="region-dropdown-item">金門縣</a>
+						<a href="/scenery/search?address=連江縣" class="region-dropdown-item">連江縣</a>
+					</div>
+				</div>
+			</div>
+			
+			<!-- User Menu for Authenticated Users -->
+			<div sec:authorize="isAuthenticated()" class="user-menu">
+				<div class="user-dropdown">
+					<div class="user-info" onclick="toggleUserDropdown()">
+						<img th:if="${avatarBase64 != null}" 
+							 th:src="'data:image/png;base64,' + ${avatarBase64}" 
+							 alt="大頭貼" class="user-avatar">
+						<img th:if="${avatarBase64 == null}" 
+							 src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUiIGhlaWdodD0iMzUiIHZpZXdCb3g9IjAgMCAzNSAzNSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTcuNSIgY3k9IjE3LjUiIHI9IjE3LjUiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPgo8cGF0aCBkPSJNMTIgMTJjMi4yMSAwIDQtMS43OSA0LTRzLTEuNzktNC00LTQtNCAxLjc5LTQgNCAxLjc5IDQgNCA0em0wIDJjLTIuNjcgMC04IDEuMzQtOCA0djJoMTZ2LTJjMC0yLjY2LTUuMzMtNC04LTR6Ii8+Cjwvc3ZnPgo8L3N2Zz4K" 
+							 alt="預設大頭貼" class="user-avatar">
+						<span class="user-name">您好，<span sec:authentication="principal.member.memberName"></span>！</span>
+					</div>
+					
+					<div class="dropdown-menu-custom" id="userDropdown">
+						<a th:href="@{/member/home}" class="dropdown-item-custom">會員中心</a>
+						<a th:href="@{/member/favorites}" class="dropdown-item-custom">⭐ 我的收藏</a>
+						<a th:href="@{/member/orders}" class="dropdown-item-custom">🎫 我的票券訂單</a>
+						<div class="dropdown-divider-custom"></div>
+						<form th:action="@{/logout}" method="post" style="margin: 0;">
+							<input type="hidden" name="_csrf" th:if="${_csrf}" th:value="${_csrf.token}">
+							<button type="submit" class="dropdown-item-custom">登出</button>
+						</form>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Login/Register for Anonymous Users -->
+			<div sec:authorize="isAnonymous()" class="user-menu">
+				<div class="user-dropdown">
+					<div class="user-info-anonymous" onclick="toggleUserDropdown()">
+						<span class="user-name">登入/註冊</span>
+					</div>
+					
+					<div class="dropdown-menu-custom" id="userDropdown">
+						<a th:href="@{/login}" class="dropdown-item-custom">登入</a>
+						<a th:href="@{/member/register}" class="dropdown-item-custom">註冊</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 <div class="container">
 
   <img th:src="@{/scenery/banner/{id}(id=${scenery.sceneryId})}" alt="Banner" class="banner-img" />
@@ -614,6 +936,61 @@
 <div id="notification" class="notification"></div>
 
 <script>
+// Regional dropdown hover delay functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const regionDropdowns = document.querySelectorAll('.region-dropdown');
+    
+    regionDropdowns.forEach((dropdown, index) => {
+        const menu = dropdown.querySelector('.region-dropdown-menu');
+        let hideTimeout;
+        
+        dropdown.addEventListener('mouseenter', function() {
+            if (hideTimeout) {
+                clearTimeout(hideTimeout);
+                hideTimeout = null;
+            }
+            menu.style.display = 'block';
+        });
+        
+        dropdown.addEventListener('mouseleave', function() {
+            hideTimeout = setTimeout(function() {
+                menu.style.display = 'none';
+            }, 250);
+        });
+        
+        menu.addEventListener('mouseenter', function() {
+            if (hideTimeout) {
+                clearTimeout(hideTimeout);
+                hideTimeout = null;
+            }
+        });
+        
+        menu.addEventListener('mouseleave', function() {
+            hideTimeout = setTimeout(function() {
+                menu.style.display = 'none';
+            }, 250);
+        });
+    });
+});
+
+// User dropdown functionality
+function toggleUserDropdown() {
+	const dropdown = document.getElementById('userDropdown');
+	if (dropdown) {
+		dropdown.classList.toggle('show');
+	}
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+	const dropdown = document.getElementById('userDropdown');
+	const userInfo = document.querySelector('.user-info, .user-info-anonymous');
+	
+	if (dropdown && userInfo && !userInfo.contains(event.target)) {
+		dropdown.classList.remove('show');
+	}
+});
+
 function openModal(imgElement) {
   const modal = document.getElementById('modalOverlay');
   const modalImg = document.getElementById('modalImage');
