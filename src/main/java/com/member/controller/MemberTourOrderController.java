@@ -14,8 +14,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-
-
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -216,102 +214,156 @@ public class MemberTourOrderController {
 
 	}
 	
-	//觀看整個旅程清單
-	@GetMapping("/travel/list")
+	@GetMapping("/travel-plans")
 	public String showPagedPlans(@AuthenticationPrincipal MemberUserDetails loginUser,
-								 @RequestParam(defaultValue = "0") int page,
+	                             @RequestParam(defaultValue = "0") int page,
 	                             @RequestParam(defaultValue = "12") int size,
 	                             @RequestParam(value = "keyword", required = false) String keyword,
 	                             Model model) {
-		memVO member = loginUser.getMember();
-		
-	    // 🔍 判斷是否有搜尋關鍵字
+	    memVO member = loginUser.getMember();
+	    
+	    System.out.println("=== MEMBER TRAVEL PLANS DEBUG ===");
+	    System.out.println("Member: " + member.getMemberAccount());
+	    System.out.println("Page: " + page + ", Size: " + size);
+	    System.out.println("Search keyword: " + keyword);
+	    
+	    // 🔍 Enhanced search logic with better filtering
 	    List<TravelPlan> allPlans;
 	    if (keyword != null && !keyword.isBlank()) {
+	        String searchKeyword = keyword.toLowerCase().trim();
+	        System.out.println("Performing search with keyword: " + searchKeyword);
+	        
 	        allPlans = travelPlanSvc.getAllTravelPlans().stream()
-	                .filter(plan -> plan.getTravelTitle() != null &&
-	                                plan.getTravelTitle().toLowerCase().contains(keyword.toLowerCase()))
-	                .toList();
+	                .filter(plan -> {
+	                    // Search in multiple fields for better results
+	                    boolean titleMatch = plan.getTravelTitle() != null && 
+	                                        plan.getTravelTitle().toLowerCase().contains(searchKeyword);
+	                    boolean descMatch = plan.getTravelPlanDescription() != null && 
+	                                       plan.getTravelPlanDescription().toLowerCase().contains(searchKeyword);
+	                    
+	                    return titleMatch || descMatch;
+	                })
+	                .collect(Collectors.toList());
+	        
+	        System.out.println("Search results: " + allPlans.size() + " plans found");
 	    } else {
 	        allPlans = travelPlanSvc.getAllTravelPlans();
+	        System.out.println("No search keyword, showing all plans: " + allPlans.size());
 	    }
 	    
+	    // Get user's favorite travel plans
 	    List<FavoriteTravelPlan> favorites = favoriteTravelPlanSvc.getFavoritesByMember(member);
 	    List<Integer> favoritedIds = favorites.stream()
 	        .map(fav -> fav.getTravelPlan().getTravelPlanId())
 	        .collect(Collectors.toList());
 	    
+	    System.out.println("User has " + favoritedIds.size() + " favorite travel plans");
 
-
-	    // ✂ 分頁邏輯
+	    // ✂ Pagination logic
 	    int start = page * size;
 	    int end = Math.min(start + size, allPlans.size());
-	    List<TravelPlan> pagedPlans = allPlans.subList(start, end);
+	    List<TravelPlan> pagedPlans = start < allPlans.size() ? allPlans.subList(start, end) : new ArrayList<>();
 
-	    // 💾 塞進 model 給 Thymeleaf 用
+	    // 💾 Add data to model for Thymeleaf
 	    model.addAttribute("favoritedIds", favoritedIds);
 	    model.addAttribute("plans", pagedPlans);
 	    model.addAttribute("currentPage", page);
 	    model.addAttribute("totalPages", (int) Math.ceil((double) allPlans.size() / size));
 	    model.addAttribute("size", size);
-	    model.addAttribute("keyword", keyword); // ➜ 頁面回填關鍵字
-
+	    model.addAttribute("keyword", keyword); // ➜ For form repopulation
+	    model.addAttribute("totalResults", allPlans.size()); // ➜ Show search result count
+	    
+	    // Add search status for the template
+	    model.addAttribute("isSearching", keyword != null && !keyword.isBlank());
+	    
+	    System.out.println("Returning " + pagedPlans.size() + " plans on page " + page);
 	    return "member/member-travel-list";
 	}
 
-	//查看指定旅程清單
-	// 詳情頁（含多個出團行程）
+	// ✅ 新增一個專門處理旅程詳情的方法
 	@GetMapping("/travel/detail/{id}")
-	public String showTravelPlanDetail(@PathVariable("id") Integer planId, Model model,
-										@AuthenticationPrincipal MemberUserDetails loginUser) {
-	    Optional<TravelPlan> optionalPlan = travelPlanSvc.getTravelPlanEntityById(planId);
-	    if (optionalPlan.isEmpty()) {
-	        return "redirect:/member/travel/list";
-	    }
-
-	    TravelPlan plan = optionalPlan.get();
-	    model.addAttribute("plan", plan);
-	    
-	    if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()
-	            && loginUser != null && loginUser.getMember() != null) {
-
-	        memVO member = loginUser.getMember();
-	        boolean isFavorite = favoriteTravelPlanSvc.isFavorite(member, plan); // ❗你要實作這方法
-	        model.addAttribute("isFavorite", isFavorite);
-	    }
-
-
-	    // 🔄 多個 Itinerary 一起撈出來
-	    List<TravelItinerary> itineraries = travelPlanSvc.findItinerariesByPlanId(planId);
-	    model.addAttribute("itineraries", itineraries);
-
-	    // 🗓 查每日行程
-	    List<TravelPlanDay> dayList = travelPlanDayRepo.findByTravelPlan_TravelPlanIdOrderByTravelDayNumber(planId);
-	    if (dayList.isEmpty()) {
-	        model.addAttribute("dayList", List.of());
-	        model.addAttribute("message", "目前無可用的每日行程");
-	    } else {
-	        Map<Integer, List<TravelPlanDay>> groupedDays = new TreeMap<>();
-	        for (TravelPlanDay day : dayList) {
-	            SceneryVO scenery = day.getScenery();
-	            if (scenery != null && scenery.getSceneryBanner() != null) {
-	                String base64 = Base64.getEncoder().encodeToString(scenery.getSceneryBanner());
-	                scenery.setBase64Image(base64);
-	            }
-	            
-	            groupedDays.computeIfAbsent(day.getTravelDayNumber(), k -> new ArrayList<>()).add(day);
+	public String showMemberTravelDetail(@PathVariable("id") Integer id, 
+	                                   @AuthenticationPrincipal MemberUserDetails loginUser,
+	                                   Model model) {
+	    try {
+	        System.out.println("=== MEMBER TRAVEL DETAIL DEBUG ===");
+	        System.out.println("Requested travel ID: " + id);
+	        System.out.println("User: " + (loginUser != null ? loginUser.getUsername() : "null"));
+	        
+	        // 驗證 ID
+	        if (id == null || id <= 0) {
+	            System.err.println("Invalid travel ID: " + id);
+	            model.addAttribute("error", "無效的旅程ID");
+	            return "redirect:/member/travel-plans";
 	        }
 
-	        model.addAttribute("today", new Date());
-	        model.addAttribute("groupedDays", groupedDays);
-	        model.addAttribute("dayList", dayList);
-	    }
+	        // 查詢旅程計劃
+	        Optional<TravelPlan> travelPlanOpt = travelPlanSvc.findById(id);
+	        if (travelPlanOpt.isEmpty()) {
+	            System.err.println("Travel plan not found with ID: " + id);
+	            model.addAttribute("error", "旅程不存在 (ID: " + id + ")");
+	            return "redirect:/member/travel-plans";
+	        }
 
-	    return "member/member-travel-detail";
+	        TravelPlan plan = travelPlanOpt.get();
+	        System.out.println("Found travel plan: " + plan.getTravelTitle());
+	        
+	        // 獲取行程詳情
+	        Optional<TravelItinerary> itineraryOpt = travelPlanSvc.getTravelItineraryForPlan(id);
+	        TravelItinerary itinerary = itineraryOpt.orElse(null);
+	        
+	        if (itinerary != null) {
+	            // 查詢行程天數
+	            List<TravelPlanDay> dayList = travelPlanDayRepo.findByTravelItinerary_TravelItineraryId(
+	                itinerary.getTravelItineraryId());
+	            dayList.sort(Comparator.comparing(TravelPlanDay::getTravelDayNumber));
+	            
+	            // 按天數分組
+	            Map<Integer, List<TravelPlanDay>> groupedDays = new TreeMap<>();
+	            for (TravelPlanDay day : dayList) {
+	                groupedDays.computeIfAbsent(day.getTravelDayNumber(), k -> new ArrayList<>()).add(day);
+	            }
+	            
+	            model.addAttribute("itinerary", itinerary);
+	            model.addAttribute("groupedDays", groupedDays);
+	            model.addAttribute("travelPlanDays", dayList);
+	            
+	            System.out.println("Found " + dayList.size() + " travel plan days");
+	        } else {
+	            model.addAttribute("itinerary", null);
+	            model.addAttribute("groupedDays", new HashMap<>());
+	            model.addAttribute("travelPlanDays", new ArrayList<>());
+	        }
+	        
+	        // 檢查收藏狀態
+	        if (loginUser != null) {
+	            memVO member = loginUser.getMember();
+	            List<FavoriteTravelPlan> favorites = favoriteTravelPlanSvc.getFavoritesByMember(member);
+	            boolean isFavorite = favorites.stream()
+	                .anyMatch(fav -> fav.getTravelPlan().getTravelPlanId().equals(id));
+	            model.addAttribute("isFavorite", isFavorite);
+	            model.addAttribute("currentUser", member);
+	            model.addAttribute("isAuthenticated", true);
+	        } else {
+	            model.addAttribute("isFavorite", false);
+	            model.addAttribute("isAuthenticated", false);
+	        }
+	        
+	        // 加入模型
+	        model.addAttribute("plan", plan);
+	        model.addAttribute("travelPlan", plan); // 別名
+	        
+	        System.out.println("Returning template: member/member-travel-detail");
+	        return "member/member-travel-detail";
+
+	    } catch (Exception e) {
+	        System.err.println("Error in showMemberTravelDetail: " + e.getMessage());
+	        e.printStackTrace();
+	        model.addAttribute("error", "載入旅程詳情時發生錯誤: " + e.getMessage());
+	        return "redirect:/member/travel-plans";
+	    }
 	}
 
-
-	
 	//送出資訊之後
 	@PostMapping("/tour-order/create")
 	public String createTourOrder(@ModelAttribute TourOrderVO order,
@@ -390,14 +442,12 @@ public class MemberTourOrderController {
 
 	    tourOrderSvc.save(savedOrder); // 一次性 persist 明細
 
-
 	    // ✅ 扣除報名名額
 	    itinerary.setMaxTourist(itinerary.getMaxTourist() - savedOrder.getPeopleCount());
 	    travelItinerarySvc.save(itinerary);
 
 	    return "redirect:/member/simulate-payment?orderId=" + savedOrder.getTourOrderId();
 	}
-
 
 	@GetMapping("/tour-order/create")
 	public String showTourOrderForm(@RequestParam(value = "planId", required = false) Integer planId, Model model){
@@ -417,10 +467,8 @@ public class MemberTourOrderController {
 	    model.addAttribute("itinerary", itinerary);
 	    model.addAttribute("order", new TourOrderVO());
 
-
 	    return "member/member-tour-order-form";
 	}
-	
 	
 	//模擬付費 controller
 	@PostMapping("/simulate-payment")
@@ -470,7 +518,6 @@ public class MemberTourOrderController {
 	    return "member/simulate-payment";
 	}
 
-	
 	@GetMapping("/simulate-payment")
 	public String showSimulatePayment(@RequestParam("orderId") Integer orderId, Model model) {
 	    
@@ -488,11 +535,10 @@ public class MemberTourOrderController {
 	    return "member/simulate-payment"; // 返回你的支付 HTML
 	}
 
-
 	//付款成功頁面導向
 	@GetMapping("/payment-success")
 	public String showPaymentSuccess(@RequestParam("orderId") Integer orderId, Model model) {
-		System.out.println("✅ 到達 payment-success，訂單ID：\" + orderId");
+		System.out.println("✅ 到達 payment-success，訂單ID：" + orderId);
 		
 	    Optional<TourOrderVO> optionalOrder = tourOrderSvc.findById(orderId);
 	    if (optionalOrder.isEmpty()) {
@@ -500,21 +546,13 @@ public class MemberTourOrderController {
 	        return "error-page"; // 或自訂錯誤頁
 	    }
 	    
-	    
-	    
-
 	    TourOrderVO order = optionalOrder.get();
 	    model.addAttribute("order", order);
 	    
 	    System.out.println("💡 付款成功畫面：order=" + order);
 	    System.out.println("💡 itinerary=" + order.getTravelItinerary());
 	    System.out.println("💡 plan=" + order.getTravelItinerary().getTravelPlan());
-
 	    
 	    return "member/payment-success"; // 要建立對應的 HTML 頁面
 	}
-
-
-
-
 }

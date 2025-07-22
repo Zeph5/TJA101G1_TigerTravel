@@ -1,54 +1,332 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant"
-th:replace="~{layout :: layout (~{::title}, ~{::body}, ~{})}">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Tag List</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<title>Tag List</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+<style>
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 20%;
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    border-right: 1px solid #dee2e6;
+    padding: 20px 15px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
+}
+
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e3f2fd;
+}
+
+.logo-img {
+    height: 42px;
+}
+
+.site-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1e88e5;
+}
+
+.sidebar h3 {
+    color: #1e88e5;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 2px solid #1e88e5;
+    padding-bottom: 10px;
+}
+
+.sidebar .nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar .nav-list li {
+    margin-bottom: 10px;
+}
+
+.sidebar .nav-list a {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 12px 15px;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.25s ease;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.sidebar .nav-list a.btn-primary {
+    background-color: #1e88e5;
+    color: white;
+    border: none;
+}
+
+.sidebar .nav-list a.btn-secondary {
+    background-color: #e3f2fd;
+    color: #1e88e5;
+    border: 1px solid #1e88e5;
+}
+
+.sidebar .nav-list a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 136, 229, 0.2);
+}
+
+.sidebar .nav-list a.btn-primary:hover {
+    background-color: #1976d2;
+}
+
+.sidebar .nav-list a.btn-secondary:hover {
+    background-color: #bbdefb;
+}
+
+.sidebar .nav-list a.active {
+    background-color: #1976d2;
+    color: white;
+}
+
+.main-content {
+    margin-left: 20%;
+    padding: 15px;
+    width: 80%;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", "Noto Sans TC", sans-serif;
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+}
+
+.search-card {
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.tag-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #17a2b8, #20c997);
+    color: white;
+}
+
+.scenery-link {
+    color: #1e88e5;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.scenery-link:hover {
+    color: #1976d2;
+    text-decoration: underline;
+}
+
+.search-result-badge {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        margin-bottom: 20px;
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+}
+</style>
 </head>
 <body>
-<div class="container mt-5">
-    <h1>Tags</h1>
 
-    <div class="mb-3">
-        <form th:action="@{/tags/searchByTagName}" method="get" class="d-inline">
-            <input type="text" name="tagName" placeholder="Search by Tag Name" class="form-control d-inline" style="width: auto; display: inline-block;" required>
-            <button type="submit" class="btn btn-primary">Search</button>
-        </form>
-
-        <form th:action="@{/tags/searchBySceneryName}" method="get" class="d-inline ms-3">
-            <input type="text" name="sceneryName" placeholder="Search by Scenery Name" class="form-control d-inline" style="width: auto; display: inline-block;" required>
-            <button type="submit" class="btn btn-info">Search</button>
-        </form>
-		
-		<a th:href="@{/tags/add}" class="btn btn-secondary ms-3">Add tag</a>
-		
-		<a th:href="@{/admin/scenery/listallscenery}" class="btn btn-outline-primary">回主頁</a>
+<!-- Left Sidebar -->
+<div class="sidebar">
+    <div class="logo-wrapper">
+        <img th:src="@{/images/logo.png}" alt="Tiger Travel Logo" class="logo-img" />
+        <span class="site-title">後台管理系統</span>
     </div>
-
-    <h5 th:if="${searchType}" th:text="'Showing results for ' + ${searchType}"></h5>
-
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Tag ID</th>
-                <th>Tag Name</th>
-                <th>Scenery Name</th>
-                <th>Update</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="tag : ${tagsList}">
-                <td th:text="${tag.tagsId}"></td>
-                <td th:text="${tag.tagsdb.tagsName}"></td>
-                <td th:text="${tag.scenery.sceneryName}"></td>
-                <td>
-    <a th:href="@{/tags/edit/{id}(id=${tag.tagsId})}" class="btn btn-sm btn-warning">Edit</a>
-</td>
-            </tr>
-        </tbody>
-    </table>
-	
-    <p th:if="${tagsList.empty}" class="text-danger">No tags found.</p>
+    <h3>景點管理</h3>
+    <ul class="nav-list">
+        <li>
+            <a href="/scenery/listallscenery" class="btn btn-primary">景點</a>
+        </li>
+        <li>
+            <a href="/sceneryscore/findAll" class="btn btn-primary">景點評價</a>
+        </li>
+        <li>
+            <a th:href="@{/tags/list}" class="btn btn-primary active">景點標籤</a>
+        </li>
+        <li>
+            <a th:href="@{/tagsdb/listall}" class="btn btn-primary">標籤列</a>
+        </li>
+        <li>
+            <a href="/manager/home" class="btn btn-secondary">🏠 返回管理首頁</a>
+        </li>
+    </ul>
 </div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <div class="container-fluid px-0">
+        <div class="px-3">
+            <!-- Page Header -->
+            <div class="mb-4">
+                <h2 class="mb-1">景點標籤管理</h2>
+                <p class="text-muted mb-0">管理景點的分類標籤，支援搜尋和編輯功能</p>
+            </div>
+
+            <!-- Search and Actions Card -->
+            <div class="card search-card mb-4">
+                <div class="card-header bg-light border-0">
+                    <h5 class="card-title mb-0 text-primary">
+                        <i class="bi bi-search me-2"></i>搜尋與操作
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <!-- Search by Tag Name -->
+                        <div class="col-md-4">
+                            <form th:action="@{/tags/searchByTagName}" method="get">
+                                <label class="form-label fw-semibold">按標籤名稱搜尋</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-tag"></i>
+                                    </span>
+                                    <input type="text" name="tagName" placeholder="輸入標籤名稱" 
+                                           class="form-control" required>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Search by Scenery Name -->
+                        <div class="col-md-4">
+                            <form th:action="@{/tags/searchBySceneryName}" method="get">
+                                <label class="form-label fw-semibold">按景點名稱搜尋</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-geo-alt"></i>
+                                    </span>
+                                    <input type="text" name="sceneryName" placeholder="輸入景點名稱" 
+                                           class="form-control" required>
+                                    <button type="submit" class="btn btn-info">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="d-flex gap-2 w-100">
+                                <a th:href="@{/tags/add}" class="btn btn-success flex-fill">
+                                    <i class="bi bi-plus-circle me-1"></i>新增標籤
+                                </a>
+                                <a th:href="@{/tags/list}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Results Banner -->
+            <div th:if="${searchType}" class="text-center mb-4">
+                <span class="search-result-badge">
+                    <i class="bi bi-funnel me-1"></i>
+                    搜尋結果：<span th:text="${searchType}"></span>
+                </span>
+            </div>
+
+
+
+            <!-- Tags Table -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h5 class="card-title mb-0 text-primary">
+                        <i class="bi bi-list-ul me-2"></i>標籤列表
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center">標籤ID</th>
+                                    <th>標籤名稱</th>
+                                    <th>關聯景點</th>
+                                    <th class="text-center">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="tag : ${tagsList}">
+                                    <td class="text-center fw-bold" th:text="${tag.tagsId}"></td>
+                                    <td>
+                                        <span class="tag-badge" th:text="${tag.tagsdb.tagsName}"></span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-geo-alt text-primary me-2"></i>
+                                            <a href="#" class="scenery-link" th:text="${tag.scenery.sceneryName}"></a>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <a th:href="@{/tags/edit/{id}(id=${tag.tagsId})}" 
+                                           class="btn btn-warning btn-sm">
+                                            <i class="bi bi-pencil-square me-1"></i>編輯
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div th:if="${tagsList.empty}" class="text-center py-5">
+                <i class="bi bi-tags text-muted" style="font-size: 4rem;"></i>
+                <h4 class="text-muted mt-3">暫無標籤資料</h4>
+                <p class="text-muted">目前沒有找到符合條件的標籤記錄</p>
+                <a th:href="@{/tags/add}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>新增第一個標籤
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

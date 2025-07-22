@@ -3,22 +3,19 @@ package com.member.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-
 import org.springframework.http.HttpMethod;
-
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // 推薦使用 BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import com.manager.config.LoginSuccessHandler;
-import com.manager.security.ManagerUserDetailService;
 import com.manager.service.CustomManagerDetailsService;
-import com.member.security.CustomAuthenticationFailureHandler; // 如果您還需要這個
+import com.member.security.CustomAuthenticationFailureHandler;
 import com.member.security.MemberUserDetailsService;
 
 @Configuration
@@ -28,55 +25,60 @@ public class SecurityConfig {
     private final MemberUserDetailsService memberUserDetailsService;
     private final CustomManagerDetailsService managerUserDetailService;
     private final CustomAuthenticationFailureHandler failureHandler;
-    private final LoginSuccessHandler loginSuccessHandler; // 假設您有這個處理器
+    private final LoginSuccessHandler loginSuccessHandler;
 
-    // 建構子注入所有依賴
     public SecurityConfig(MemberUserDetailsService memberUserDetailsService,
-    		CustomManagerDetailsService managerUserDetailService,
-                          CustomAuthenticationFailureHandler failureHandler,
-                          LoginSuccessHandler loginSuccessHandler) { // 注入 failureHandler
+                         CustomManagerDetailsService managerUserDetailService,
+                         CustomAuthenticationFailureHandler failureHandler,
+                         LoginSuccessHandler loginSuccessHandler) {
         this.memberUserDetailsService = memberUserDetailsService;
         this.managerUserDetailService = managerUserDetailService;        
         this.failureHandler = failureHandler;
-        this.loginSuccessHandler = loginSuccessHandler; // 注入 loginSuccessHandler
+        this.loginSuccessHandler = loginSuccessHandler;
     }
     
     @Bean
-    @Order(1) // Manager 的規則優先
+    @Order(1) // Manager security chain - highest priority
     public SecurityFilterChain managerFilterChain(HttpSecurity http,
-    		AuthenticationProvider managerAuthenticationProvider) throws Exception {
-        http.securityMatcher("/manager/**") // 這個規則只看「管理者專屬的路」
-                .authorizeHttpRequests(auth -> auth // 定義「誰能走，誰不能走」
-                        .requestMatchers("/manager/register", "/manager/login","/manager/forgetPassword","/manager/forgetPasswordSuccess").permitAll() // 對所有人（包括未登入的訪客）開放
-                        .anyRequest().hasRole("ADMIN") // 其他所有 /manager/** 頁面需要 ADMIN 角色
-                ).formLogin(form -> form // 定義「怎麼登入」
-                        .loginPage("/manager/login") // Manager 的登入頁面 URL
-                        .loginProcessingUrl("/manager/login") // Manager 表單提交的 URL
-                        .successHandler(loginSuccessHandler)
-                        .failureUrl("/manager/login?error") // 登入失敗導向的 URL
-                        .permitAll())
-                .logout(logout -> logout
-                        .logoutRequestMatcher(new AntPathRequestMatcher("/manager/logout")) // Manager 的登出 URL
-                        .logoutSuccessUrl("/manager/login")
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID"))
-                .csrf(csrf -> csrf.disable()); // 暫時禁用 CSRF
+                                                  AuthenticationProvider managerAuthenticationProvider) throws Exception {
+        http.securityMatcher("/manager/**")
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/manager/register", "/manager/login", "/manager/forgetPassword", "/manager/forgetPasswordSuccess").permitAll()
+                .anyRequest().hasRole("ADMIN")
+            )
+            .formLogin(form -> form
+                .loginPage("/manager/login")
+                .loginProcessingUrl("/manager/login")
+                .successHandler(loginSuccessHandler)
+                .failureUrl("/manager/login?error")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutRequestMatcher(new AntPathRequestMatcher("/manager/logout"))
+                .logoutSuccessUrl("/manager/login")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+            )
+            // Enable CSRF for manager with proper configuration
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .ignoringRequestMatchers("/manager/api/**") // if you have API endpoints
+            );
 
         http.authenticationProvider(managerAuthenticationProvider);
         return http.build();
     }
 
     @Bean
-    @Order(2) // 放在 manager/member 後面處理
+    @Order(2) // Admin security chain
     public SecurityFilterChain adminFilterChain(HttpSecurity http,
-                                                AuthenticationProvider managerAuthenticationProvider) throws Exception {
-        http
-            .securityMatcher("/admin/**") // 只處理 /admin/** 開頭的路徑
+                                               AuthenticationProvider managerAuthenticationProvider) throws Exception {
+        http.securityMatcher("/admin/**")
             .authorizeHttpRequests(auth -> auth
-                .anyRequest().hasRole("ADMIN") // 必須具備 ADMIN 角色
+                .anyRequest().hasRole("ADMIN")
             )
             .formLogin(form -> form
-                .loginPage("/manager/login") // 沿用 manager 登入頁
+                .loginPage("/manager/login")
                 .loginProcessingUrl("/manager/login")
                 .defaultSuccessUrl("/admin", true)
                 .permitAll()
@@ -87,27 +89,35 @@ public class SecurityConfig {
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
             )
-            .csrf(csrf -> csrf.disable());
+            // Enable CSRF for admin
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            );
 
         http.authenticationProvider(managerAuthenticationProvider);
         return http.build();
     }
     
-    // Bean: 用於會員的 SecurityFilterChain (優先順序較低，排在後面處理)
     @Bean
-    @Order(3)
+    @Order(3) // Member and public security chain - lowest priority
     public SecurityFilterChain memberFilterChain(HttpSecurity http,
-            AuthenticationProvider memberAuthenticationProvider) throws Exception {
-    	
-    	http.securityMatcher("/**")
-            // ❗ 關閉 CSRF（如果沒有表單驗證需求）
-//            .csrf(csrf -> csrf.disable())
-
-            // ✅ 授權路徑規則
+                                                AuthenticationProvider memberAuthenticationProvider) throws Exception {
+        
+        http.securityMatcher("/**")
+            // Enable CSRF protection with proper configuration
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .ignoringRequestMatchers(
+                    // Disable CSRF for specific API endpoints and delete operations
+                    "/api/**",
+                    "/sceneryscore/delete/**"
+                )
+            )
+            
             .authorizeHttpRequests(auth -> auth
 
                 // ✅ 靜態資源 & 基本公開頁面
-                .requestMatchers("/css/**", "/js/**", "/images/**", "/homepage_images/**", "/logo_image/**").permitAll()
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/homepage_images/**", "/logo_image/**","/favicon.ico", "/robots.txt", "/sitemap.xml").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/", "/index", "/login", "/register", "/error", "/login?error").permitAll()
                 .requestMatchers("/ticketlist").permitAll()
@@ -115,25 +125,42 @@ public class SecurityConfig {
                 // ✅ 景點搜尋功能（開放給所有人）
                 .requestMatchers("/search", "/scenery/search").permitAll()
                 
-                // ✅ 前台景點頁面（開放給所有人瀏覽）- 對應 templates/frontend/scenery/
+                // Public pages
+                .requestMatchers(
+                    "/", "/index", "/login", "/register", 
+                    "/error", "/login?error", "/ticketlist"
+                ).permitAll()
+                
+                // ✅ NEW: Scenery Score Management (Admin only)
+                .requestMatchers(
+                    "/sceneryscore/**", 
+                    "/sceneryscore/findAll", 
+                    "/sceneryscore/search",
+                    "/sceneryscore/delete/**",
+                    "/sceneryscore/diagnostic",
+                    "/sceneryscore/json",
+                    "/sceneryscore/test",
+                    "/sceneryscore/security-test",
+                    "/sceneryscore/public-test"
+                ).hasRole("ADMIN")
+                
+                // Search functionality (public) - Allow both GET and POST
+                .requestMatchers(HttpMethod.GET, "/search", "/scenery/search").permitAll()
+                .requestMatchers(HttpMethod.POST, "/search", "/scenery/search").permitAll()
+                
+                // Frontend scenery pages (public read access)
                 .requestMatchers(HttpMethod.GET, "/frontend/**").permitAll()
                 
-                // ✅ 景點評論功能（需要登入）- 對應 templates/frontend/scenery/Scenery.html
-                .requestMatchers(HttpMethod.POST, "/frontend/scenery/detail/*/add-comment").authenticated()
+                // Travel detail pages (public read access via IndexController)
+                .requestMatchers(HttpMethod.GET, "/travel/detail/**").permitAll()
                 
-                // ✅ NEW: 景點收藏功能（需要登入）
-                .requestMatchers(HttpMethod.POST, "/frontend/scenery/detail/*/favorite/add").authenticated()
-                .requestMatchers(HttpMethod.POST, "/frontend/scenery/detail/*/favorite/remove").authenticated()
-                .requestMatchers(HttpMethod.POST, "/scenery/favorite/add/*").authenticated()
-                .requestMatchers(HttpMethod.POST, "/scenery/favorite/remove/*").authenticated()
-
-                // ✅ 景點相關資源（圖片等）
-                .requestMatchers("/scenery/banner/**", "/scenery/image/**").permitAll()
-
-                // ✅ 靜態資源（包含 favicon）
-                .requestMatchers("/favicon.ico").permitAll()
-
-                // ✅ 忘記密碼與註冊流程（開放）
+                // Scenery resources (images, banners)
+                .requestMatchers(
+                    "/scenery/banner/**", 
+                    "/scenery/image/**"
+                ).permitAll()
+                
+                // Password reset and registration (public)
                 .requestMatchers(
                     "/member/register", "/member/verify",
                     "/member/forgot", "/member/forgotPassword",
@@ -144,54 +171,67 @@ public class SecurityConfig {
                     "/member/password/reset-password-success",
                     "/member/password/reset-password-fail"
                 ).permitAll()
-
-                // ✅ 密碼重設畫面（特殊開放）
+                
+                // Password reset POST (special case)
                 .requestMatchers(HttpMethod.POST, "/member/resetPassword").permitAll()
-
-                // ✅ 管理員功能
+                
+                // Scenery interactions (require authentication)
+                .requestMatchers(
+                    HttpMethod.POST, 
+                    "/frontend/scenery/detail/*/add-comment",
+                    "/frontend/scenery/detail/*/favorite/add",
+                    "/frontend/scenery/detail/*/favorite/remove",
+                    "/scenery/favorite/add/*",
+                    "/scenery/favorite/remove/*"
+                ).authenticated()
+                
+                // Manager-only functions
                 .requestMatchers("/member/list").hasRole("MANAGER")
-
-                // ✅ 一般會員功能（需要登入）
+                
+                // Admin-only scenery management
                 .requestMatchers(
-                        "/member/edit", "/member/home", "/member/favorites","/member/favorites/**",
-                        "/member/receipt/**",
-                        "/member/ticketOrders", "/member/ticket/orders",
-                        "/member/order/**", "/member/ticketOrderDetail",
-                        "/member/detail/**",
-                        "/member/orders", // ✅ ⬅️ 加這行，允許登入會員看訂單整合頁
-                        "/member/travel/orders", // 若有這路徑建議也加
-                        "/member/tour-order/detail/**","/member/travel/**",
-                        "/tour-order/create","/member/tour-order/create","/member/travel/list/**",
-                        "/member/simulate-payment","/member/simulate-payment/**",
-                        "/member/payment-success","/member/password/change","/member/tour-order/create",
-                        "/tour-order/create","member/simulate-payment","/simulate-payment",
-                        "/member/member-tour-order-form",
-                        "/member/favorites/add/**","/favorites/tour/add/**",
-                        "/favorites/tour/remove/**","/favorites/scenery/remove/**"
-                    ).authenticated()
-
-                // ✅ 票券功能（也要登入）
+                    "/scenery/listallscenery", "/scenery/addscenery", 
+                    "/scenery/updatescenery/**", "/scenery/index", 
+                    "/scenery/deleteimage/**", "/scenery/updatestatus",
+                    "/scenery/{id}", "/scenery/{sceneryId}/addimage",
+                    "/scenery/sceneryindex"
+                ).hasRole("ADMIN")
+                
+                // Admin-only tag management (updated to include tagsdb)
+                .requestMatchers(
+                    "/tags/**", "/tags/addtags", "/tags/listalltags", 
+                    "/tags/updatetag/**", "/tags/addtagsdb", 
+                    "/tags/updatetagsdb", "/tags/searchresult",
+                    "/tags/list",
+                    "/tagsdb/**", "/tagsdb/listall"
+                ).hasRole("ADMIN")
+                
+                // Member-only functions (require authentication)
+                .requestMatchers(
+                    "/member/edit", "/member/home", "/member/favorites", "/member/favorites/**",
+                    "/member/receipt/**", "/member/ticketOrders", "/member/ticket/orders",
+                    "/member/order/**", "/member/ticketOrderDetail", "/member/detail/**",
+                    "/member/orders", "/member/travel/orders", "/member/tour-order/detail/**",
+                    "/member/travel/**", // This covers both /member/travel/detail/{id} and /member/travel-plans
+                    "/tour-order/create", "/member/tour-order/create",
+                    "/member/travel-plans", // Allow travel plans list with search (authenticated users)
+                    "/member/simulate-payment", "/member/simulate-payment/**",
+                    "/member/payment-success", "/member/password/change", "/simulate-payment",
+                    "/member/member-tour-order-form", "/member/favorites/add/**",
+                    "/favorites/tour/add/**", "/favorites/tour/remove/**", 
+                    "/favorites/scenery/remove/**"
+                ).authenticated()
+                
+                // Ticket functions (require authentication)
                 .requestMatchers("/ticket/**", "/ticketOrders").authenticated()
-
-                // ✅ 景點後台管理功能（需要管理員權限）- 對應 templates/scenery/
-                .requestMatchers(
-                    "/scenery/listallscenery", "/scenery/addscenery", "/scenery/updatescenery/**",
-                    "/scenery/index", "/scenery/deleteimage/**", "/scenery/updatestatus",
-                    "/scenery/{id}", "/scenery/{sceneryId}/addimage"
-                ).hasRole("ADMIN")
-
-                // ✅ 標籤後台管理功能（需要管理員權限）- 對應 templates/tags/
-                .requestMatchers(
-                    "/tags/**", // 所有標籤管理功能
-                    "/tags/addtags", "/tags/listalltags", "/tags/updatetag/**",
-                    "/tags/addtagsdb", "/tags/updatetagsdb", "/tags/searchresult"
-                ).hasRole("ADMIN")
-
-                // ❗ 最後兜底規則（不建議用 denyAll 除非你真的想封鎖）
-                // .requestMatchers("/member/**").denyAll()
+                
+                // Catch-all for member routes before general permit
+                .requestMatchers("/member/**").authenticated()
+                
+                // Allow all other requests (be careful with this - consider making it more restrictive)
+                .anyRequest().permitAll()
             )
-
-            // ✅ 登入設定
+            
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/member/login")
@@ -199,21 +239,25 @@ public class SecurityConfig {
                 .failureHandler(failureHandler)
                 .permitAll()
             )
-
-            // ✅ 登出設定
+            
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/index")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
                 .permitAll()
+            )
+            
+            // Session management
+            .sessionManagement(session -> session
+                .maximumSessions(1)
+                .maxSessionsPreventsLogin(false)
             );
 
-        // ✅ 加入自定義會員登入機制
         http.authenticationProvider(memberAuthenticationProvider);
-
         return http.build();
     }
 
-    // Bean: 會員的 AuthenticationProvider
     @Bean
     public AuthenticationProvider memberAuthenticationProvider(PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -222,7 +266,6 @@ public class SecurityConfig {
         return provider;
     }
 
-    // Bean: 管理員的 AuthenticationProvider
     @Bean
     public AuthenticationProvider managerAuthenticationProvider(PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -230,6 +273,4 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
-
-    // Note: PasswordEncoder bean is already defined in PasswordEncoderConfig.class
 }

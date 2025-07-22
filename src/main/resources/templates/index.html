@@ -4,6 +4,8 @@
 <head>
 <meta charset="UTF-8">
 <title>首頁</title>
+<!-- Add favicon to prevent 404 error -->
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link
 	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
 	rel="stylesheet">
@@ -39,14 +41,52 @@ h1, h2, h4, h5 {
 	box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
 }
 
+/* Fixed logo section styling */
+.logo-section-fixed {
+	position: fixed;
+	top: 0; /* Now at the very top */
+	left: 0;
+	right: 0;
+	background-color: var(--sky-blue);
+	z-index: 1000; /* Higher z-index since it's on top */
+	padding: 15px 0;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	border-bottom: 1px solid var(--border-color);
+}
+
+.logo-section-fixed .logo-container {
+	display: flex;
+	align-items: center;
+	justify-content: space-between; /* Space between logo and user menu */
+	padding: 0 20px;
+	position: relative;
+}
+
+.logo-section-fixed .logo-img {
+	height: 50px;
+	margin-right: 15px;
+}
+
+.logo-section-fixed .logo-text {
+	font-family: 'Noto Sans TC', sans-serif;
+	font-weight: bold;
+	font-size: 32px;
+	color: #333;
+}
+
+.logo-section-fixed .user-menu {
+	position: static; /* Remove absolute positioning */
+	margin-left: auto; /* Push to the right */
+}
+
 /* Fixed search bar styling */
 .search-bar-fixed {
 	position: fixed;
-	top: 0;
+	top: 80px; /* Position below the logo bar */
 	left: 0;
 	right: 0;
 	background-color: var(--light-gray);
-	z-index: 1000;
+	z-index: 999; /* Lower z-index since it's below logo */
 	padding: 10px 0;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	border-bottom: 1px solid var(--border-color);
@@ -93,8 +133,6 @@ h1, h2, h4, h5 {
 }
 
 .user-menu {
-	position: absolute;
-	right: 20px;
 	display: flex;
 	align-items: center;
 	gap: 10px;
@@ -197,11 +235,11 @@ h1, h2, h4, h5 {
 /* Fixed logo section styling */
 .logo-section-fixed {
 	position: fixed;
-	top: 60px; /* Position below the smaller search bar */
+	top: 0; /* Now at the very top */
 	left: 0;
 	right: 0;
 	background-color: var(--sky-blue);
-	z-index: 999;
+	z-index: 1000; /* Higher z-index since it's on top */
 	padding: 15px 0;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	border-bottom: 1px solid var(--border-color);
@@ -210,7 +248,9 @@ h1, h2, h4, h5 {
 .logo-section-fixed .logo-container {
 	display: flex;
 	align-items: center;
+	justify-content: space-between; /* Space between logo and user menu */
 	padding: 0 20px;
+	position: relative;
 }
 
 .logo-section-fixed .logo-img {
@@ -223,6 +263,11 @@ h1, h2, h4, h5 {
 	font-weight: bold;
 	font-size: 32px;
 	color: #333;
+}
+
+.logo-section-fixed .user-menu {
+	position: static; /* Remove absolute positioning */
+	margin-left: auto; /* Push to the right */
 }
 
 /* 精選景點卡片 */
@@ -554,6 +599,112 @@ h1, h2, h4, h5 {
 	}
 }
 
+/* Travel Tours Section Styles */
+.travel-tours-section {
+	border: 2px solid #007bff;
+	border-radius: 15px;
+	padding: 25px 20px;
+	background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+	box-shadow: 0 4px 15px rgba(0, 123, 255, 0.15);
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.travel-tours-section .tours-title {
+	text-align: center;
+	margin-bottom: 20px;
+	font-size: 22px;
+	color: #007bff;
+	font-weight: bold;
+	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.tours-content {
+	flex: 1;
+	overflow-y: auto;
+	max-height: calc(100% - 80px);
+}
+
+.tour-bar {
+	display: flex;
+	align-items: center;
+	background-color: var(--white);
+	border: 1px solid #007bff;
+	border-radius: 8px;
+	padding: 12px;
+	margin-bottom: 12px;
+	transition: all 0.3s ease;
+	cursor: pointer;
+}
+
+.tour-bar:hover {
+	box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+	transform: translateY(-2px);
+	border-color: #0056b3;
+}
+
+.tour-bar-image {
+	width: 60px;
+	height: 60px;
+	object-fit: cover;
+	border-radius: 6px;
+	margin-right: 12px;
+	flex-shrink: 0;
+	border: 2px solid #007bff;
+}
+
+@media (max-width: 480px) {
+	.tour-bar-image {
+		width: 50px;
+		height: 50px;
+		margin-right: 10px;
+	}
+}
+
+.tour-bar-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.tour-bar-title {
+	font-size: 14px;
+	font-weight: 600;
+	color: #007bff;
+	margin: 0 0 4px 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+	.tour-bar-title {
+		font-size: 13px;
+	}
+}
+
+.tour-bar-description {
+	font-size: 12px;
+	color: #666;
+	margin: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+	.tour-bar-description {
+		font-size: 11px;
+	}
+}
+
+.tours-view-more {
+	text-align: center;
+	margin-top: 15px;
+	padding-top: 15px;
+	border-top: 1px solid #dee2e6;
+}
+
 /* Responsive banner styles */
 .banner-img {
 	max-height: 600px;
@@ -705,7 +856,55 @@ footer {
 </head>
 <body>
 
-	<!-- Fixed Search Bar at Top -->
+	<!-- Fixed Logo Section with User Menu -->
+	<div class="logo-section-fixed">
+		<div class="logo-container">
+			<img th:src="@{/logo_image/Tiger_Travel_Logo_1.png}" alt="Tiger Travel Logo" class="logo-img" onerror="this.style.display='none'">
+			<span class="logo-text">臺鴿旅遊</span>
+			
+			<!-- User Menu for Authenticated Users -->
+			<div sec:authorize="isAuthenticated()" class="user-menu">
+				<div class="user-dropdown">
+					<div class="user-info" onclick="toggleUserDropdown()">
+						<img th:if="${avatarBase64 != null}" 
+							 th:src="'data:image/png;base64,' + ${avatarBase64}" 
+							 alt="大頭貼" class="user-avatar">
+						<img th:if="${avatarBase64 == null}" 
+							 src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUiIGhlaWdodD0iMzUiIHZpZXdCb3g9IjAgMCAzNSAzNSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTcuNSIgY3k9IjE3LjUiIHI9IjE3LjUiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPgo8cGF0aCBkPSJNMTIgMTJjMi4yMSAwIDQtMS43OSA0LTRzLTEuNzktNC00LTQtNCAxLjc5LTQgNCAxLjc5IDQgNCA0em0wIDJjLTIuNjcgMC04IDEuMzQtOCA0djJoMTZ2LTJjMC0yLjY2LTUuMzMtNC04LTR6Ii8+Cjwvc3ZnPgo8L3N2Zz4K" 
+							 alt="預設大頭貼" class="user-avatar">
+						<span class="user-name">您好，<span sec:authentication="principal.member.memberName"></span>！</span>
+					</div>
+					
+					<div class="dropdown-menu-custom" id="userDropdown">
+						<a th:href="@{/member/home}" class="dropdown-item-custom">會員中心</a>
+						<a th:href="@{/member/favorites}" class="dropdown-item-custom">⭐ 我的收藏</a>
+						<a th:href="@{/member/ticketOrders}" class="dropdown-item-custom">🎫 我的票券訂單</a>
+						<div class="dropdown-divider-custom"></div>
+						<form th:action="@{/logout}" method="post" style="margin: 0;">
+							<input type="hidden" name="_csrf" th:if="${_csrf}" th:value="${_csrf.token}">
+							<button type="submit" class="dropdown-item-custom">登出</button>
+						</form>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Login/Register for Anonymous Users -->
+			<div sec:authorize="isAnonymous()" class="user-menu">
+				<div class="user-dropdown">
+					<div class="user-info-anonymous" onclick="toggleUserDropdown()">
+						<span class="user-name">登入/註冊</span>
+					</div>
+					
+					<div class="dropdown-menu-custom" id="userDropdown">
+						<a th:href="@{/login}" class="dropdown-item-custom">登入</a>
+						<a th:href="@{/member/register}" class="dropdown-item-custom">註冊</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Fixed Search Bar -->
 	<div class="search-bar-fixed">
 		<div class="container-fluid">
 			<div class="search-container">
@@ -715,59 +914,13 @@ footer {
 					<select class="form-select search-dropdown" id="searchType" name="searchType">
 						<option value="scenery">景點</option>
 						<option value="tickets">票券</option>
+						<option value="travel">旅遊行程</option>
 					</select>
 					<button class="btn btn-outline-primary search-button" type="submit">搜尋</button>
 					<!-- Include CSRF token for security -->
-					<input type="hidden" name="_csrf" value="${_csrf.token}">
+					<input type="hidden" name="_csrf" th:if="${_csrf}" th:value="${_csrf.token}">
 				</form>
-				
-				<!-- User Menu for Authenticated Users -->
-				<div sec:authorize="isAuthenticated()" class="user-menu">
-					<div class="user-dropdown">
-						<div class="user-info" onclick="toggleUserDropdown()">
-							<img th:if="${avatarBase64 != null}" 
-								 th:src="'data:image/png;base64,' + ${avatarBase64}" 
-								 alt="大頭貼" class="user-avatar">
-							<img th:if="${avatarBase64 == null}" 
-								 src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUiIGhlaWdodD0iMzUiIHZpZXdCb3g9IjAgMCAzNSAzNSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTcuNSIgY3k9IjE3LjUiIHI9IjE3LjUiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPgo8cGF0aCBkPSJNMTIgMTJjMi4yMSAwIDQtMS43OSA0LTRzLTEuNzktNC00LTQtNCAxLjc5LTQgNCAxLjc5IDQgNCA0em0wIDJjLTIuNjcgMC04IDEuMzQtOCA0djJoMTZ2LTJjMC0yLjY2LTUuMzMtNC04LTR6Ii8+Cjwvc3ZnPgo8L3N2Zz4K" 
-								 alt="預設大頭貼" class="user-avatar">
-							<span class="user-name">您好，<span sec:authentication="principal.member.memberName"></span>！</span>
-						</div>
-						
-						<div class="dropdown-menu-custom" id="userDropdown">
-							<a th:href="@{/member/home}" class="dropdown-item-custom">會員中心</a>
-							<a th:href="@{/member/favorites}" class="dropdown-item-custom">⭐ 我的收藏</a>
-							<a th:href="@{/member/ticketOrders}" class="dropdown-item-custom">🎫 我的票券訂單</a>
-							<div class="dropdown-divider-custom"></div>
-							<form th:action="@{/logout}" method="post" style="margin: 0;">
-								<button type="submit" class="dropdown-item-custom">登出</button>
-							</form>
-						</div>
-					</div>
-				</div>
-				
-				<!-- Login/Register for Anonymous Users - NO AVATAR -->
-				<div sec:authorize="isAnonymous()" class="user-menu">
-					<div class="user-dropdown">
-						<div class="user-info-anonymous" onclick="toggleUserDropdown()">
-							<span class="user-name">登入/註冊</span>
-						</div>
-						
-						<div class="dropdown-menu-custom" id="userDropdown">
-							<a th:href="@{/login}" class="dropdown-item-custom">登入</a>
-							<a th:href="@{/member/register}" class="dropdown-item-custom">註冊</a>
-						</div>
-					</div>
-				</div>
 			</div>
-		</div>
-	</div>
-
-	<!-- Fixed Logo Section -->
-	<div class="logo-section-fixed">
-		<div class="logo-container">
-			<img th:src="@{/logo_image/Tiger_Travel_Logo_1.png}" alt="Tiger Travel Logo" class="logo-img">
-			<span class="logo-text">臺鴿旅遊</span>
 		</div>
 	</div>
 
@@ -777,8 +930,8 @@ footer {
 		<div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
 
 		<div class="mt-0 mb-4">
-    <div id="bannerSlider" class="position-relative"></div>
-</div>
+			<div id="bannerSlider" class="position-relative"></div>
+		</div>
 
 		<div class="two-column-layout">
 			<!-- Left Column - Popular Scenery & Tickets -->
@@ -807,17 +960,17 @@ footer {
 								</div>
 								
 								<!-- Show placeholder rectangles only if we have fewer than 4 sceneries -->
-								<div th:if="${#lists.size(topSceneries) == 0}" class="scenery-rectangle">
-									<span>暫無景點</span>
+								<div th:if="${#lists.size(topSceneries) == 0}" class="scenery-rectangle" onclick="window.location.href='/search?keyword=景點'">
+									<span>搜尋景點</span>
 								</div>
-								<div th:if="${#lists.size(topSceneries) == 1}" class="scenery-rectangle">
+								<div th:if="${#lists.size(topSceneries) == 1}" class="scenery-rectangle" onclick="window.location.href='/search?keyword=台灣'">
 									<span>更多景點</span>
 								</div>
-								<div th:if="${#lists.size(topSceneries) == 2}" class="scenery-rectangle">
-									<span>更多景點</span>
+								<div th:if="${#lists.size(topSceneries) == 2}" class="scenery-rectangle" onclick="window.location.href='/ticketlist'">
+									<span>熱門票券</span>
 								</div>
-								<div th:if="${#lists.size(topSceneries) == 3}" class="scenery-rectangle">
-									<span>更多景點</span>
+								<div th:if="${#lists.size(topSceneries) == 3}" class="scenery-rectangle" onclick="window.location.href='/search?keyword=旅遊'">
+									<span>旅遊攻略</span>
 								</div>
 							</div>
 						</div>
@@ -841,10 +994,10 @@ footer {
 						<div th:each="ticket, iterStat : ${ticketList}" th:if="${iterStat.index < 4}" class="ticket-bar">
 							<img th:if="${ticket['ticketImageBase64'] != null}"
 								th:src="'data:image/png;base64,' + ${ticket['ticketImageBase64']}"
-								class="ticket-bar-image" alt="票券圖片">
+								class="ticket-bar-image" alt="票券圖片" onerror="this.src='/images/sample.png'">
 							<img th:if="${ticket['ticketImageBase64'] == null}"
 								th:src="@{/images/sample.png}" 
-								class="ticket-bar-image" alt="預設圖片">
+								class="ticket-bar-image" alt="預設圖片" onerror="this.style.display='none'">
 							<div class="ticket-bar-content">
 								<h5 class="ticket-bar-title" th:text="${ticket['ticketName']}">票券名稱</h5>
 								<p class="ticket-bar-price">
@@ -862,12 +1015,148 @@ footer {
 				</div>
 			</div>
 			
-			<!-- Right Column - Future Content -->
+			<!-- Right Column - Travel Tours -->
 			<div class="right-column">
-				<div style="height: 300px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #666;">
-					<div class="text-center">
-						<h4>其他內容區域</h4>
-						<p>這裡可以放置其他旅遊相關內容</p>
+				<div class="travel-tours-section">
+					<h3 class="tours-title">🧳 精選旅遊行程</h3>
+					
+					<div class="tours-content">
+						<!-- Real tours from database (up to 6) -->
+						<div th:each="tour, iterStat : ${tourList}" 
+							 th:if="${iterStat.index < 6}" 
+							 class="tour-bar" 
+							 th:data-travel-id="${tour.travelPlanId}"
+							 th:onclick="|window.location.href='/travel/detail/' + ${tour.travelPlanId}|"
+							 style="cursor: pointer;">
+							
+							<img th:if="${tour.travelPlanBannerUrl != null}"
+								 th:src="${tour.travelPlanBannerUrl}"
+								 class="tour-bar-image" 
+								 alt="旅程圖片" 
+								 onerror="this.src='/images/bannerSample.jpg'">
+							<img th:if="${tour.travelPlanBannerUrl == null}"
+								 th:src="@{/images/bannerSample.jpg}" 
+								 class="tour-bar-image" 
+								 alt="預設圖片" 
+								 onerror="this.style.display='none'">
+							
+							<div class="tour-bar-content">
+								<h5 class="tour-bar-title" th:text="${tour.travelTitle}">旅程標題</h5>
+								<p class="tour-bar-description" th:text="${tour.travelPlanDescription}">旅程簡介</p>
+							</div>
+							
+							<!-- Hidden input for JavaScript fallback -->
+							<input type="hidden" name="travelPlanId" th:value="${tour.travelPlanId}">
+						</div>
+						
+						<!-- ✅ FIXED: Placeholders only show when we have FEWER than 6 real tours -->
+						<!-- This entire block only executes if tourList has fewer than 6 items -->
+						<th:block th:if="${#lists.size(tourList) < 6}">
+							
+							<!-- Placeholder 1: Only show if we have 0 real tours -->
+							<div th:if="${#lists.size(tourList) == 0}" 
+								 class="tour-bar" 
+								 data-travel-id="1"
+								 onclick="window.location.href='/travel/detail/1'"
+								 style="cursor: pointer;">
+								<img th:src="@{/images/bannerSample.jpg}" 
+									 class="tour-bar-image" 
+									 alt="預設圖片" 
+									 onerror="this.style.display='none'">
+								<div class="tour-bar-content">
+									<h5 class="tour-bar-title">探索台灣之美</h5>
+									<p class="tour-bar-description">發現台灣各地的美麗景點與文化</p>
+								</div>
+							</div>
+							
+							<!-- Placeholder 2: Only show if we have 1 real tour -->
+							<div th:if="${#lists.size(tourList) == 1}" 
+								 class="tour-bar" 
+								 data-travel-id="2"
+								 onclick="window.location.href='/travel/detail/2'"
+								 style="cursor: pointer;">
+								<img th:src="@{/images/bannerSample.jpg}" 
+									 class="tour-bar-image" 
+									 alt="預設圖片" 
+									 onerror="this.style.display='none'">
+								<div class="tour-bar-content">
+									<h5 class="tour-bar-title">山海之旅</h5>
+									<p class="tour-bar-description">體驗台灣山脈與海岸的壯麗風光</p>
+								</div>
+							</div>
+							
+							<!-- Placeholder 3: Only show if we have 2 real tours -->
+							<div th:if="${#lists.size(tourList) == 2}" 
+								 class="tour-bar" 
+								 data-travel-id="3"
+								 onclick="window.location.href='/travel/detail/3'"
+								 style="cursor: pointer;">
+								<img th:src="@{/images/bannerSample.jpg}" 
+									 class="tour-bar-image" 
+									 alt="預設圖片" 
+									 onerror="this.style.display='none'">
+								<div class="tour-bar-content">
+									<h5 class="tour-bar-title">文化深度遊</h5>
+									<p class="tour-bar-description">深入了解台灣的歷史文化與傳統</p>
+								</div>
+							</div>
+							
+							<!-- Placeholder 4: Only show if we have 3 real tours -->
+							<div th:if="${#lists.size(tourList) == 3}" 
+								 class="tour-bar" 
+								 data-travel-id="4"
+								 onclick="window.location.href='/travel/detail/4'"
+								 style="cursor: pointer;">
+								<img th:src="@{/images/bannerSample.jpg}" 
+									 class="tour-bar-image" 
+									 alt="預設圖片" 
+									 onerror="this.style.display='none'">
+								<div class="tour-bar-content">
+									<h5 class="tour-bar-title">美食之旅</h5>
+									<p class="tour-bar-description">品嚐台灣各地的特色美食</p>
+								</div>
+							</div>
+							
+							<!-- Placeholder 5: Only show if we have 4 real tours -->
+							<div th:if="${#lists.size(tourList) == 4}" 
+								 class="tour-bar" 
+								 data-travel-id="5"
+								 onclick="window.location.href='/travel/detail/5'"
+								 style="cursor: pointer;">
+								<img th:src="@{/images/bannerSample.jpg}" 
+									 class="tour-bar-image" 
+									 alt="預設圖片" 
+									 onerror="this.style.display='none'">
+								<div class="tour-bar-content">
+									<h5 class="tour-bar-title">溫泉之旅</h5>
+									<p class="tour-bar-description">放鬆身心的溫泉度假體驗</p>
+								</div>
+							</div>
+							
+							<!-- Placeholder 6: Only show if we have 5 real tours -->
+							<div th:if="${#lists.size(tourList) == 5}" 
+								 class="tour-bar" 
+								 data-travel-id="6"
+								 onclick="window.location.href='/travel/detail/6'"
+								 style="cursor: pointer;">
+								<img th:src="@{/images/bannerSample.jpg}" 
+									 class="tour-bar-image" 
+									 alt="預設圖片" 
+									 onerror="this.style.display='none'">
+								<div class="tour-bar-content">
+									<h5 class="tour-bar-title">生態探索</h5>
+									<p class="tour-bar-description">探索台灣豐富的自然生態</p>
+								</div>
+							</div>
+							
+						</th:block>
+						
+						<!-- ✅ If you have 6 or more real tours, NO placeholders will show -->
+					</div>
+					
+					<!-- View More Link -->
+					<div class="tours-view-more">
+						<a th:href="@{/member/travel-plans}" class="btn btn-outline-info btn-sm">查看更多旅程</a>
 					</div>
 				</div>
 			</div>
@@ -878,6 +1167,10 @@ footer {
 		台鴿旅遊 Tiger Travel. All rights reserved. </footer>
 
 	<script>
+		// Debug: Log tour data from server
+		console.log('=== HOMEPAGE DEBUG ===');
+		console.log('Tour list data from server:', /*[[${tourList}]]*/ []);
+		
 		document.addEventListener('DOMContentLoaded', () => {
 		    const images = document.querySelectorAll('#bannerSlider .banner-img');
 		    if (images.length <= 1) return; // Don't cycle if only 1 image
@@ -898,7 +1191,9 @@ footer {
 		// User dropdown functionality
 		function toggleUserDropdown() {
 			const dropdown = document.getElementById('userDropdown');
-			dropdown.classList.toggle('show');
+			if (dropdown) {
+				dropdown.classList.toggle('show');
+			}
 		}
 		
 		// Close dropdown when clicking outside
@@ -906,7 +1201,7 @@ footer {
 			const dropdown = document.getElementById('userDropdown');
 			const userInfo = document.querySelector('.user-info, .user-info-anonymous');
 			
-			if (!userInfo.contains(event.target)) {
+			if (dropdown && userInfo && !userInfo.contains(event.target)) {
 				dropdown.classList.remove('show');
 			}
 		});
@@ -916,8 +1211,8 @@ footer {
 			const content = document.getElementById('sceneryContent');
 			const icon = document.querySelector('.scenery-toggle-icon');
 			
-			content.classList.toggle('expanded');
-			icon.classList.toggle('expanded');
+			if (content) content.classList.toggle('expanded');
+			if (icon) icon.classList.toggle('expanded');
 		}
 		
 		// Ticket section toggle functionality
@@ -925,68 +1220,130 @@ footer {
 			const content = document.getElementById('ticketContent');
 			const icon = document.querySelector('.ticket-toggle-icon');
 			
-			content.classList.toggle('expanded');
-			icon.classList.toggle('expanded');
+			if (content) content.classList.toggle('expanded');
+			if (icon) icon.classList.toggle('expanded');
 		}
 		
 		// Enhanced search form submission handling
-		document.getElementById('searchForm').addEventListener('submit', function(e) {
-			e.preventDefault();
-			
-			const searchType = document.getElementById('searchType').value;
-			const searchInput = document.getElementById('searchInput').value.trim();
-			
-			// Validate input
-			if (!searchInput) {
-				alert('請輸入搜尋關鍵字');
-				return;
-			}
-			
-			// Set form action and method based on search type
-			if (searchType === 'scenery') {
-				this.action = '/scenery/search';
-				this.method = 'POST';
-			} else if (searchType === 'tickets') {
-				// For tickets, use GET method to ticketlist with keyword parameter
-				this.action = '/ticketlist';
-				this.method = 'GET';
+		const searchForm = document.getElementById('searchForm');
+		if (searchForm) {
+			searchForm.addEventListener('submit', function(e) {
+				e.preventDefault();
 				
-				// Create a hidden input for the keyword if it doesn't exist
-				let keywordInput = this.querySelector('input[name="keyword"]');
-				if (!keywordInput) {
-					keywordInput = document.createElement('input');
-					keywordInput.type = 'hidden';
-					keywordInput.name = 'keyword';
-					this.appendChild(keywordInput);
-				}
-				keywordInput.value = searchInput;
+				console.log('=== SEARCH FORM SUBMIT DEBUG ===');
 				
-				// Remove the searchType input for GET request to ticketlist
-				const searchTypeInput = this.querySelector('select[name="searchType"]');
-				if (searchTypeInput) {
-					searchTypeInput.removeAttribute('name');
+				const searchType = document.getElementById('searchType').value;
+				const searchInput = document.getElementById('searchInput').value.trim();
+				
+				console.log('Search type:', searchType);
+				console.log('Search input:', searchInput);
+				
+				// Validate input
+				if (!searchInput) {
+					alert('請輸入搜尋關鍵字');
+					return;
 				}
-			}
-			
-			// Submit the form
-			this.submit();
-		});
+				
+				// Set form action and method based on search type
+				if (searchType === 'scenery') {
+					this.action = '/scenery/search';
+					this.method = 'POST';
+					console.log('Setting form action to:', this.action, 'method:', this.method);
+				} else if (searchType === 'tickets') {
+					// For tickets, use GET method to ticketlist with keyword parameter
+					this.action = '/ticketlist';
+					this.method = 'GET';
+					
+					// Create a hidden input for the keyword if it doesn't exist
+					let keywordInput = this.querySelector('input[name="keyword"]');
+					if (!keywordInput) {
+						keywordInput = document.createElement('input');
+						keywordInput.type = 'hidden';
+						keywordInput.name = 'keyword';
+						this.appendChild(keywordInput);
+					}
+					keywordInput.value = searchInput;
+					
+					// Remove the searchType input for GET request to ticketlist
+					const searchTypeInput = this.querySelector('select[name="searchType"]');
+					if (searchTypeInput) {
+						searchTypeInput.removeAttribute('name');
+					}
+					
+					console.log('Setting form action to:', this.action, 'method:', this.method);
+				} else if (searchType === 'travel') {
+					// For travel plans, use GET method to member travel list with keyword parameter
+					this.action = '/member/travel-plans';
+					this.method = 'GET';
+					
+					// Create a hidden input for the keyword if it doesn't exist
+					let keywordInput = this.querySelector('input[name="keyword"]');
+					if (!keywordInput) {
+						keywordInput = document.createElement('input');
+						keywordInput.type = 'hidden';
+						keywordInput.name = 'keyword';
+						this.appendChild(keywordInput);
+					}
+					keywordInput.value = searchInput;
+					
+					// Remove the searchType input for GET request to travel plans
+					const searchTypeInput = this.querySelector('select[name="searchType"]');
+					if (searchTypeInput) {
+						searchTypeInput.removeAttribute('name');
+					}
+					
+					console.log('Setting form action to:', this.action, 'method:', this.method);
+				}
+				
+				// Ensure CSRF token is present for POST requests
+				if (this.method === 'POST') {
+					let csrfInput = this.querySelector('input[name="_csrf"]');
+					if (!csrfInput) {
+						// Try to find CSRF token from meta tag or create one
+						const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+						if (csrfToken) {
+							csrfInput = document.createElement('input');
+							csrfInput.type = 'hidden';
+							csrfInput.name = '_csrf';
+							csrfInput.value = csrfToken;
+							this.appendChild(csrfInput);
+							console.log('Added CSRF token:', csrfToken);
+						}
+					}
+				}
+				
+				console.log('Submitting form...');
+				// Submit the form
+				this.submit();
+			});
+		}
 		
 		// Update placeholder when dropdown changes
-		document.getElementById('searchType').addEventListener('change', function() {
-			const searchInput = document.getElementById('searchInput');
-			if (this.value === 'scenery') {
-				searchInput.placeholder = '搜尋景點名稱或標籤';
-			} else {
-				searchInput.placeholder = '搜尋票券';
-			}
-		});
+		const searchTypeSelect = document.getElementById('searchType');
+		if (searchTypeSelect) {
+			searchTypeSelect.addEventListener('change', function() {
+				const searchInput = document.getElementById('searchInput');
+				if (searchInput) {
+					if (this.value === 'scenery') {
+						searchInput.placeholder = '搜尋景點名稱或標籤';
+					} else if (this.value === 'tickets') {
+						searchInput.placeholder = '搜尋票券';
+					} else if (this.value === 'travel') {
+						searchInput.placeholder = '搜尋旅遊行程';
+					}
+				}
+			});
+		}
 		
 		// Add error handling for form submission
-		document.getElementById('searchForm').addEventListener('error', function(e) {
-			console.error('Search form error:', e);
-			alert('搜尋時發生錯誤，請稍後再試');
-		});
+		if (searchForm) {
+			searchForm.addEventListener('error', function(e) {
+				console.error('Search form error:', e);
+				alert('搜尋時發生錯誤，請稍後再試');
+			});
+		}
+		
+		// Banner slider initialization
 		document.addEventListener('DOMContentLoaded', () => {
 		    // 自動生成 banner 圖片陣列（可根據你需求調整數量與命名規則）
 		    const bannerCount = 6;
@@ -997,24 +1354,130 @@ footer {
 
 		    // 動態產生圖片到 #bannerSlider
 		    const bannerSlider = document.getElementById('bannerSlider');
-		    bannerSlider.innerHTML = images.map((img, idx) => 
-		        `<img src="${img}" class="img-fluid w-100 rounded banner-img${idx === 0 ? ' d-block' : ' d-none'}">`
-		    ).join('');
+		    if (bannerSlider) {
+			    bannerSlider.innerHTML = images.map((img, idx) => 
+			        `<img src="${img}" class="img-fluid w-100 rounded banner-img${idx === 0 ? ' d-block' : ' d-none'}" onerror="this.style.display='none'">`
+			    ).join('');
 
-		    // 輪播邏輯
-		    if (images.length > 1) {
-		        let currentIndex = 0;
-		        setInterval(() => {
-		            const bannerImgs = bannerSlider.querySelectorAll('.banner-img');
-		            bannerImgs[currentIndex].classList.remove('d-block');
-		            bannerImgs[currentIndex].classList.add('d-none');
+			    // 輪播邏輯
+			    if (images.length > 1) {
+			        let currentIndex = 0;
+			        setInterval(() => {
+			            const bannerImgs = bannerSlider.querySelectorAll('.banner-img');
+			            if (bannerImgs.length > 0) {
+				            bannerImgs[currentIndex].classList.remove('d-block');
+				            bannerImgs[currentIndex].classList.add('d-none');
 
-		            currentIndex = (currentIndex + 1) % images.length;
+				            currentIndex = (currentIndex + 1) % images.length;
 
-		            bannerImgs[currentIndex].classList.remove('d-none');
-		            bannerImgs[currentIndex].classList.add('d-block');
-		        }, 5000); // 5 秒切換
+				            bannerImgs[currentIndex].classList.remove('d-none');
+				            bannerImgs[currentIndex].classList.add('d-block');
+			            }
+			        }, 5000); // 5 秒切換
+			    }
 		    }
+		});
+		
+		// Enhanced tour bar click handler with multiple fallback methods
+		document.addEventListener('DOMContentLoaded', function() {
+		    console.log('=== TRAVEL CLICK HANDLER DEBUG ===');
+		    
+		    // Method 1: Handle clicks on tour bars with onclick attributes
+		    document.querySelectorAll('.tour-bar[onclick]').forEach(function(tourBar, index) {
+		        console.log('Found tour bar with onclick:', index, tourBar);
+		        
+		        tourBar.addEventListener('click', function(e) {
+		            e.preventDefault();
+		            console.log('Tour bar clicked:', this);
+		            
+		            // Get the onclick attribute
+		            const onclickAttr = this.getAttribute('onclick');
+		            console.log('Onclick attribute:', onclickAttr);
+		            
+		            if (onclickAttr) {
+		                try {
+		                    // Extract the URL from the onclick attribute
+		                    const urlMatch = onclickAttr.match(/window\.location\.href\s*=\s*['"]([^'"]+)['"]/);
+		                    if (urlMatch && urlMatch[1]) {
+		                        const url = urlMatch[1];
+		                        console.log('Navigating to:', url);
+		                        window.location.href = url;
+		                    } else {
+		                        // Fallback: execute the onclick directly
+		                        console.log('Executing onclick directly');
+		                        eval(onclickAttr);
+		                    }
+		                } catch (error) {
+		                    console.error('Error executing onclick:', error);
+		                }
+		            }
+		        });
+		    });
+		    
+		    // Method 2: Handle clicks on tour bars with data attributes
+		    document.querySelectorAll('.tour-bar[data-travel-id]').forEach(function(tourBar, index) {
+		        console.log('Found tour bar with data-travel-id:', index, tourBar.getAttribute('data-travel-id'));
+		        
+		        tourBar.addEventListener('click', function(e) {
+		            e.preventDefault();
+		            const travelId = this.getAttribute('data-travel-id');
+		            console.log('Travel ID from data attribute:', travelId);
+		            
+		            if (travelId) {
+		                const url = '/travel/detail/' + travelId;
+		                console.log('Navigating to:', url);
+		                window.location.href = url;
+		            }
+		        });
+		    });
+		    
+		    // Method 3: Generic click handler for all tour bars (fallback)
+		    document.querySelectorAll('.tour-bar').forEach(function(tourBar, index) {
+		        console.log('Processing tour bar', index, ':', tourBar);
+		        
+		        // Add cursor pointer style
+		        tourBar.style.cursor = 'pointer';
+		        
+		        // If no other handlers work, add a generic one based on hidden input
+		        tourBar.addEventListener('click', function(e) {
+		            // Only proceed if the click wasn't already handled
+		            if (!e.defaultPrevented) {
+		                e.preventDefault();
+		                
+		                // Try to find travel ID from hidden input
+		                const hiddenInput = this.querySelector('input[name="travelPlanId"]');
+		                let travelId = null;
+		                
+		                if (hiddenInput && hiddenInput.value) {
+		                    travelId = hiddenInput.value;
+		                    console.log('Travel ID from hidden input:', travelId);
+		                } else {
+		                    // Final fallback: use index + 1
+		                    travelId = index + 1;
+		                    console.log('Using fallback travel ID:', travelId);
+		                }
+		                
+		                if (travelId) {
+		                    const url = '/travel/detail/' + travelId;
+		                    console.log('Final fallback - navigating to:', url);
+		                    window.location.href = url;
+		                }
+		            }
+		        });
+		    });
+		    
+		    // Debug: Log all tour bars found
+		    const allTourBars = document.querySelectorAll('.tour-bar');
+		    console.log('Total tour bars found:', allTourBars.length);
+		    allTourBars.forEach((bar, index) => {
+		        const hiddenInput = bar.querySelector('input[name="travelPlanId"]');
+		        console.log(`Tour bar ${index}:`, {
+		            onclick: bar.getAttribute('onclick'),
+		            dataId: bar.getAttribute('data-travel-id'),
+		            hiddenInputValue: hiddenInput ? hiddenInput.value : null,
+		            title: bar.querySelector('.tour-bar-title') ? bar.querySelector('.tour-bar-title').textContent : 'No title'
+		        });
+		    });
 		});
 	</script>
 </body>

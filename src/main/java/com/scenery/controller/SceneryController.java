@@ -51,6 +51,7 @@ public class SceneryController {
 	private MemberService memberService;
 	
 
+
 	// ===== ADMIN/BACKEND SCENERY MANAGEMENT =====
 
 	@GetMapping("/listallscenery")

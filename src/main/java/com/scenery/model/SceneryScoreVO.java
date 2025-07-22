@@ -16,11 +16,11 @@ public class SceneryScoreVO implements java.io.Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer scoreId;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "member_id", nullable = false)
 	private memVO member;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "scenery_id", nullable = false)
 	private SceneryVO scenery;
 

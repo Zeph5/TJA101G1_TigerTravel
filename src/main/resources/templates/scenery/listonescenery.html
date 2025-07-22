@@ -1,44 +1,470 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>Scenery Details</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<title>Scenery Details</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+<style>
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 20%;
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    border-right: 1px solid #dee2e6;
+    padding: 20px 15px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
+}
+
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e3f2fd;
+}
+
+.logo-img {
+    height: 42px;
+}
+
+.site-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1e88e5;
+}
+
+.sidebar h3 {
+    color: #1e88e5;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 2px solid #1e88e5;
+    padding-bottom: 10px;
+}
+
+.sidebar .nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar .nav-list li {
+    margin-bottom: 10px;
+}
+
+.sidebar .nav-list a {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 12px 15px;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.25s ease;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.sidebar .nav-list a.btn-primary {
+    background-color: #1e88e5;
+    color: white;
+    border: none;
+}
+
+.sidebar .nav-list a.btn-secondary {
+    background-color: #e3f2fd;
+    color: #1e88e5;
+    border: 1px solid #1e88e5;
+}
+
+.sidebar .nav-list a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 136, 229, 0.2);
+}
+
+.sidebar .nav-list a.btn-primary:hover {
+    background-color: #1976d2;
+}
+
+.sidebar .nav-list a.btn-secondary:hover {
+    background-color: #bbdefb;
+}
+
+.sidebar .nav-list a.active {
+    background-color: #1976d2;
+    color: white;
+}
+
+.main-content {
+    margin-left: 20%;
+    padding: 15px;
+    width: 80%;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", "Noto Sans TC", sans-serif;
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+}
+
+.detail-item {
+    background: #f8f9fa;
+    border-left: 4px solid #1e88e5;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    border-radius: 0 8px 8px 0;
+    transition: all 0.3s ease;
+}
+
+.detail-item:hover {
+    background: #e3f2fd;
+    transform: translateX(5px);
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #1e88e5;
+    display: inline-block;
+    min-width: 120px;
+}
+
+.detail-value {
+    color: #333;
+    margin-left: 10px;
+}
+
+.rating-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rating-stars {
+    color: #ffc107;
+}
+
+.image-container {
+    position: relative;
+    display: inline-block;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease;
+}
+
+.image-container:hover {
+    transform: scale(1.02);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-active {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.status-inactive {
+    background: linear-gradient(135deg, #6c757d, #adb5bd);
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        margin-bottom: 20px;
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .detail-label {
+        min-width: auto;
+        display: block;
+        margin-bottom: 4px;
+    }
+    
+    .detail-value {
+        margin-left: 0;
+    }
+}
+</style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-md navbar-dark bg-success fixed-top justify-content-center">
-    <div align="center">
-        <h2>listonescenery.html</h2>
-        <h3><a class="navbar-brand" th:href="@{/scenery/sceneryindex}">回sceneryindex</a></h3>
+<!-- Left Sidebar -->
+<div class="sidebar">
+    <div class="logo-wrapper">
+        <img th:src="@{/images/logo.png}" alt="Tiger Travel Logo" class="logo-img" />
+        <span class="site-title">後台管理系統</span>
     </div>
-</nav>
+    <h3>景點管理</h3>
+    <ul class="nav-list">
+        <li>
+            <a href="/scenery/listallscenery" class="btn btn-primary active">景點</a>
+        </li>
+        <li>
+            <a href="/sceneryscore/findAll" class="btn btn-primary">景點評價</a>
+        </li>
+        <li>
+            <a th:href="@{/tags/list}" class="btn btn-primary">景點標籤</a>
+        </li>
+        <li>
+            <a th:href="@{/tagsdb/listall}" class="btn btn-primary">標籤列</a>
+        </li>
+        <li>
+            <a href="/manager/home" class="btn btn-secondary">🏠 返回管理首頁</a>
+        </li>
+    </ul>
+</div>
 
-<div align="center" style="margin-top: 80px;">
-    <h3>查詢結果 :</h3>
-    <span>景點編號:</span> <span th:text="${sceneryVO.sceneryId}"></span><br />
-    <span>景點名稱:</span> <span th:text="${sceneryVO.sceneryName}"></span><br />
-    <span>景點介紹:</span> <span th:text="${sceneryVO.sceneryIntro}"></span><br />
-    <span>景點總評分:</span> <span th:text="${sceneryVO.sceneryTotalScore}"></span><br />
-    <span>景點總評分人數:</span> <span th:text="${sceneryVO.sceneryTotalScoreCount}"></span><br />
-    <span>景點地址:</span> <span th:text="${sceneryVO.sceneryAddress}"></span><br />
-    <span>景點經度:</span> <span th:text="${sceneryVO.sceneryLongitude}"></span><br />
-    <span>景點緯度:</span> <span th:text="${sceneryVO.sceneryLatitude}"></span><br />
-    <span>創建時間:</span> <span th:text="${sceneryVO.createTime}"></span><br />
+<!-- Main Content -->
+<div class="main-content">
+    <div class="container-fluid px-0">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
+                <div class="px-3">
+                    <!-- Page Header -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-1">景點詳細資訊</h2>
+                            <p class="text-muted mb-0">查看和編輯景點的完整資訊</p>
+                        </div>
+                        <a th:href="@{/scenery/sceneryindex}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>返回索引
+                        </a>
+                    </div>
 
-    <!-- Optional: Show banner image -->
-    <div th:if="${sceneryVO.sceneryBanner != null}" style="margin-top: 10px;">
-        <span>景點圖片:</span><br />
-        <img th:src="@{/scenery/banner/{id}(id=${sceneryVO.sceneryId})}" style="max-height: 200px;" />
+                    <!-- Main Details Card -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-geo-alt-fill me-2"></i>
+                                <span th:text="${sceneryVO.sceneryName}">景點名稱</span>
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            
+                            <!-- Basic Information Section -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <h6 class="text-secondary mb-3 border-bottom pb-2">
+                                        <i class="bi bi-info-circle me-1"></i>基本資訊
+                                    </h6>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            <i class="bi bi-hash me-1"></i>景點編號:
+                                        </span>
+                                        <span class="detail-value" th:text="${sceneryVO.sceneryId}"></span>
+                                    </div>
+                                    
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            <i class="bi bi-geo-alt me-1"></i>景點名稱:
+                                        </span>
+                                        <span class="detail-value" th:text="${sceneryVO.sceneryName}"></span>
+                                    </div>
+
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            <i class="bi bi-calendar-plus me-1"></i>創建時間:
+                                        </span>
+                                        <span class="detail-value" th:text="${sceneryVO.createTime}"></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            <i class="bi bi-star-fill me-1"></i>總評分:
+                                        </span>
+                                        <div class="detail-value rating-display">
+                                            <span th:text="${sceneryVO.sceneryTotalScore}"></span>
+                                            <span class="rating-stars">
+                                                <i class="bi bi-star-fill"></i>
+                                                <i class="bi bi-star-fill"></i>
+                                                <i class="bi bi-star-fill"></i>
+                                                <i class="bi bi-star-fill"></i>
+                                                <i class="bi bi-star"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            <i class="bi bi-people me-1"></i>評分人數:
+                                        </span>
+                                        <span class="detail-value">
+                                            <span th:text="${sceneryVO.sceneryTotalScoreCount}"></span> 人
+                                        </span>
+                                    </div>
+
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            <i class="bi bi-toggle-on me-1"></i>狀態:
+                                        </span>
+                                        <span class="detail-value">
+                                            <span class="status-badge status-active">營運中</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Description Section -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h6 class="text-secondary mb-3 border-bottom pb-2">
+                                        <i class="bi bi-card-text me-1"></i>景點介紹
+                                    </h6>
+                                    <div class="detail-item">
+                                        <div class="detail-value" th:text="${sceneryVO.sceneryIntro}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Location Information -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h6 class="text-secondary mb-3 border-bottom pb-2">
+                                        <i class="bi bi-geo me-1"></i>地理位置
+                                    </h6>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            <i class="bi bi-map me-1"></i>地址:
+                                        </span>
+                                        <div class="detail-value" th:text="${sceneryVO.sceneryAddress}"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            <i class="bi bi-globe me-1"></i>經度:
+                                        </span>
+                                        <span class="detail-value" th:text="${sceneryVO.sceneryLongitude}"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            <i class="bi bi-globe me-1"></i>緯度:
+                                        </span>
+                                        <span class="detail-value" th:text="${sceneryVO.sceneryLatitude}"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Image Section -->
+                            <div class="row mt-4" th:if="${sceneryVO.sceneryBanner != null}">
+                                <div class="col-12">
+                                    <h6 class="text-secondary mb-3 border-bottom pb-2">
+                                        <i class="bi bi-image me-1"></i>景點圖片
+                                    </h6>
+                                    <div class="text-center">
+                                        <div class="image-container">
+                                            <img th:src="@{/scenery/banner/{id}(id=${sceneryVO.sceneryId})}" 
+                                                 class="img-fluid" style="max-height: 400px;" 
+                                                 alt="景點圖片" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <hr class="my-4">
+                                    <div class="d-flex justify-content-between flex-wrap gap-3">
+                                        <div class="d-flex gap-2">
+                                            <a th:href="@{/scenery/listallscenery}" class="btn btn-outline-secondary">
+                                                <i class="bi bi-list-ul me-1"></i>返回列表
+                                            </a>
+                                            <a th:href="@{/scenery/sceneryindex}" class="btn btn-outline-primary">
+                                                <i class="bi bi-house me-1"></i>回主頁
+                                            </a>
+                                        </div>
+                                        
+                                        <form th:action="@{/scenery/showupdatescenery}" method="post" class="d-inline">
+                                            <input type="hidden" th:if="${_csrf != null}"
+                                                   th:name="${_csrf.parameterName}"
+                                                   th:value="${_csrf.token}" />
+                                            <input type="hidden" name="sceneryId" th:value="${sceneryVO.sceneryId}" />
+                                            <button type="submit" class="btn btn-warning">
+                                                <i class="bi bi-pencil-square me-1"></i>編輯景點
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions Card -->
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted">
+                                <i class="bi bi-lightning me-1"></i>快速操作
+                            </h6>
+                            <div class="row">
+                                <div class="col-6 col-md-3 mb-2">
+                                    <a th:href="@{/sceneryscore/findAll}" class="btn btn-outline-primary btn-sm w-100">
+                                        <i class="bi bi-chat-quote"></i><br>
+                                        <small>查看評價</small>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3 mb-2">
+                                    <a th:href="@{/tags/list}" class="btn btn-outline-success btn-sm w-100">
+                                        <i class="bi bi-tags"></i><br>
+                                        <small>管理標籤</small>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3 mb-2">
+                                    <a th:href="@{/scenery/addscenery}" class="btn btn-outline-info btn-sm w-100">
+                                        <i class="bi bi-plus-circle"></i><br>
+                                        <small>新增景點</small>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3 mb-2">
+                                    <a href="/manager/home" class="btn btn-outline-secondary btn-sm w-100">
+                                        <i class="bi bi-house"></i><br>
+                                        <small>管理首頁</small>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <form th:action="@{/scenery/showupdatescenery}" method="post">
-        <input type="hidden" th:if="${_csrf != null}"
-               th:name="${_csrf.parameterName}"
-               th:value="${_csrf.token}" />
-        <input type="hidden" name="sceneryId" th:value="${sceneryVO.sceneryId}" />
-        <button type="submit">修改</button>
-    </form>
 </div>
 
 </body>
