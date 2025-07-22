@@ -1,21 +1,345 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Add Tag</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<title>Add Tag</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+<style>
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 20%;
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    border-right: 1px solid #dee2e6;
+    padding: 20px 15px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
+}
+
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e3f2fd;
+}
+
+.logo-img {
+    height: 42px;
+}
+
+.site-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1e88e5;
+}
+
+.sidebar h3 {
+    color: #1e88e5;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 2px solid #1e88e5;
+    padding-bottom: 10px;
+}
+
+.sidebar .nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar .nav-list li {
+    margin-bottom: 10px;
+}
+
+.sidebar .nav-list a {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 12px 15px;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.25s ease;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.sidebar .nav-list a.btn-primary {
+    background-color: #1e88e5;
+    color: white;
+    border: none;
+}
+
+.sidebar .nav-list a.btn-secondary {
+    background-color: #e3f2fd;
+    color: #1e88e5;
+    border: 1px solid #1e88e5;
+}
+
+.sidebar .nav-list a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 136, 229, 0.2);
+}
+
+.sidebar .nav-list a.btn-primary:hover {
+    background-color: #1976d2;
+}
+
+.sidebar .nav-list a.btn-secondary:hover {
+    background-color: #bbdefb;
+}
+
+.sidebar .nav-list a.active {
+    background-color: #1976d2;
+    color: white;
+}
+
+.main-content {
+    margin-left: 20%;
+    padding: 15px;
+    width: 80%;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", "Noto Sans TC", sans-serif;
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+}
+
+.tag-preview {
+    background: linear-gradient(135deg, #17a2b8, #20c997);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-block;
+    margin-top: 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.tag-preview.show {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        margin-bottom: 20px;
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tagInput = document.getElementById('tagsName');
+    const preview = document.getElementById('tagPreview');
+    const previewText = document.getElementById('previewText');
+    
+    tagInput.addEventListener('input', function() {
+        const value = this.value.trim();
+        if (value) {
+            previewText.textContent = value;
+            preview.classList.add('show');
+        } else {
+            preview.classList.remove('show');
+        }
+    });
+    
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const tagName = tagInput.value.trim();
+        if (!tagName) {
+            e.preventDefault();
+            tagInput.classList.add('is-invalid');
+            return;
+        }
+        
+        if (tagName.length < 2) {
+            e.preventDefault();
+            tagInput.classList.add('is-invalid');
+            alert('標籤名稱至少需要2個字元');
+            return;
+        }
+    });
+    
+    tagInput.addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+    });
+});
+</script>
 </head>
-<body class="container mt-5">
-    <h2>Add New Tag</h2>
+<body>
 
-    <form th:action="@{/tagsdb/add}" method="post" th:object="${tagsdb}" class="mt-3">
-        <div class="mb-3">
-            <label for="tagsName" class="form-label">Tag Name</label>
-            <input type="text" class="form-control" id="tagsName" th:field="*{tagsName}" required />
+<!-- Left Sidebar -->
+<div class="sidebar">
+    <div class="logo-wrapper">
+        <img th:src="@{/images/logo.png}" alt="Tiger Travel Logo" class="logo-img" />
+        <span class="site-title">後台管理系統</span>
+    </div>
+    <h3>景點管理</h3>
+    <ul class="nav-list">
+        <li>
+            <a href="/scenery/listallscenery" class="btn btn-primary">景點</a>
+        </li>
+        <li>
+            <a href="/sceneryscore/findAll" class="btn btn-primary">景點評價</a>
+        </li>
+        <li>
+            <a th:href="@{/tags/list}" class="btn btn-primary">景點標籤</a>
+        </li>
+        <li>
+            <a th:href="@{/tagsdb/listall}" class="btn btn-primary active">標籤列</a>
+        </li>
+        <li>
+            <a href="/manager/home" class="btn btn-secondary">🏠 返回管理首頁</a>
+        </li>
+    </ul>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <div class="container-fluid px-0">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-8 col-xl-6">
+                <div class="px-3">
+                    <!-- Page Header -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-1">新增標籤類型</h2>
+                            <p class="text-muted mb-0">在標籤資料庫中新增可用的標籤類型</p>
+                        </div>
+                        <a th:href="@{/tagsdb/listall}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>返回列表
+                        </a>
+                    </div>
+
+                    <!-- Error Alert -->
+                    <div th:if="${error}" class="alert alert-danger border-0 shadow-sm mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <span th:text="${error}"></span>
+                    </div>
+
+                    <!-- Main Form Card -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-success text-white border-0">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-plus-circle me-2"></i>新增標籤類型
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <form th:action="@{/tagsdb/add}" method="post" th:object="${tagsdb}" class="mt-0">
+                                
+                                <!-- Tag Name Section -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h6 class="text-secondary mb-3 border-bottom pb-2">
+                                            <i class="bi bi-tag me-1"></i>標籤資訊
+                                        </h6>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="tagsName" class="form-label fw-semibold">
+                                        標籤名稱 <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-tag-fill"></i>
+                                        </span>
+                                        <input type="text" class="form-control form-control-lg" 
+                                               id="tagsName" th:field="*{tagsName}" 
+                                               placeholder="請輸入標籤名稱（例如：戶外活動、文化景點）" 
+                                               required maxlength="50" />
+                                    </div>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        輸入清楚易懂的標籤名稱，將用於景點分類
+                                    </div>
+                                    
+                                    <!-- Live Preview -->
+                                    <div class="mt-2">
+                                        <small class="text-muted">預覽效果：</small>
+                                        <div id="tagPreview" class="tag-preview">
+                                            <i class="bi bi-tag-fill me-1"></i>
+                                            <span id="previewText">標籤名稱</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Instructions -->
+                                <div class="alert alert-info border-0" role="alert">
+                                    <h6 class="alert-heading">
+                                        <i class="bi bi-lightbulb me-1"></i>命名建議
+                                    </h6>
+                                    <ul class="mb-0 small">
+                                        <li>使用清楚描述性的名稱，如「自然風景」、「歷史古蹟」</li>
+                                        <li>避免過於冗長的名稱，建議在2-10個字元之間</li>
+                                        <li>確保名稱的唯一性，避免與現有標籤重複</li>
+                                        <li>使用正面且專業的詞彙</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <hr class="my-4">
+                                        <div class="d-flex justify-content-end gap-3">
+                                            <a th:href="@{/tagsdb/listall}" class="btn btn-outline-secondary btn-lg px-4">
+                                                <i class="bi bi-x-circle me-1"></i>取消
+                                            </a>
+                                            <button type="submit" class="btn btn-success btn-lg px-4">
+                                                <i class="bi bi-plus-circle me-1"></i>新增標籤
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Help Card -->
+                    <div class="card mt-4 border-0 bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted">
+                                <i class="bi bi-question-circle me-1"></i>關於標籤類型
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled small text-muted mb-0">
+                                        <li><i class="bi bi-check2 text-success me-1"></i>標籤類型用於景點分類</li>
+                                        <li><i class="bi bi-check2 text-success me-1"></i>新增後可在景點標籤中使用</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled small text-muted mb-0">
+                                        <li><i class="bi bi-check2 text-success me-1"></i>幫助用戶更容易找到相關景點</li>
+                                        <li><i class="bi bi-check2 text-success me-1"></i>提升網站的組織性和易用性</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <button type="submit" class="btn btn-primary">Add</button>
-        <a class="btn btn-secondary" th:href="@{/tagsdb/listall}">Cancel</a>
-    </form>
+    </div>
+</div>
 
-    <p class="text-danger" th:if="${error}" th:text="${error}"></p>
 </body>
 </html>

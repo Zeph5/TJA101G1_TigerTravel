@@ -1,22 +1,346 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Tag Added Successfully</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<meta charset="UTF-8">
+<title>Tag Added Successfully</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+<style>
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 20%;
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    border-right: 1px solid #dee2e6;
+    padding: 20px 15px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
+}
+
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e3f2fd;
+}
+
+.logo-img {
+    height: 42px;
+}
+
+.site-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1e88e5;
+}
+
+.sidebar h3 {
+    color: #1e88e5;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 2px solid #1e88e5;
+    padding-bottom: 10px;
+}
+
+.sidebar .nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar .nav-list li {
+    margin-bottom: 10px;
+}
+
+.sidebar .nav-list a {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 12px 15px;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.25s ease;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.sidebar .nav-list a.btn-primary {
+    background-color: #1e88e5;
+    color: white;
+    border: none;
+}
+
+.sidebar .nav-list a.btn-secondary {
+    background-color: #e3f2fd;
+    color: #1e88e5;
+    border: 1px solid #1e88e5;
+}
+
+.sidebar .nav-list a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 136, 229, 0.2);
+}
+
+.sidebar .nav-list a.btn-primary:hover {
+    background-color: #1976d2;
+}
+
+.sidebar .nav-list a.btn-secondary:hover {
+    background-color: #bbdefb;
+}
+
+.sidebar .nav-list a.active {
+    background-color: #1976d2;
+    color: white;
+}
+
+.main-content {
+    margin-left: 20%;
+    padding: 15px;
+    width: 80%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", "Noto Sans TC", sans-serif;
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+}
+
+.success-card {
+    background: linear-gradient(135deg, #d4edda, #ffffff);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(40, 167, 69, 0.15);
+    animation: slideInUp 0.6s ease-out;
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    animation: bounceIn 0.8s ease-out;
+}
+
+.success-icon i {
+    font-size: 40px;
+    color: white;
+}
+
+.tag-association-display {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 20px 0;
+}
+
+.tag-badge {
+    background: linear-gradient(135deg, #17a2b8, #20c997);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.scenery-badge {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        margin-bottom: 20px;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        min-height: auto;
+    }
+}
+</style>
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="alert alert-success text-center">
-            <h2>✅ Tag Added Successfully!</h2>
-            <p>The tag was successfully associated with the scenery.</p>
-        </div>
 
-        <div class="text-center mt-4">
-            <a href="/tags/add" class="btn btn-primary">Add Another Tag</a>
-            <a href="/scenery/listonescenery" class="btn btn-secondary">View Scenery</a>
-            <a href="/scenery/sceneryindex" class="btn btn-outline-dark">Back to Scenery Index</a>
+<!-- Left Sidebar -->
+<div class="sidebar">
+    <div class="logo-wrapper">
+        <img th:src="@{/images/logo.png}" alt="Tiger Travel Logo" class="logo-img" />
+        <span class="site-title">後台管理系統</span>
+    </div>
+    <h3>景點管理</h3>
+    <ul class="nav-list">
+        <li>
+            <a href="/scenery/listallscenery" class="btn btn-primary">景點</a>
+        </li>
+        <li>
+            <a href="/sceneryscore/findAll" class="btn btn-primary">景點評價</a>
+        </li>
+        <li>
+            <a th:href="@{/tags/list}" class="btn btn-primary active">景點標籤</a>
+        </li>
+        <li>
+            <a th:href="@{/tagsdb/listall}" class="btn btn-primary">標籤列</a>
+        </li>
+        <li>
+            <a href="/manager/home" class="btn btn-secondary">🏠 返回管理首頁</a>
+        </li>
+    </ul>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                <div class="card success-card">
+                    <div class="card-body p-5 text-center">
+                        <div class="success-icon">
+                            <i class="bi bi-check-lg"></i>
+                        </div>
+                        
+                        <h2 class="text-success fw-bold mb-3">標籤關聯成功！</h2>
+                        <p class="text-muted mb-4 fs-5">標籤已成功關聯到指定景點</p>
+                        
+                        <div class="alert alert-success bg-transparent border-success" role="alert">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>關聯已建立：</strong>標籤與景點的關聯已成功儲存至系統中
+                        </div>
+                        
+                        <!-- Tag Association Display -->
+                        <div class="tag-association-display">
+                            <h6 class="text-muted mb-3">
+                                <i class="bi bi-link-45deg me-1"></i>成功建立的關聯
+                            </h6>
+                            <div class="d-flex align-items-center justify-content-center flex-wrap gap-3">
+                                <div class="tag-badge">
+                                    <i class="bi bi-tag-fill me-1"></i>
+                                    新增的標籤
+                                </div>
+                                <i class="bi bi-arrow-left-right text-primary fs-4"></i>
+                                <div class="scenery-badge">
+                                    <i class="bi bi-geo-alt-fill me-1"></i>
+                                    關聯的景點
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center mt-4">
+                            <a href="/tags/add" class="btn btn-success btn-lg px-4">
+                                <i class="bi bi-plus-circle me-2"></i>繼續新增標籤
+                            </a>
+                            <a th:href="@{/tags/list}" class="btn btn-outline-primary btn-lg px-4">
+                                <i class="bi bi-list-ul me-2"></i>查看標籤列表
+                            </a>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="text-muted small">
+                                    <i class="bi bi-check-circle-fill text-success me-1"></i>
+                                    <span>關聯已儲存</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">
+                                    <i class="bi bi-search me-1"></i>
+                                    <span>可供搜尋使用</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Next Steps Card -->
+                <div class="card mt-4 border-0">
+                    <div class="card-body bg-light rounded">
+                        <h6 class="card-title text-muted mb-3">
+                            <i class="bi bi-arrow-right-circle me-1"></i>接下來您可以
+                        </h6>
+                        <div class="row">
+                            <div class="col-6 col-md-4 mb-2">
+                                <a href="/tags/add" class="btn btn-outline-success btn-sm w-100">
+                                    <i class="bi bi-plus-circle"></i><br>
+                                    <small>新增標籤</small>
+                                </a>
+                            </div>
+                            <div class="col-6 col-md-4 mb-2">
+                                <a th:href="@{/tags/list}" class="btn btn-outline-primary btn-sm w-100">
+                                    <i class="bi bi-list-ul"></i><br>
+                                    <small>管理標籤</small>
+                                </a>
+                            </div>
+                            <div class="col-6 col-md-4 mb-2">
+                                <a href="/manager/home" class="btn btn-outline-secondary btn-sm w-100">
+                                    <i class="bi bi-house"></i><br>
+                                    <small>管理首頁</small>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+</div>
+
 </body>
 </html>

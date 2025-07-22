@@ -12,6 +12,8 @@ import com.scenery.model.SceneryService;
 import com.scenery.model.SceneryVO;
 import com.ticket.model.Ticket;
 import com.ticket.repository.TicketRepository;
+import com.travel_plan.model.TravelPlan;
+import com.travel_plan.repository.TravelPlanRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -51,18 +53,26 @@ public class IndexController {
     private TicketRepository ticketRepository;
     @Autowired
     private SceneryScoreRepository sceneryScoreRepository;
+    @Autowired
+    private TravelPlanRepository travelPlanRepository;
 
     @GetMapping({"/", "/index"})
     public String showIndex(@RequestParam(required = false) String keyword, Model model) {
+        System.out.println("=== INDEX PAGE LOADING ===");
         loadCommonData(model, keyword);
         return "index";
     }
 
-    // Fixed scenery search handler - now properly handles POST requests
+ // Fixed scenery search handler - works for both authenticated and anonymous users
     @PostMapping("/scenery/search")
     public String searchSceneryPost(@RequestParam("keyword") String keyword,
-                                   RedirectAttributes redirectAttributes) {
+                                   RedirectAttributes redirectAttributes,
+                                   Authentication authentication) { // Optional authentication
         try {
+            System.out.println("=== SCENERY SEARCH POST DEBUG ===");
+            System.out.println("Keyword: " + keyword);
+            System.out.println("User authenticated: " + (authentication != null && authentication.isAuthenticated()));
+            
             // Validate keyword
             if (keyword == null || keyword.trim().isEmpty()) {
                 redirectAttributes.addFlashAttribute("error", "請輸入搜尋關鍵字");
@@ -71,21 +81,31 @@ public class IndexController {
             
             // Encode keyword for URL safety
             String encodedKeyword = UriUtils.encodeQueryParam(keyword.trim(), StandardCharsets.UTF_8);
-            return "redirect:/search?keyword=" + encodedKeyword + "&page=1";
+            String redirectUrl = "redirect:/search?keyword=" + encodedKeyword + "&page=1";
+            
+            System.out.println("Redirecting to: " + redirectUrl);
+            return redirectUrl;
             
         } catch (Exception e) {
             System.err.println("Error in scenery search: " + e.getMessage());
+            e.printStackTrace();
             redirectAttributes.addFlashAttribute("error", "搜尋時發生錯誤，請稍後再試");
             return "redirect:/";
         }
     }
 
-    // Enhanced search results page
+    // Enhanced search results page - works for both authenticated and anonymous users
     @GetMapping("/search")
     public String searchScenery(@RequestParam String keyword,
                                 @RequestParam(defaultValue = "1") int page,
-                                Model model) {
+                                Model model,
+                                Authentication authentication) { // Optional authentication
         try {
+            System.out.println("=== SEARCH RESULTS DEBUG ===");
+            System.out.println("Keyword: " + keyword);
+            System.out.println("Page: " + page);
+            System.out.println("User authenticated: " + (authentication != null && authentication.isAuthenticated()));
+            
             // Validate inputs
             if (keyword == null || keyword.trim().isEmpty()) {
                 model.addAttribute("error", "搜尋關鍵字不能為空");
@@ -101,6 +121,7 @@ public class IndexController {
 
             // Perform search
             Page<SceneryVO> sceneryPage = sceneryService.searchSceneryByNameOrTag(keyword.trim(), pageable);
+            System.out.println("Found " + sceneryPage.getTotalElements() + " results");
 
             // Encode images and ratings
             encodeImagesAndRatings(sceneryPage.getContent());
@@ -114,12 +135,18 @@ public class IndexController {
             model.addAttribute("totalPages", sceneryPage.getTotalPages());
             model.addAttribute("totalElements", sceneryPage.getTotalElements());
             
+            // Add user authentication status for the template
+            model.addAttribute("isAuthenticated", authentication != null && authentication.isAuthenticated());
+            
+            System.out.println("Returning template: frontend/scenery/scenerysearch");
+            return "frontend/scenery/scenerysearch";
+            
         } catch (Exception e) {
             System.err.println("Error in search results: " + e.getMessage());
+            e.printStackTrace();
             model.addAttribute("error", "搜尋時發生錯誤，請稍後再試");
+            return "frontend/scenery/scenerysearch";
         }
-        
-        return "frontend/scenery/scenerysearch";
     }
 
     // ===== SCENERY DETAIL PAGE WITH COMMENTS =====
@@ -289,16 +316,99 @@ public class IndexController {
         return "redirect:/frontend/scenery/detail/" + sceneryId;
     }
 
+    // ===== TRAVEL DETAIL PAGE =====
+    
+    @GetMapping("/travel/detail/{id}")
+    public String showTravelDetail(@PathVariable("id") Integer id, Model model, Authentication authentication) {
+        try {
+            System.out.println("=== TRAVEL DETAIL DEBUG ===");
+            System.out.println("Requested travel ID: " + id);
+            
+            // Validate the ID
+            if (id == null || id <= 0) {
+                System.err.println("Invalid travel ID: " + id);
+                model.addAttribute("error", "無效的旅程ID");
+                return "redirect:/";
+            }
+
+            // Get the travel plan
+            Optional<TravelPlan> travelPlanOpt = travelPlanRepository.findById(id);
+            if (travelPlanOpt.isEmpty()) {
+                System.err.println("Travel plan not found with ID: " + id);
+                model.addAttribute("error", "旅程不存在 (ID: " + id + ")");
+                return "redirect:/";
+            }
+
+            TravelPlan plan = travelPlanOpt.get();
+            System.out.println("Found travel plan: " + plan.getTravelTitle());
+            
+            // Add the plan to model with both names for compatibility
+            model.addAttribute("plan", plan);
+            model.addAttribute("travelPlan", plan);
+
+            // Add empty collections for now (you can populate these later with actual data)
+            model.addAttribute("itineraries", new ArrayList<>());
+            model.addAttribute("groupedDays", new HashMap<>());
+            model.addAttribute("memberOrders", new ArrayList<>());
+            
+            // Check if user is authenticated for favorite status
+            boolean isAuthenticated = false;
+            memVO currentUser = null;
+            
+            if (authentication != null && authentication.isAuthenticated()) {
+                try {
+                    String memberAccount = authentication.getName();
+                    System.out.println("Authenticated user: " + memberAccount);
+                    
+                    Optional<memVO> memberOpt = memberService.findByAccount(memberAccount);
+                    if (memberOpt.isPresent()) {
+                        currentUser = memberOpt.get();
+                        isAuthenticated = true;
+                        model.addAttribute("currentUser", currentUser);
+                        System.out.println("Current user ID: " + currentUser.getMemberId());
+                        
+                        // You can implement favorite checking here if needed
+                        // For now, set it to false
+                        model.addAttribute("isFavorite", false);
+                    } else {
+                        System.out.println("User not found in database: " + memberAccount);
+                        model.addAttribute("isFavorite", false);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error checking authentication: " + e.getMessage());
+                    model.addAttribute("isFavorite", false);
+                }
+            } else {
+                System.out.println("No user authenticated");
+                model.addAttribute("isFavorite", false);
+            }
+            
+            model.addAttribute("isAuthenticated", isAuthenticated);
+            
+            System.out.println("Returning template: member/member-travel-detail");
+            return "member/member-travel-detail";
+
+        } catch (Exception e) {
+            System.err.println("Error in showTravelDetail: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "載入旅程詳情時發生錯誤: " + e.getMessage());
+            return "redirect:/";
+        }
+    }
+
     // ===== HELPER METHODS =====
 
     private void loadCommonData(Model model, String keyword) {
         try {
+            System.out.println("Loading common data for homepage...");
+            
             // Load top sceneries using cached ratings
             List<SceneryVO> topSceneries = sceneryService.getTopRatedSceneries(4);
             
             // Encode images for the sceneries
             encodeImagesAndRatings(topSceneries);
             model.addAttribute("topSceneries", topSceneries);
+            System.out.println("Loaded " + topSceneries.size() + " top sceneries");
 
             // Load tickets
             List<Ticket> allTickets = ticketRepository.findAll();
@@ -319,6 +429,42 @@ public class IndexController {
                         return map;
                     }).toList();
             model.addAttribute("ticketList", ticketList);
+            System.out.println("Loaded " + ticketList.size() + " tickets");
+
+            // Load travel tours for homepage
+            try {
+                List<TravelPlan> popularTours = travelPlanRepository.findTop6ByOrderByTravelPlanIdDesc();
+                if (popularTours == null) {
+                    popularTours = new ArrayList<>();
+                }
+                
+                // Process tour data for display
+                List<Map<String, Object>> tourList = popularTours.stream()
+                        .limit(6)
+                        .map(tour -> {
+                            Map<String, Object> map = new HashMap<>();
+                            map.put("travelPlanId", tour.getTravelPlanId());
+                            map.put("travelTitle", tour.getTravelTitle());
+                            map.put("travelPlanDescription", tour.getTravelPlanDescription());
+                            map.put("travelPlanBannerUrl", tour.getTravelPlanBannerUrl());
+                            return map;
+                        }).toList();
+                
+                System.out.println("Loaded " + tourList.size() + " tours for homepage");
+                
+                // Debug each tour
+                for (int i = 0; i < tourList.size(); i++) {
+                    Map<String, Object> tour = tourList.get(i);
+                    System.out.println("Tour " + i + ": ID=" + tour.get("travelPlanId") + ", Title=" + tour.get("travelTitle"));
+                }
+                
+                model.addAttribute("tourList", tourList);
+                
+            } catch (Exception e) {
+                System.err.println("Error loading travel tours: " + e.getMessage());
+                e.printStackTrace();
+                model.addAttribute("tourList", new ArrayList<>());
+            }
 
             // Load homepage images
             List<String> homepageImages = new ArrayList<>();
@@ -335,12 +481,15 @@ public class IndexController {
                 }
             }
             model.addAttribute("homepageImages", homepageImages);
+            System.out.println("Loaded " + homepageImages.size() + " homepage images");
             
         } catch (Exception e) {
             System.err.println("Error loading common data: " + e.getMessage());
+            e.printStackTrace();
             // Set default empty values to prevent template errors
             model.addAttribute("topSceneries", new ArrayList<>());
             model.addAttribute("ticketList", new ArrayList<>());
+            model.addAttribute("tourList", new ArrayList<>());
             model.addAttribute("homepageImages", new ArrayList<>());
         }
     }

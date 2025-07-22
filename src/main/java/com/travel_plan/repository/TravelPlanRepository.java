@@ -25,5 +25,9 @@ public interface TravelPlanRepository extends JpaRepository<TravelPlan, Integer>
 	List<TravelPlan> findByTravelTitleContaining(String keyword);
 	
 	Page<TravelPlan> findByTravelTitleContaining(String keyword, Pageable pageable);
+	
+	List<TravelPlan> findTop6ByOrderByTravelPlanIdDesc();
+	
+	Optional<TravelPlan> findById(Integer id);
 
 }

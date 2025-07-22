@@ -1,58 +1,394 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Add Tag</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-    <script>
-        function fillSceneryName(select) {
-            const selectedOption = select.options[select.selectedIndex];
-            document.getElementById("sceneryNameInput").value = selectedOption.text;
+<title>Add Tag</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+<style>
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 20%;
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    border-right: 1px solid #dee2e6;
+    padding: 20px 15px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
+}
+
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e3f2fd;
+}
+
+.logo-img {
+    height: 42px;
+}
+
+.site-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1e88e5;
+}
+
+.sidebar h3 {
+    color: #1e88e5;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 2px solid #1e88e5;
+    padding-bottom: 10px;
+}
+
+.sidebar .nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar .nav-list li {
+    margin-bottom: 10px;
+}
+
+.sidebar .nav-list a {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 12px 15px;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.25s ease;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.sidebar .nav-list a.btn-primary {
+    background-color: #1e88e5;
+    color: white;
+    border: none;
+}
+
+.sidebar .nav-list a.btn-secondary {
+    background-color: #e3f2fd;
+    color: #1e88e5;
+    border: 1px solid #1e88e5;
+}
+
+.sidebar .nav-list a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 136, 229, 0.2);
+}
+
+.sidebar .nav-list a.btn-primary:hover {
+    background-color: #1976d2;
+}
+
+.sidebar .nav-list a.btn-secondary:hover {
+    background-color: #bbdefb;
+}
+
+.sidebar .nav-list a.active {
+    background-color: #1976d2;
+    color: white;
+}
+
+.main-content {
+    margin-left: 20%;
+    padding: 15px;
+    width: 80%;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", "Noto Sans TC", sans-serif;
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    opacity: 0.65;
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+.auto-fill-hint {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.selection-preview {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 15px;
+    display: none;
+}
+
+.preview-active {
+    display: block !important;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        margin-bottom: 20px;
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+}
+</style>
+<script>
+function fillSceneryName(select) {
+    const selectedOption = select.options[select.selectedIndex];
+    const sceneryNameInput = document.getElementById("sceneryNameInput");
+    const previewDiv = document.getElementById("selectionPreview");
+    const previewScenery = document.getElementById("previewScenery");
+    
+    if (selectedOption.value) {
+        sceneryNameInput.value = selectedOption.text;
+        previewScenery.textContent = selectedOption.text;
+        previewDiv.classList.add("preview-active");
+        
+        // Add visual feedback
+        sceneryNameInput.classList.add("is-valid");
+        setTimeout(() => {
+            sceneryNameInput.classList.remove("is-valid");
+        }, 2000);
+    } else {
+        previewDiv.classList.remove("preview-active");
+    }
+}
+
+function clearSelection() {
+    document.getElementById("sceneryNameInput").value = "";
+    document.getElementById("sceneryDropdown").value = "";
+    document.getElementById("selectionPreview").classList.remove("preview-active");
+}
+
+// Add form validation feedback
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const tagSelect = document.querySelector('[name="tagsdbId"]');
+        const sceneryInput = document.querySelector('[name="sceneryName"]');
+        
+        if (!tagSelect.value || !sceneryInput.value.trim()) {
+            e.preventDefault();
+            // Add visual feedback for missing fields
+            if (!tagSelect.value) tagSelect.classList.add('is-invalid');
+            if (!sceneryInput.value.trim()) sceneryInput.classList.add('is-invalid');
         }
-    </script>
+    });
+});
+</script>
 </head>
 <body>
-<div class="container mt-5">
-    <h1>Add Tag to Scenery</h1>
 
-    <div th:if="${error}" class="alert alert-danger">
-        <p th:text="${error}"></p>
+<!-- Left Sidebar -->
+<div class="sidebar">
+    <div class="logo-wrapper">
+        <img th:src="@{/images/logo.png}" alt="Tiger Travel Logo" class="logo-img" />
+        <span class="site-title">後台管理系統</span>
     </div>
-
-    <form th:action="@{/tags/add}" th:object="${tagsForm}" method="post">
-        <!-- Tag selection -->
-        <div class="mb-3">
-            <label for="tagsdbId">Select Tag:</label>
-            <select class="form-select" th:field="*{tagsdbId}" required>
-                <option value="" disabled selected>Select a tag</option>
-                <option th:each="tagdb : ${tagsdbList}"
-                        th:value="${tagdb.tagsdbId}"
-                        th:text="${tagdb.tagsName}"></option>
-            </select>
-        </div>
-        
-        
-           <!-- Optional: Hidden or minimized dropdown for selecting -->
-        <div class="mb-3">
-            <label for="sceneryDropdown">Choose from existing scenery:</label>
-            <select class="form-select" id="sceneryDropdown" onchange="fillSceneryName(this)">
-                <option value="" disabled selected>Select to autofill</option>
-                <option th:each="scene : ${sceneryList}"
-                        th:value="${scene.sceneryId}"
-                        th:text="${scene.sceneryName}"></option>
-            </select>
-        </div>
-
-        <!-- Scenery name field with dropdown to auto-fill -->
-        <div class="mb-3">
-            <label for="sceneryName">Scenery Name:</label>
-            <input type="text" class="form-control" th:field="*{sceneryName}" id="sceneryNameInput"
-                   placeholder="Enter or select a scenery" required />
-        </div>
-
-     
-
-        <button type="submit" class="btn btn-success">Add Tag</button>
-    </form>
+    <h3>景點管理</h3>
+    <ul class="nav-list">
+        <li>
+            <a href="/scenery/listallscenery" class="btn btn-primary">景點</a>
+        </li>
+        <li>
+            <a href="/sceneryscore/findAll" class="btn btn-primary">景點評價</a>
+        </li>
+        <li>
+            <a th:href="@{/tags/list}" class="btn btn-primary active">景點標籤</a>
+        </li>
+        <li>
+            <a th:href="@{/tagsdb/listall}" class="btn btn-primary">標籤列</a>
+        </li>
+        <li>
+            <a href="/manager/home" class="btn btn-secondary">🏠 返回管理首頁</a>
+        </li>
+    </ul>
 </div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <div class="container-fluid px-0">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-8 col-xl-6">
+                <div class="px-3">
+                    <!-- Page Header -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-1">新增景點標籤</h2>
+                            <p class="text-muted mb-0">為景點添加相關標籤以便分類管理</p>
+                        </div>
+                        <a th:href="@{/tags/list}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>返回列表
+                        </a>
+                    </div>
+
+                    <!-- Error Alert -->
+                    <div th:if="${error}" class="alert alert-danger border-0 shadow-sm mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <span th:text="${error}"></span>
+                    </div>
+
+                    <!-- Main Form Card -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-light border-0">
+                            <h5 class="card-title mb-0 text-primary">
+                                <i class="bi bi-tag-fill me-2"></i>標籤設定
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <form th:action="@{/tags/add}" th:object="${tagsForm}" method="post">
+                                
+                                <!-- Tag Selection Section -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h6 class="text-secondary mb-3 border-bottom pb-2">
+                                            <i class="bi bi-tags me-1"></i>選擇標籤
+                                        </h6>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="tagsdbId" class="form-label fw-semibold">
+                                        標籤類型 <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select form-select-lg" th:field="*{tagsdbId}" required>
+                                        <option value="" disabled selected>請選擇一個標籤</option>
+                                        <option th:each="tagdb : ${tagsdbList}"
+                                                th:value="${tagdb.tagsdbId}"
+                                                th:text="${tagdb.tagsName}"></option>
+                                    </select>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        選擇要添加到景點的標籤類型
+                                    </div>
+                                </div>
+
+                                <!-- Scenery Selection Section -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h6 class="text-secondary mb-3 border-bottom pb-2">
+                                            <i class="bi bi-geo-alt me-1"></i>選擇景點
+                                        </h6>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="sceneryDropdown" class="form-label fw-semibold">
+                                        快速選擇景點
+                                    </label>
+                                    <select class="form-select" id="sceneryDropdown" onchange="fillSceneryName(this)">
+                                        <option value="" disabled selected>從現有景點中選擇</option>
+                                        <option th:each="scene : ${sceneryList}"
+                                                th:value="${scene.sceneryId}"
+                                                th:text="${scene.sceneryName}"></option>
+                                    </select>
+                                    <div class="auto-fill-hint">
+                                        <i class="bi bi-lightbulb me-1"></i>
+                                        選擇景點會自動填入下方的景點名稱欄位
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="sceneryName" class="form-label fw-semibold">
+                                        景點名稱 <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-geo-alt"></i>
+                                        </span>
+                                        <input type="text" class="form-control form-control-lg" 
+                                               th:field="*{sceneryName}" id="sceneryNameInput"
+                                               placeholder="請輸入或選擇景點名稱" required />
+                                        <button type="button" class="btn btn-outline-secondary" 
+                                                onclick="clearSelection()" title="清除選擇">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text">
+                                        可以手動輸入景點名稱，或使用上方下拉選單快速選擇
+                                    </div>
+                                </div>
+
+                                <!-- Selection Preview -->
+                                <div id="selectionPreview" class="selection-preview">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        <strong>已選擇景點：</strong>
+                                        <span id="previewScenery" class="ms-2 text-primary"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <hr class="my-4">
+                                        <div class="d-flex justify-content-end gap-3">
+                                            <a th:href="@{/tags/list}" class="btn btn-outline-secondary btn-lg px-4">
+                                                <i class="bi bi-x-circle me-1"></i>取消
+                                            </a>
+                                            <button type="submit" class="btn btn-success btn-lg px-4">
+                                                <i class="bi bi-plus-circle me-1"></i>新增標籤
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Help Card -->
+                    <div class="card mt-4 border-0 bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted">
+                                <i class="bi bi-question-circle me-1"></i>操作說明
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled small text-muted mb-0">
+                                        <li><i class="bi bi-check2 text-success me-1"></i>選擇適合的標籤類型</li>
+                                        <li><i class="bi bi-check2 text-success me-1"></i>可使用下拉選單快速選擇景點</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled small text-muted mb-0">
+                                        <li><i class="bi bi-check2 text-success me-1"></i>也可以手動輸入景點名稱</li>
+                                        <li><i class="bi bi-check2 text-success me-1"></i>使用清除按鈕重置選擇</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
