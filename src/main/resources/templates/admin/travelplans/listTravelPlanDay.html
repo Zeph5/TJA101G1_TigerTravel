@@ -20,6 +20,8 @@
 </head>
 
 <body>
+<input type="hidden" id="_csrf" th:value="${_csrf.token}" />
+<input type="hidden" id="_csrf_header" th:value="${_csrf.headerName}" />
 	<div class="container bg-white shadow rounded p-4">
 
 		<!-- 上排返回按鈕 -->
@@ -92,72 +94,82 @@
 
 	<!-- ✅ 拖曳與刪除功能 -->
 	<script th:inline="javascript">
-		document.addEventListener('DOMContentLoaded', function () {
-			let updateUrl = /*[[@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/update-order(planId=${travelPlanId}, itineraryId=${travelItineraryId})}]]*/"";
-			let deleteUrl = /*[[@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/delete-multiple(planId=${travelPlanId}, itineraryId=${travelItineraryId})}]]*/"";
+	document.addEventListener('DOMContentLoaded', function () {
+		let updateUrl = /*[[@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/update-order(planId=${travelPlanId}, itineraryId=${travelItineraryId})}]]*/"";
+		let deleteUrl = /*[[@{/admin/travelplans/{planId}/itinerary/{itineraryId}/days/delete-multiple(planId=${travelPlanId}, itineraryId=${travelItineraryId})}]]*/"";
 
-			$("#sortableList").sortable({
-				handle: ".handle",
-				update: function () {
-					let order = [];
-					$("#sortableList tr").each(function (index) {
-						const row = $(this);
-						const id = row.data("id");
-						order.push(id);
-						row.find("td:nth-child(4)").text(index + 1);
-					});
-					$.ajax({
-						url: updateUrl,
-						method: "POST",
-						contentType: "application/json",
-						data: JSON.stringify(order),
-						success: function () {
-							const toastEl = document.getElementById('saveToast');
-							if (toastEl) {
-								const toast = new bootstrap.Toast(toastEl);
-								toast.show();
-							}
-						},
-						error: function () {
-							alert("更新失敗");
-						}
-					});
-				}
-			});
-
-			$('#checkAll').on('click', function () {
-				$('.row-checkbox').prop('checked', this.checked);
-			});
-
-			window.deleteSelected = function () {
-				const selectedIds = $('.row-checkbox:checked').map(function () {
-					return $(this).val();
-				}).get();
-
-				if (selectedIds.length === 0) {
-					alert("請先勾選要刪除的行程！");
-					return;
-				}
-
-				if (!confirm(`確定要刪除 ${selectedIds.length} 筆行程嗎？`)) {
-					return;
-				}
-
+		// ✅ 拖曳排序功能
+		$("#sortableList").sortable({
+			handle: ".handle",
+			update: function () {
+				let order = [];
+				$("#sortableList tr").each(function (index) {
+					const row = $(this);
+					const id = row.data("id");
+					order.push(id);
+					row.find("td:nth-child(4)").text(index + 1);
+				});
 				$.ajax({
-					url: deleteUrl,
+					url: updateUrl,
 					method: "POST",
 					contentType: "application/json",
-					data: JSON.stringify(selectedIds),
+					data: JSON.stringify(order),
+					beforeSend: function (xhr) {
+						const token = document.getElementById('_csrf').value;
+						const header = document.getElementById('_csrf_header').value;
+						xhr.setRequestHeader(header, token);
+					},
 					success: function () {
-						location.reload();
+						alert("✅ 順序已儲存");
 					},
 					error: function () {
-						alert("刪除失敗");
+						alert("❌ 儲存失敗，請檢查權限或登入狀態");
 					}
 				});
-			};
+			}
 		});
-	</script>
+
+		// ✅ 全選 checkbox
+		$('#checkAll').on('click', function () {
+			$('.row-checkbox').prop('checked', this.checked);
+		});
+
+		// ✅ 多筆刪除功能
+		window.deleteSelected = function () {
+			const selectedIds = $('.row-checkbox:checked').map(function () {
+				return $(this).val();
+			}).get();
+
+			if (selectedIds.length === 0) {
+				alert("請先勾選要刪除的行程！");
+				return;
+			}
+
+			if (!confirm(`確定要刪除 ${selectedIds.length} 筆行程嗎？`)) {
+				return;
+			}
+
+			$.ajax({
+				url: deleteUrl,
+				method: "POST",
+				contentType: "application/json",
+				data: JSON.stringify(selectedIds),
+				beforeSend: function (xhr) {
+					const token = document.getElementById('_csrf').value;
+					const header = document.getElementById('_csrf_header').value;
+					xhr.setRequestHeader(header, token);
+				},
+				success: function () {
+					location.reload();
+				},
+				error: function () {
+					alert("刪除失敗");
+				}
+			});
+		};
+	});
+</script>
+
 
 	<!-- ✅ 成功提示 -->
 	<div id="saveToast" class="toast align-items-center text-bg-success border-0 position-fixed bottom-0 end-0 m-4" role="alert" aria-live="assertive" aria-atomic="true">
