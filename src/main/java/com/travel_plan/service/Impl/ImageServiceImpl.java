@@ -35,7 +35,7 @@ public class ImageServiceImpl implements ImageService {
 	                .outputQuality(0.8)  // 圖片品質（0~1）
 	                .toFile(new File(fullPath));
 	    }
-
+	    System.out.println("📂 儲存圖片到：" + fullPath);
 	    // 回傳相對路徑存入資料庫
 	    return "/uploads/" + newFileName + ".jpg";
 	}

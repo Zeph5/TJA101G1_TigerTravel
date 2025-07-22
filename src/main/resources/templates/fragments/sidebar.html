@@ -2,61 +2,84 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 	<div th:fragment="sidebar">
-		<div
-			class="bg-dark text-white p-3 position-fixed top-0 start-0 vh-100"
+		<div class="bg-dark text-white p-3 position-fixed top-0 start-0 vh-100"
 			style="width: 220px; z-index: 1030;">
 
 			<div class="mb-4">
-				<a th:href="@{/manager/home}"> <img th:src="@{/images/icon.png}"
-					alt="logo" style="height: 120px; width: auto;" class="mb-2" />
+				<a th:href="@{/manager/home}">
+					<img th:src="@{/images/icon.png}" alt="logo"
+						style="height: 120px; width: auto;" class="mb-2" />
 				</a>
 				<h5 class="text-white">TigerTravel 後台</h5>
 				<link rel="stylesheet" th:href="@{/css/admin-theme.css}" />
-
 			</div>
+
 			<!-- 側邊選單 -->
 			<ul class="nav flex-column gap-1">
 
 				<!-- 首頁 -->
-				<li class="nav-item"><a class="nav-link text-white"
-					th:href="@{/manager/home}"> <i class="fa-solid fa-house"></i>
-						首頁
-				</a></li>
+				<li class="nav-item">
+					<a class="nav-link text-white" th:href="@{/manager/home}">
+						<i class="fa-solid fa-house"></i> 首頁
+					</a>
+				</li>
 
-				<!-- 行程管理（可展開） -->
-				<li class="nav-item"><a class="nav-link text-white"
-					th:href="@{/admin/travelplans}"> <i class="fa-solid fa-map"></i>
-						行程管理
-				</a></li>
-
+				<!-- 行程管理 -->
+				<li class="nav-item">
+					<a class="nav-link text-white" th:href="@{/admin/travelplans}">
+						<i class="fa-solid fa-map"></i> 行程管理
+					</a>
+				</li>
 
 				<!-- 會員管理 -->
-				<li class="nav-item"><a class="nav-link text-white"
-					th:href="@{/admin/members/list}"> <i class="fa-solid fa-users"></i>
-						會員管理
-				</a></li>
+				<li class="nav-item">
+					<a class="nav-link text-white" th:href="@{/admin/members/list}">
+						<i class="fa-solid fa-users"></i> 會員管理
+					</a>
+				</li>
 
 				<!-- 訂單管理 -->
-				<li class="nav-item"><a class="nav-link text-white"
-					th:href="@{/admin/orders/list}"> <i
-						class="fa-solid fa-file-invoice-dollar"></i> 訂單管理
-				</a></li>
+				<li class="nav-item">
+					<a class="nav-link text-white" th:href="@{/admin/orders/list}">
+						<i class="fa-solid fa-file-invoice-dollar"></i> 訂單管理
+					</a>
+				</li>
 
 				<!-- 票券管理 -->
-				<li class="nav-item"><a class="nav-link text-white"
-					th:href="@{/admin/ticket/list}"> <i class="fa-solid fa-ticket"></i>
-						票券管理
-				</a></li>
+				<li class="nav-item">
+					<a class="nav-link text-white" th:href="@{/admin/ticket/list}">
+						<i class="fa-solid fa-ticket"></i> 票券管理
+					</a>
+				</li>
 
-				<!-- 景點管理 -->
-				<li class="nav-item"><a class="nav-link text-white"
-					th:href="@{/admin/scenery/listallscenery}"> <i
-						class="fa-solid fa-mountain-sun"></i> 景點管理
-				</a></li>
+				<!-- 景點管理（可展開） -->
+				<li class="nav-item">
+					<a class="nav-link text-white" data-bs-toggle="collapse" href="#scenerySubMenu" role="button"
+						aria-expanded="false" aria-controls="scenerySubMenu">
+						<i class="fa-solid fa-mountain-sun"></i> 景點管理
+					</a>
+					<div class="collapse ps-3" id="scenerySubMenu">
+						<ul class="nav flex-column">
+							<li class="nav-item">
+								<a class="nav-link text-white" href="/scenery/listallscenery">景點</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link text-white" href="/sceneryscore/findAll">景點評價</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link text-white" th:href="@{/tags/list}">景點標籤</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link text-white" th:href="@{/tagsdb/listall}">標籤列</a>
+							</li>
+						</ul>
+					</div>
+				</li>
 
 			</ul>
 		</div>
 	</div>
-
 </body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </html>

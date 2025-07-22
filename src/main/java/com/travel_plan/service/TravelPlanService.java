@@ -82,8 +82,5 @@ public interface TravelPlanService {
 	void deleteAllByIds(List<Integer> planIds);
 
 	Page<TravelPlan> getTravelPlans(PageRequest of);
-
-
-
 	
 }

@@ -62,5 +62,6 @@ public interface TravelPlanDayService {
 
 
 	void deleteMultipleByIds(Integer itineraryId, List<Integer> dayIds);
-
+	
+	
 }

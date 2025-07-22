@@ -208,8 +208,26 @@ public class TravelPlanDayServiceImpl implements TravelPlanDayService {
 	@Override
 	@Transactional
 	public void deleteTravelPlanDayById(Integer travelPlanDayId, Integer itineraryId) {
-		travelPlanDayRepository.deleteById(travelPlanDayId);
-		
+		   TravelPlanDay toDelete = travelPlanDayRepository.findById(travelPlanDayId)
+			        .orElseThrow(() -> new IllegalArgumentException("找不到行程項目"));
+
+			    LocalDate date = toDelete.getTraveltime();
+
+			    // 先刪除
+			    travelPlanDayRepository.delete(toDelete);
+
+			    // 再取得該日剩下的項目（照目前的排序）
+			    List<TravelPlanDay> remainingDays = travelPlanDayRepository
+			        .findByTravelItinerary_TravelItineraryIdAndTraveltimeOrderByTravelSequenceNumber
+(itineraryId, date);
+
+			    // 重新設定序號
+			    for (int i = 0; i < remainingDays.size(); i++) {
+			        remainingDays.get(i).setTravelSequenceNumber(i + 1);
+			    }
+
+			    // 批次儲存
+			    travelPlanDayRepository.saveAll(remainingDays);
 	}
 	
 	
@@ -308,11 +326,5 @@ public class TravelPlanDayServiceImpl implements TravelPlanDayService {
 	    List<TravelPlanDay> toDelete = travelPlanDayRepository.findAllById(dayIds).stream()
 	        .filter(day -> day.getTravelItinerary().getTravelItineraryId().equals(itineraryId))
 	        .collect(Collectors.toList());
-	    travelPlanDayRepository.deleteAll(toDelete);
-	}
-
-	
-
-
-
+	    travelPlanDayRepository.deleteAll(toDelete);}
 }
