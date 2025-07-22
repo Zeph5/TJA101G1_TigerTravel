@@ -2,173 +2,571 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>我的訂單</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的訂單 - 臺鴿旅遊</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff; /* 淡藍背景，清新如藍天 */
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 頂部搜尋區 (藍色調淺，加漸變) */
+        .header {
+            background: linear-gradient(to right, #66b2ff, #99ccff); /* 淺藍漸變，更柔和好看 */
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 加陰影，讓立體 */
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-bar select, .search-bar input {
+            padding: 8px;
+            border: none;
+            border-radius: 8px; /* 圓角多點，好看 */
+            background-color: rgba(255, 255, 255, 0.8); /* 半透白，融入漸變 */
+        }
+
+        .search-bar button {
+            background-color: #5cb85c; /* 綠調淺，柔和 */
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .search-bar button:hover {
+            background-color: #4cae4c;
+            transform: scale(1.05); /* hover 放大，好玩 */
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .user-menu a:hover {
+            color: #ffeb3b; /* 黃色hover，活潑 */
+        }
+
+        /* 主要內容區域 */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 15px; /* 圓角多點，好看 */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9f7ff; /* 加淡藍邊框，精緻 */
+        }
+
+        .page-header {
+            font-size: 28px;
+            color: #66b2ff; /* 藍調淺 */
+            margin-bottom: 25px;
+            border-bottom: 2px solid #99ccff; /* 邊框調淺 */
+            padding-bottom: 15px;
+            text-align: center;
+        }
+
+        /* 切換按鈕區域 */
+        .tab-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background-color: #e9f7ff; /* 淡藍按鈕 */
+            color: #66b2ff;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            min-width: 150px;
+        }
+
+        .tab-btn:hover {
+            background-color: #cceeff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background-color: #66b2ff;
+            color: white;
+        }
+
+        /* 回首頁按鈕 */
+        .back-home {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .btn-back {
+            background-color: #99ccff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.2s;
+            display: inline-block;
+        }
+
+        .btn-back:hover {
+            background-color: #66b2ff;
+            transform: scale(1.05);
+            text-decoration: none;
+            color: white;
+        }
+
+        /* 標籤頁內容 */
+        .tab-content {
+            background-color: #f8fcff; /* 淡藍背景區塊 */
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #e1f3ff;
+            min-height: 300px;
+        }
+
+        .tab-title {
+            color: #66b2ff;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* 訂單卡片設計 */
+        .order-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e1f3ff;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .order-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9f7ff;
+        }
+
+        .order-id {
+            font-weight: bold;
+            color: #66b2ff;
+            font-size: 16px;
+        }
+
+        .order-status {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .status-paid { background-color: #d1edff; color: #0c5460; }
+        .status-cancelled { background-color: #f8d7da; color: #721c24; }
+
+        .order-content {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .order-image {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #e9f7ff;
+        }
+
+        .placeholder-image {
+            width: 120px;
+            height: 120px;
+            background-color: #e0e0e0;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 12px;
+            border-radius: 8px;
+            border: 2px solid #e9f7ff;
+        }
+
+        .order-info {
+            flex: 1;
+        }
+
+        .order-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .order-details {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .order-details p {
+            margin: 4px 0;
+        }
+
+        .order-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .order-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #66b2ff;
+            margin-bottom: 10px;
+        }
+
+        .btn-action {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .btn-detail {
+            background-color: #66b2ff;
+            color: white;
+        }
+
+        .btn-detail:hover {
+            background-color: #5aa3e6;
+            text-decoration: none;
+            color: white;
+        }
+
+        .btn-payment {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        .btn-payment:hover {
+            background-color: #e68900;
+            text-decoration: none;
+            color: white;
+        }
+
+        .order-date {
+            color: #999;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        /* 空狀態 */
+        .empty-state {
+            text-align: center;
+            color: #999;
+            font-size: 16px;
+            padding: 40px 20px;
+        }
+
+        .empty-state p {
+            margin: 15px 0;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+
+            .tab-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .tab-btn {
+                width: 100%;
+                max-width: 250px;
+            }
+
+            .order-content {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .order-actions {
+                align-items: center;
+            }
+
+            .order-header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .order-image, .placeholder-image {
+                width: 100px;
+                height: 100px;
+            }
+
+            .page-header {
+                font-size: 24px;
+            }
+
+            .tab-title {
+                font-size: 18px;
+            }
+        }
+    </style>
 </head>
-<body class="container mt-5">
-
-    <h2 class="mb-4 text-center">🧾 我的訂單</h2>
-
-    <!-- 切換按鈕 -->
-    <div class="d-flex justify-content-center mb-4">
-        <button class="btn btn-outline-primary me-2" onclick="showTab('ticket')">🎫 票券訂單</button>
-        <button class="btn btn-outline-success" onclick="showTab('tour')">🧳 旅程訂單</button>
+<body>
+    <!-- 頂部搜尋功能 -->
+    <div class="header">
+        <div class="search-bar">
+            <select>
+                <option>景點</option>
+                <option>票券</option>
+            </select>
+            <input type="text" placeholder="搜尋">
+            <button>搜尋</button>
+        </div>
+        <div class="user-menu">
+            <a href="/member/home">會員中心</a>
+            <a href="/index">首頁</a>
+            
+        </div>
     </div>
-    <div class="text-center mt-5">
-	    <a th:href="@{/index}" class="btn btn-secondary">🔙 回首頁</a>
-	</div>
-    
 
-    <!-- ✅ 票券訂單 -->
-    <div id="ticketTab" style="display: block;">
-        <h4 class="mb-3">票券訂單</h4>
+    <!-- 主要內容 -->
+    <div class="container">
+        <h2 class="page-header">🧾 我的訂單</h2>
 
-        <div class="text-muted" th:if="${ticketOrders != null and #lists.isEmpty(ticketOrders)}">
-            尚無票券訂單。
+        <!-- 回首頁按鈕 -->
+        
+
+        <!-- 切換按鈕 -->
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="showTab('ticket')">🎫 票券訂單</button>
+            <button class="tab-btn" onclick="showTab('tour')">🧳 旅程訂單</button>
         </div>
 
-        <div class="table-responsive" th:if="${ticketOrders != null and !#lists.isEmpty(ticketOrders)}">
-            <table class="table table-bordered align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>訂單編號</th>
-                        <th>票券資訊</th>
-                        <th>訂單金額</th>
-                        <th>訂單狀態</th>
-                        <th>下單時間</th>
-                        <th>功能</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="order : ${ticketOrders}">
-                        <td th:text="${order.ticketOrderId}">1001</td>
-                        
-                        <td>
-						    <div th:if="${receiptMap != null and receiptMap[order.ticketOrderId] != null}">
-						        <div th:each="receipt : ${receiptMap[order.ticketOrderId]}">
-						            <div>
-						
-						                <!-- 🖼️ 圖片顯示 -->
-										<div th:if="${receiptImageMap != null and receiptImageMap[receipt.ticketOrderReceiptId] != null}">
-										    <img th:src="'data:image/jpeg;base64,' + ${receiptImageMap[receipt.ticketOrderReceiptId]}"
-										         alt="票券圖片" style="width:200px;" />
-										</div>
-										<div th:if="${receiptImageMap == null or receiptImageMap[receipt.ticketOrderReceiptId] == null}">
-										    <span class="text-muted">尚無圖片</span>
-										</div>
+        <!-- 票券訂單標籤頁 -->
+        <div id="ticketTab" class="tab-content">
+            <h4 class="tab-title">票券訂單</h4>
 
+            <!-- 空狀態 -->
+            <div class="empty-state" th:if="${ticketOrders != null and #lists.isEmpty(ticketOrders)}">
+                <p>🎫 尚無票券訂單</p>
+                <p>快去探索精彩的景點票券吧！</p>
+            </div>
 
-						
-						                <!-- ✅ 名稱 -->
-						                <span th:with="ticket=${ticketMap[receipt.ticketOrderReceiptId]}"
- 										   	  th:text="${ticket != null ? ticket.ticketName : '未命名票券'}"></span>
-
-						                <br><br>
-						            </div>
-						        </div>
-						    </div>
-						</td>
-
-
-
-
-
-                        <td th:text="${order.orderPrice + ' 元'}">3000 元</td>
-                        <td>
+            <!-- 訂單列表 -->
+            <div th:if="${ticketOrders != null and !#lists.isEmpty(ticketOrders)}">
+                <div th:each="order : ${ticketOrders}" class="order-card">
+                    <div class="order-header">
+                        <span class="order-id">訂單編號：<span th:text="${order.ticketOrderId}">1001</span></span>
+                        <span class="order-status" 
+                              th:classappend="${order.orderStatus == 0 ? 'status-pending' : (order.orderStatus == 1 ? 'status-paid' : 'status-cancelled')}">
                             <span th:switch="${order.orderStatus}">
-                                <span th:case="0" class="text-warning">待付款</span>
-                                <span th:case="1" class="text-success">已付款</span>
-                                <span th:case="2" class="text-danger">已取消</span>
+                                <span th:case="0">待付款</span>
+                                <span th:case="1">已付款</span>
+                                <span th:case="2">已取消</span>
                                 <span th:case="*">未知</span>
                             </span>
-                        </td>
-                        <td th:text="${order.orderDatetime != null ? #temporals.format(order.orderDatetime, 'yyyy/MM/dd HH:mm') : '-'}"></td>
-                        <td>
-						    <a th:href="@{'/member/detail/order/' + ${order.ticketOrderId}}"
-						       class="btn btn-sm btn-outline-primary">查看明細</a>
-						</td>
+                        </span>
+                    </div>
 
-                        
-                        
-                    </tr>
-                </tbody>
-            </table>
+                    <div class="order-content">
+                        <!-- 票券圖片 -->
+                        <div th:if="${receiptMap != null and receiptMap[order.ticketOrderId] != null and !#lists.isEmpty(receiptMap[order.ticketOrderId])}">
+                            <div th:with="firstReceipt=${receiptMap[order.ticketOrderId][0]}">
+                                <div th:if="${receiptImageMap != null and receiptImageMap[firstReceipt.ticketOrderReceiptId] != null}">
+                                    <img class="order-image" 
+                                         th:src="'data:image/jpeg;base64,' + ${receiptImageMap[firstReceipt.ticketOrderReceiptId]}"
+                                         alt="票券圖片" />
+                                </div>
+                                <div th:unless="${receiptImageMap != null and receiptImageMap[firstReceipt.ticketOrderReceiptId] != null}">
+                                    <div class="placeholder-image">尚無圖片</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:unless="${receiptMap != null and receiptMap[order.ticketOrderId] != null and !#lists.isEmpty(receiptMap[order.ticketOrderId])}">
+                            <div class="placeholder-image">尚無圖片</div>
+                        </div>
+
+                        <!-- 訂單資訊 -->
+                        <div class="order-info">
+                            <div class="order-title">
+                                <span th:if="${receiptMap != null and receiptMap[order.ticketOrderId] != null}">
+                                    <div th:each="receipt, iterStat : ${receiptMap[order.ticketOrderId]}">
+                                        <span th:with="ticket=${ticketMap[receipt.ticketOrderReceiptId]}"
+                                              th:text="${ticket != null ? ticket.ticketName : '未命名票券'}"></span>
+                                        <span th:unless="${iterStat.last}">、</span>
+                                    </div>
+                                </span>
+                                <span th:unless="${receiptMap != null and receiptMap[order.ticketOrderId] != null}">票券訂單</span>
+                            </div>
+                            <div class="order-details">
+                                <p><strong>下單時間：</strong> 
+                                   <span th:text="${order.orderDatetime != null ? #temporals.format(order.orderDatetime, 'yyyy/MM/dd HH:mm') : '-'}"></span>
+                                </p>
+                                <p th:if="${receiptMap != null and receiptMap[order.ticketOrderId] != null}">
+                                   <strong>票券數量：</strong> <span th:text="${#lists.size(receiptMap[order.ticketOrderId])}"></span> 張
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- 操作區域 -->
+                        <div class="order-actions">
+                            <div class="order-price" th:text="${order.orderPrice + ' 元'}">3000 元</div>
+                            <a th:href="@{'/member/detail/order/' + ${order.ticketOrderId}}"
+                               class="btn-action btn-detail">查看明細</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <!-- ✅ 旅程訂單 -->
-    <div id="tourTab" style="display: none;">
-        <h4 class="mb-3">旅程訂單</h4>
+        <!-- 旅程訂單標籤頁 -->
+        <div id="tourTab" class="tab-content" style="display: none;">
+            <h4 class="tab-title">旅程訂單</h4>
 
-        <div class="text-muted" th:if="${tourOrders != null and #lists.isEmpty(tourOrders)}">
-            目前尚無旅程訂單。
-        </div>
+            <!-- 空狀態 -->
+            <div class="empty-state" th:if="${tourOrders != null and #lists.isEmpty(tourOrders)}">
+                <p>🧳 目前尚無旅程訂單</p>
+                <p>快去預訂心儀的旅程吧！</p>
+            </div>
 
-        <div class="table-responsive" th:if="${tourOrders != null and !#lists.isEmpty(tourOrders)}">
-            <table class="table table-bordered align-middle">
-                <thead class="table-light">
-				    <tr>
-				        <th>訂單編號</th>
-				        <th>旅程標題</th>
-				        <th>旅程圖片</th>
-				        <th>出發日期</th>
-				        <th>結束日期</th> <!-- 加這 -->
-				        <th>人數</th>
-				        <th>總金額</th>
-				        <th>訂單狀態</th>
-				        <th>功能</th>
-				    </tr>
-				</thead>
-				<tbody>
-				    <tr th:each="tour : ${tourOrders}">
-				        <td th:text="${tour.tourOrderId}"></td>
-				        <td th:text="${tour.travelItinerary.travelPlan.travelTitle}"></td>
-				        
-				        <!-- 旅程圖片，從banner URL -->
-				        <td>
-				            <div th:if="${tour.travelItinerary != null and tour.travelItinerary.travelPlan != null and tour.travelItinerary.travelPlan.travelPlanBannerUrl != null}">
-				                <img th:src="${tour.travelItinerary.travelPlan.travelPlanBannerUrl}" alt="旅程圖片" style="width:200px;" />
-				            </div>
-				            <div th:if="${tour.travelItinerary == null or tour.travelItinerary.travelPlan == null or tour.travelItinerary.travelPlan.travelPlanBannerUrl == null}">
-				                <span class="text-muted">尚無圖片</span>
-				            </div>
-				        </td>
-				        
-				        <td th:text="${tour.travelItinerary.startDate != null ? #temporals.format(tour.travelItinerary.startDate, 'yyyy-MM-dd') : '-'}"></td>
-				        <td th:text="${tour.travelItinerary.endDate != null ? #temporals.format(tour.travelItinerary.endDate, 'yyyy-MM-dd') : '-'}"></td> <!-- 加這 -->
-				        <td th:text="${tour.peopleCount}"></td>
-				        <td th:text="${tour.totalAmount + ' 元'}"></td>
-				
-				        <td>
-				            <span th:switch="${tour.tourOrderStatus}"> <!-- 改tour不是order -->
-				                <span th:case="待付款" class="text-warning">待付款</span> <!-- 你的case用文字 -->
-				                <span th:case="已付款" class="text-success">已付款</span>
-				                <span th:case="已取消" class="text-danger">已取消</span>
-				                <span th:case="*" >未知</span>
-				            </span>
-				        </td>
-				
-				        <td>
-						    <a th:href="@{'/member/tour-order/detail/' + ${tour.tourOrderId}}" 
-						       class="btn btn-sm btn-outline-primary">查看明細</a>
-						
-						    <a th:if="${tour.tourOrderStatus == '待付款'}"
-						       th:href="@{'/member/simulate-payment?orderId=' + ${tour.tourOrderId}}"
-						       class="btn btn-sm btn-warning ms-2">繼續付款</a>
-						</td>
+            <!-- 訂單列表 -->
+            <div th:if="${tourOrders != null and !#lists.isEmpty(tourOrders)}">
+                <div th:each="tour : ${tourOrders}" class="order-card">
+                    <div class="order-header">
+                        <span class="order-id">訂單編號：<span th:text="${tour.tourOrderId}"></span></span>
+                        <span class="order-status" 
+                              th:classappend="${tour.tourOrderStatus == '待付款' ? 'status-pending' : (tour.tourOrderStatus == '已付款' ? 'status-paid' : 'status-cancelled')}">
+                            <span th:switch="${tour.tourOrderStatus}">
+                                <span th:case="待付款">待付款</span>
+                                <span th:case="已付款">已付款</span>
+                                <span th:case="已取消">已取消</span>
+                                <span th:case="*">未知</span>
+                            </span>
+                        </span>
+                    </div>
 
+                    <div class="order-content">
+                        <!-- 旅程圖片 -->
+                        <div th:if="${tour.travelItinerary != null and tour.travelItinerary.travelPlan != null and tour.travelItinerary.travelPlan.travelPlanBannerUrl != null}">
+                            <img class="order-image" 
+                                 th:src="${tour.travelItinerary.travelPlan.travelPlanBannerUrl}" 
+                                 alt="旅程圖片" />
+                        </div>
+                        <div th:unless="${tour.travelItinerary != null and tour.travelItinerary.travelPlan != null and tour.travelItinerary.travelPlan.travelPlanBannerUrl != null}">
+                            <div class="placeholder-image">尚無圖片</div>
+                        </div>
 
-				    </tr>
-				</tbody>
-            </table>
+                        <!-- 訂單資訊 -->
+                        <div class="order-info">
+                            <div class="order-title" th:text="${tour.travelItinerary.travelPlan.travelTitle}">旅程標題</div>
+                            <div class="order-details">
+                                <p><strong>出發日期：</strong> 
+                                   <span th:text="${tour.travelItinerary.startDate != null ? #temporals.format(tour.travelItinerary.startDate, 'yyyy-MM-dd') : '-'}"></span>
+                                </p>
+                                <p><strong>結束日期：</strong> 
+                                   <span th:text="${tour.travelItinerary.endDate != null ? #temporals.format(tour.travelItinerary.endDate, 'yyyy-MM-dd') : '-'}"></span>
+                                </p>
+                                <p><strong>參與人數：</strong> <span th:text="${tour.peopleCount}"></span> 人</p>
+                            </div>
+                        </div>
+
+                        <!-- 操作區域 -->
+                        <div class="order-actions">
+                            <div class="order-price" th:text="${tour.totalAmount + ' 元'}">5000 元</div>
+                            <a th:href="@{'/member/tour-order/detail/' + ${tour.tourOrderId}}" 
+                               class="btn-action btn-detail">查看明細</a>
+                            <a th:if="${tour.tourOrderStatus == '待付款'}"
+                               th:href="@{'/member/simulate-payment?orderId=' + ${tour.tourOrderId}}"
+                               class="btn-action btn-payment">繼續付款</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- 切換 JS -->
     <script>
         function showTab(tab) {
+            // 更新標籤頁顯示
             document.getElementById('ticketTab').style.display = (tab === 'ticket') ? 'block' : 'none';
             document.getElementById('tourTab').style.display = (tab === 'tour') ? 'block' : 'none';
+            
+            // 更新按鈕狀態
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            if (tab === 'ticket') {
+                buttons[0].classList.add('active');
+            } else {
+                buttons[1].classList.add('active');
+            }
         }
     </script>
 

@@ -33,7 +33,7 @@ public class TicketController {
 
 	@GetMapping("/ticketlist")
 	public String listTickets(Model model, @RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "10") int size, @RequestParam(required = false) String keyword) {
+			@RequestParam(defaultValue = "9") int size, @RequestParam(required = false) String keyword) {
 
 		// 全部票券（分頁）
 		Page<Ticket> ticketPage = ticketService.getTickets(PageRequest.of(page, size));

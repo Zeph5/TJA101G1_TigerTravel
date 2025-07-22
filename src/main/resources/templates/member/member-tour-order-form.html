@@ -3,97 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <title>訂購旅程</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/unified.css">
     <!-- 加個Bootstrap Icons，免費又好用，給emoji替代或圖標 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-<body class="bg-light"> <!-- 淺灰背景，讓頁面不那麼白 -->
+<body class="bg-light">
 
-
-    <div class="container mt-5"> <!-- 包container，內容居中，頂部留白 -->
-        <h2 class="text-center mb-4 text-primary"><i class="bi bi-airplane-fill"></i> 訂購旅程 - 確認行程細節</h2> <!-- 加圖標和顏色 -->
-
-        <!-- 顯示行程資訊，包成card -->
-        <div th:if="${itinerary != null}" class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h3 class="card-title text-success">行程標題： <span th:text="${itinerary.travelPlan.travelTitle}"></span></h3>
-                <p class="card-text"><strong>出發日期：</strong> <span th:text="${itinerary.startDate}"></span></p>
-                <p class="card-text"><strong>結束日期：</strong> <span th:text="${itinerary.endDate}"></span></p>
-                <p class="card-text"><strong>總價格（單人）：</strong> <span th:text="${itinerary.totalPrice}"></span> 元</p>
-                <p class="card-text"><strong>最大人數上限：</strong> <span th:text="${itinerary.maxTourist}"></span> 人</p>
-                <!-- 如果想加描述： <p class="card-text"><strong>行程描述：</strong> <span th:text="${itinerary.travelPlan.travelDescription}"></span></p> -->
+    <div class="container my-5">
+        <div class="main-card">
+            <h2 class="page-title"><i class="bi bi-airplane-fill"></i> 訂購旅程 - 確認行程細節</h2>
+            
+            <!-- 顯示行程資訊 -->
+            <div th:if="${itinerary != null}" class="card mb-3">
+                <div class="card-body">
+                    <h5>行程標題：<span th:text="${itinerary.travelPlan.travelTitle}"></span></h5>
+                    <div>出發日期：<span th:text="${itinerary.startDate}"></span></div>
+                    <div>結束日期：<span th:text="${itinerary.endDate}"></span></div>
+                    <div>總價格（單人）：<span th:text="${itinerary.totalPrice}"></span> 元</div>
+                    <div>最大人數上限：<span th:text="${itinerary.maxTourist}"></span> 人</div>
+                </div>
             </div>
+            
+            <div th:if="${itinerary == null}" class="alert alert-warning text-center mb-3">
+                <i class="bi bi-exclamation-triangle-fill"></i> ⚠️ 無法載入行程資訊，請檢查 planId 或聯絡管理員！
+            </div>
+
+            <form id="orderForm" action="/member/tour-order/create" method="post">
+                <!-- 隱藏行程ID -->
+                <input type="hidden" name="travelItineraryId" th:value="${itinerary.travelItineraryId}" />
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <hr />
+                
+                <!-- 主報名人資訊 -->
+                <h4 class="mt-4"><i class="bi bi-person-circle"></i> 主報名人資訊</h4>
+                <div class="form-group">
+                    <label>姓名：<span class="text-danger">*</span></label>
+                    <input type="text" name="mainName" class="form-control"
+                           th:value="${inputBackup != null ? inputBackup['mainName'] : ''}" required />
+                </div>
+                <div class="form-group">
+                    <label>身分證：<span class="text-danger">*</span></label>
+                    <input type="text" name="mainPid" class="form-control"
+                           th:value="${inputBackup != null ? inputBackup['mainPid'] : ''}" required />
+                </div>
+                <div class="form-group">
+                    <label>電子信箱：<span class="text-danger">*</span></label>
+                    <input type="email" name="mainEmail" class="form-control"
+                           th:value="${inputBackup != null ? inputBackup['mainEmail'] : ''}" required />
+                </div>
+                <div class="form-group">
+                    <label>手機號碼：<span class="text-danger">*</span></label>
+                    <input type="text" name="mainPhone" class="form-control"
+                           th:value="${inputBackup != null ? inputBackup['mainPhone'] : ''}" required />
+                </div>
+
+                <!-- 額外旅客人數 -->
+                <div class="form-group">
+                    <label for="peopleCount">
+                        <i class="bi bi-people-fill"></i> 額外旅客人數（不含主報名人）：
+                    </label>
+                    <select name="peopleCount" id="peopleCount" class="form-control" required>
+                        <option value="">若有額外旅客，請選擇人數</option>
+                        <th:block th:each="i : ${#numbers.sequence(0, itinerary.maxTourist - 1)}">
+                            <option th:value="${i}" th:text="${i} + ' 人'"
+                                    th:selected="${inputBackup != null and inputBackup['peopleCount'] == i.toString()}">
+                            </option>
+                        </th:block>
+                    </select>
+                </div>
+
+                <!-- 動態旅客容器 -->
+                <div id="touristsContainer"></div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check-circle-fill"></i> 提交訂單</button>
+                </div>
+            </form>
         </div>
-        <div th:if="${itinerary == null}" class="alert alert-warning text-center mb-4">
-            <i class="bi bi-exclamation-triangle-fill"></i> ⚠️ 無法載入行程資訊，請檢查 planId 或聯絡管理員！
-        </div>
-		
-        <!-- 表單區，也包成card -->
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <form action="/member/tour-order/create" method="post">
-				    <!-- 隱藏行程ID -->
-				    <input type="hidden" name="travelItineraryId" th:value="${itinerary.travelItineraryId}" />
-				    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-				
-				    <!-- 主報名人欄位 -->
-				    <div class="mb-4">
-				        <h5 class="text-primary"><i class="bi bi-person-circle"></i> 主報名人資訊 <span class="text-danger">*</span></h5>
-				        <input type="text" name="mainName" placeholder="姓名" class="form-control mb-2"
-						       th:value="${inputBackup != null ? inputBackup['mainName'] : ''}" required />
-						
-						<input type="text" name="mainPid" placeholder="身分證" class="form-control mb-2"
-						       th:value="${inputBackup != null ? inputBackup['mainPid'] : ''}" required />
-						
-						<input type="email" name="mainEmail" placeholder="電子信箱" class="form-control mb-2"
-						       th:value="${inputBackup != null ? inputBackup['mainEmail'] : ''}" required />
-						
-						<input type="text" name="mainPhone" placeholder="手機號碼" class="form-control mb-2"
-						       th:value="${inputBackup != null ? inputBackup['mainPhone'] : ''}" required />
+    </div>
 
-				    </div>
-				
-				    <!-- 額外旅客人數 -->
-				    <label for="peopleCount" class="form-label">
-					    <i class="bi bi-people-fill"></i> 額外旅客人數（不含主報名人）：
-					</label>
-					<select name="peopleCount" id="peopleCount" class="form-select" required>
-					    <option value="">若有額外旅客，請選擇人數</option>
-					    <th:block th:each="i : ${#numbers.sequence(0, itinerary.maxTourist - 1)}">
-					        <option th:value="${i}" th:text="${i} + ' 人'"
-					                th:selected="${inputBackup != null and inputBackup['peopleCount'] == i.toString()}">
-					        </option>
-					    </th:block>
-					</select>
+    <script>
+        const peopleCountSelect = document.getElementById('peopleCount');
+        const touristsContainer = document.getElementById('touristsContainer');
+        
+        peopleCountSelect.addEventListener('change', function () {
+            const count = parseInt(this.value) || 0;
+            touristsContainer.innerHTML = '';
+            
+            for (let i = 0; i < count; i++) {
+                const touristDiv = document.createElement('div');
+                touristDiv.innerHTML = `
+                    <h4 class="mt-4">額外旅客 ${i + 1}</h4>
+                    <div class="form-group">
+                        <label>姓名：<span class="text-danger">*</span></label>
+                        <input type="text" name="touristName${i}" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label>身分證：<span class="text-danger">*</span></label>
+                        <input type="text" name="touristPersonalId${i}" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label>連絡電話：<span class="text-danger">*</span></label>
+                        <input type="text" name="contactNumber${i}" class="form-control" required />
+                    </div>
+                `;
+                touristsContainer.appendChild(touristDiv);
+            }
+        });
 
-				
-				    <!-- 動態旅客容器 -->
-				    <div id="touristsContainer" class="mb-3"></div>
-				
-				    <button type="submit" class="btn btn-primary btn-lg w-100"><i class="bi bi-check-circle-fill"></i> 提交訂單</button>
-				</form>
-				
-				<script>
-				    const peopleCountSelect = document.getElementById('peopleCount');
-				    const touristsContainer = document.getElementById('touristsContainer');
-				    peopleCountSelect.addEventListener('change', function () {
-				        const count = parseInt(this.value) || 0;
-				        touristsContainer.innerHTML = '';
-				        for (let i = 0; i < count; i++) {
-				            touristsContainer.innerHTML += `
-				                <div class="border-bottom pb-3 mb-3">
-				                    <h5 class="text-muted">額外旅客 ${i + 1}</h5>
-				                    <input type="text" name="touristName${i}" placeholder="姓名" class="form-control mb-2" required />
-				                    <input type="text" name="touristPersonalId${i}" placeholder="身分證" class="form-control mb-2" required />
-				                    <input type="text" name="contactNumber${i}" placeholder="連絡電話" class="form-control" required />
-				                </div>
-				            `;
-				        }
-				    });
-				</script>
+        // 表單驗證
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            let valid = true;
+            let warnMsg = '';
+            
+            // 檢查必填欄位
+            const requiredInputs = this.querySelectorAll('input[required], select[required]');
+            requiredInputs.forEach(function(input) {
+                if (!input.value.trim()) {
+                    valid = false;
+                    warnMsg += `${input.previousElementSibling ? input.previousElementSibling.textContent : '欄位'} 不可為空！\n`;
+                }
+            });
+            
+            if (!valid) {
+                alert(warnMsg);
+                e.preventDefault();
+            }
+        });
 
-
-    <!-- 你提供的script，保持原樣 -->
-    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96092877ad51a367',t:'MTc1Mjc0OTIxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+        // 你提供的script，保持原樣
+        (function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96092877ad51a367',t:'MTc1Mjc0OTIxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();
+    </script>
 </body>
 </html>
