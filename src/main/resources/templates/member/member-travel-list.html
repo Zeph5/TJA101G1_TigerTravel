@@ -1,22 +1,278 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>可預訂的旅程清單</title>
+    <!-- Add favicon to prevent 404 error -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
 	<meta name="_csrf" th:content="${_csrf.token}"/>
 	<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 	
 	<style>
+        /* 主色系設定 */
+        :root {
+        	--sky-blue: #B3E5FC;
+        	--egg-shell: #FDF6EC;
+        	--earth-yellow: #D9A441;
+        	--white: #ffffff;
+        	--light-gray: #f0f0f0;
+        	--border-color: #ccc;
+        }
+
+        /* Global styles */
         body {
-            background-color: #f0f8ff; /* 淡藍背景，清新如藍天 */
+            background-color: var(--egg-shell);
+            font-family: 'Segoe UI', 'Noto Sans TC', sans-serif;
             color: #333;
+            margin: 0;
+            padding-top: 100px; /* Space for fixed header */
         }
+
+        /* Fixed logo section styling */
+        .logo-section-fixed {
+        	position: fixed;
+        	top: 0;
+        	left: 0;
+        	right: 0;
+        	background-color: var(--sky-blue);
+        	z-index: 1000;
+        	padding: 15px 0;
+        	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        	border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo-section-fixed .logo-container {
+        	display: flex;
+        	align-items: center;
+        	justify-content: space-between;
+        	padding: 0 20px;
+        	position: relative;
+        }
+
+        .logo-section-fixed .logo-img {
+        	height: 50px;
+        	margin-right: 15px;
+        }
+
+        .logo-section-fixed .logo-text {
+        	font-family: 'Noto Sans TC', sans-serif;
+        	font-weight: bold;
+        	font-size: 32px;
+        	color: #333;
+        }
+
+        .logo-section-fixed .user-menu {
+        	position: static;
+        	margin-left: auto;
+        }
+
+        /* Regional Navigation Dropdown Styles */
+        .regional-nav {
+        	position: absolute;
+        	left: 50%;
+        	top: 50%;
+        	transform: translate(-50%, -50%);
+        	display: flex;
+        	gap: 30px;
+        }
+
+        .region-dropdown {
+        	position: relative;
+        	display: inline-block;
+        }
+
+        .region-link {
+        	color: #333;
+        	text-decoration: none;
+        	font-weight: 500;
+        	font-size: 16px;
+        	padding: 8px 12px;
+        	border-radius: 5px;
+        	transition: all 0.3s ease;
+        	cursor: pointer;
+        	display: block;
+        	white-space: nowrap;
+        }
+
+        .region-link:hover,
+        .region-dropdown:hover .region-link {
+        	background-color: rgba(255, 255, 255, 0.2);
+        	color: var(--earth-yellow);
+        	text-decoration: none;
+        }
+
+        .region-dropdown-menu {
+        	position: absolute;
+        	top: 100%;
+        	left: 50%;
+        	transform: translateX(-50%);
+        	background-color: var(--white);
+        	border: 1px solid var(--border-color);
+        	border-radius: 8px;
+        	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        	min-width: 180px;
+        	padding: 8px 0;
+        	margin-top: 5px;
+        	display: none;
+        	z-index: 1001;
+        }
+
+        .region-dropdown-item {
+        	display: block;
+        	padding: 8px 16px;
+        	text-decoration: none;
+        	color: #333;
+        	font-size: 14px;
+        	transition: background-color 0.2s;
+        	cursor: pointer;
+        }
+
+        .region-dropdown-item:hover {
+        	background-color: var(--light-gray);
+        	text-decoration: none;
+        	color: var(--earth-yellow);
+        }
+
+        .user-menu {
+        	display: flex;
+        	align-items: center;
+        	gap: 10px;
+        }
+
+        .user-dropdown {
+        	position: relative;
+        	display: inline-block;
+        }
+
+        .user-info {
+        	display: flex;
+        	align-items: center;
+        	gap: 8px;
+        	cursor: pointer;
+        	padding: 5px 10px;
+        	border-radius: 5px;
+        	transition: background-color 0.2s;
+        }
+
+        .user-info:hover {
+        	background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .user-avatar {
+        	width: 35px;
+        	height: 35px;
+        	border-radius: 50%;
+        	border: 2px solid var(--border-color);
+        }
+
+        .user-name {
+        	font-weight: 500;
+        	color: #333;
+        	font-size: 14px;
+        }
+
+        .user-info-anonymous {
+        	display: flex;
+        	align-items: center;
+        	cursor: pointer;
+        	padding: 8px 15px;
+        	border-radius: 5px;
+        	transition: background-color 0.2s;
+        	background-color: var(--earth-yellow);
+        	color: white;
+        	font-weight: 500;
+        }
+
+        .user-info-anonymous:hover {
+        	background-color: #c4932a;
+        }
+
+        .dropdown-menu-custom {
+        	position: absolute;
+        	top: 100%;
+        	right: 0;
+        	background-color: var(--white);
+        	border: 1px solid var(--border-color);
+        	border-radius: 8px;
+        	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        	min-width: 200px;
+        	padding: 8px 0;
+        	margin-top: 5px;
+        	display: none;
+        	z-index: 1001;
+        }
+
+        .dropdown-menu-custom.show {
+        	display: block;
+        }
+
+        .dropdown-item-custom {
+        	display: block;
+        	padding: 10px 16px;
+        	text-decoration: none;
+        	color: #333;
+        	font-size: 14px;
+        	border: none;
+        	background: none;
+        	width: 100%;
+        	text-align: left;
+        	cursor: pointer;
+        	transition: background-color 0.2s;
+        }
+
+        .dropdown-item-custom:hover {
+        	background-color: var(--light-gray);
+        	text-decoration: none;
+        	color: #333;
+        }
+
+        .dropdown-divider-custom {
+        	height: 1px;
+        	background-color: var(--border-color);
+        	margin: 5px 0;
+        }
+
+        /* Banner styles */
+        .banner-img {
+        	max-height: 600px;
+        	object-position: top;
+        	transition: opacity 1s ease-in-out;
+        	width: 100%;
+        	height: auto;
+        }
+
+        @media (max-width: 768px) {
+        	.banner-img {
+        		max-height: 250px;
+        	}
+        	
+        	.regional-nav {
+        		display: none;
+        	}
+        }
+
+        @media (max-width: 480px) {
+        	.banner-img {
+        		max-height: 200px;
+        	}
+        }
+
+        /* Page specific styles */
         h2 {
-            color: #007bff; /* 藍標題 */
+            color: #007bff;
             text-align: center;
+            margin-bottom: 2rem;
         }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
         .avatar {
             text-align: center;
             margin-bottom: 20px;
@@ -28,7 +284,7 @@
             transition: background-color 0.3s;
         }
         .nav-buttons a:hover {
-            background-color: #e9f7ff; /* 淡藍hover */
+            background-color: #e9f7ff;
         }
         .search-form input {
             border-color: #007bff;
@@ -55,7 +311,7 @@
             object-fit: cover;
         }
         .btn-outline-secondary {
-            border-color: #28a745; /* 綠邊 */
+            border-color: #28a745;
             color: #28a745;
         }
         .btn-outline-secondary:hover {
@@ -82,110 +338,313 @@
         }
     </style>
 </head>
-<body class="container mt-5">
+<body>
 
-    <h2 class="mb-4">🧳 可預訂的旅程清單</h2>
-    
-    <div th:if="${avatarBase64 != null}" class="avatar">
-        <img th:src="'data:image/png;base64,' + ${avatarBase64}" alt="大頭貼" width="100" height="100" class="rounded-circle border">
-    </div>
+	<!-- Fixed Logo Section with User Menu and Regional Navigation -->
+	<div class="logo-section-fixed">
+		<div class="logo-container">
+			<a th:href="@{/index}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+				<img th:src="@{/logo_image/Tiger_Travel_Logo_1.png}" alt="Tiger Travel Logo" class="logo-img" onerror="this.style.display='none'">
+				<span class="logo-text">臺鴿旅遊</span>
+			</a>
+			
+			<!-- Regional Navigation Dropdowns -->
+			<div class="regional-nav">
+				<!-- 北台灣景點 -->
+				<div class="region-dropdown">
+					<span class="region-link">北台灣景點</span>
+					<div class="region-dropdown-menu">
+						<a href="/scenery/search?address=台北市" class="region-dropdown-item">台北市</a>
+						<a href="/scenery/search?address=新北市" class="region-dropdown-item">新北市</a>
+						<a href="/scenery/search?address=基隆市" class="region-dropdown-item">基隆市</a>
+						<a href="/scenery/search?address=桃園市" class="region-dropdown-item">桃園市</a>
+						<a href="/scenery/search?address=新竹市" class="region-dropdown-item">新竹市</a>
+						<a href="/scenery/search?address=新竹縣" class="region-dropdown-item">新竹縣</a>
+					</div>
+				</div>
+				
+				<!-- 中台灣景點 -->
+				<div class="region-dropdown">
+					<span class="region-link">中台灣景點</span>
+					<div class="region-dropdown-menu">
+						<a href="/scenery/search?address=苗栗縣" class="region-dropdown-item">苗栗縣</a>
+						<a href="/scenery/search?address=台中市" class="region-dropdown-item">台中市</a>
+						<a href="/scenery/search?address=彰化縣" class="region-dropdown-item">彰化縣</a>
+						<a href="/scenery/search?address=南投縣" class="region-dropdown-item">南投縣</a>
+						<a href="/scenery/search?address=雲林縣" class="region-dropdown-item">雲林縣</a>
+					</div>
+				</div>
+				
+				<!-- 南台灣景點 -->
+				<div class="region-dropdown">
+					<span class="region-link">南台灣景點</span>
+					<div class="region-dropdown-menu">
+						<a href="/scenery/search?address=嘉義市" class="region-dropdown-item">嘉義市</a>
+						<a href="/scenery/search?address=嘉義縣" class="region-dropdown-item">嘉義縣</a>
+						<a href="/scenery/search?address=台南市" class="region-dropdown-item">台南市</a>
+						<a href="/scenery/search?address=高雄市" class="region-dropdown-item">高雄市</a>
+						<a href="/scenery/search?address=屏東縣" class="region-dropdown-item">屏東縣</a>
+					</div>
+				</div>
+				
+				<!-- 東台灣景點 -->
+				<div class="region-dropdown">
+					<span class="region-link">東台灣景點</span>
+					<div class="region-dropdown-menu">
+						<a href="/scenery/search?address=宜蘭縣" class="region-dropdown-item">宜蘭縣</a>
+						<a href="/scenery/search?address=花蓮縣" class="region-dropdown-item">花蓮縣</a>
+						<a href="/scenery/search?address=台東縣" class="region-dropdown-item">台東縣</a>
+					</div>
+				</div>
+				
+				<!-- 台灣外島景點 -->
+				<div class="region-dropdown">
+					<span class="region-link">台灣外島景點</span>
+					<div class="region-dropdown-menu">
+						<a href="/scenery/search?address=澎湖縣" class="region-dropdown-item">澎湖縣</a>
+						<a href="/scenery/search?address=金門縣" class="region-dropdown-item">金門縣</a>
+						<a href="/scenery/search?address=連江縣" class="region-dropdown-item">連江縣</a>
+					</div>
+				</div>
+			</div>
+			
+			<!-- User Menu for Authenticated Users -->
+			<div sec:authorize="isAuthenticated()" class="user-menu">
+				<div class="user-dropdown">
+					<div class="user-info" onclick="toggleUserDropdown()">
+						<img th:if="${avatarBase64 != null}" 
+							 th:src="'data:image/png;base64,' + ${avatarBase64}" 
+							 alt="大頭貼" class="user-avatar">
+						<img th:if="${avatarBase64 == null}" 
+							 src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUiIGhlaWdodD0iMzUiIHZpZXdCb3g9IjAgMCAzNSAzNSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTcuNSIgY3k9IjE3LjUiIHI9IjE3LjUiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPgo8cGF0aCBkPSJNMTIgMTJjMi4yMSAwIDQtMS43OSA0LTRzLTEuNzktNC00LTQtNCAxLjc5LTQgNCAxLjc5IDQgNCA0em0wIDJjLTIuNjcgMC04IDEuMzQtOCA0djJoMTZ2LTJjMC0yLjY2LTUuMzMtNC04LTR6Ii8+Cjwvc3ZnPgo8L3N2Zz4K" 
+							 alt="預設大頭貼" class="user-avatar">
+						<span class="user-name">您好，<span sec:authentication="principal.member.memberName"></span>！</span>
+					</div>
+					
+					<div class="dropdown-menu-custom" id="userDropdown">
+						<a th:href="@{/member/home}" class="dropdown-item-custom">會員中心</a>
+						<a th:href="@{/member/favorites}" class="dropdown-item-custom">⭐ 我的收藏</a>
+						<a th:href="@{/member/orders}" class="dropdown-item-custom">🎫 我的票券訂單</a>
+						<div class="dropdown-divider-custom"></div>
+						<form th:action="@{/logout}" method="post" style="margin: 0;">
+							<input type="hidden" name="_csrf" th:if="${_csrf}" th:value="${_csrf.token}">
+							<button type="submit" class="dropdown-item-custom">登出</button>
+						</form>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Login/Register for Anonymous Users -->
+			<div sec:authorize="isAnonymous()" class="user-menu">
+				<div class="user-dropdown">
+					<div class="user-info-anonymous" onclick="toggleUserDropdown()">
+						<span class="user-name">登入/註冊</span>
+					</div>
+					
+					<div class="dropdown-menu-custom" id="userDropdown">
+						<a th:href="@{/login}" class="dropdown-item-custom">登入</a>
+						<a th:href="@{/member/register}" class="dropdown-item-custom">註冊</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-    <div class="d-flex justify-content-center gap-3 nav-buttons mb-4">
-        <a th:href="@{/index}" class="btn btn-outline-primary">首頁</a>
-        <a th:href="@{/member/favorites}" class="btn btn-outline-success">⭐ 我的收藏</a>
-        <a th:href="@{/member/orders}" class="btn btn-outline-info">🎫 我的訂單</a>
-    </div>
-    
-    <form th:action="@{/member/travel/list}" method="get" class="d-flex justify-content-center my-4 search-form" role="search">
-        <input class="form-control me-2 w-50" type="search" name="keyword" placeholder="搜尋旅程標題" aria-label="Search"
-               th:value="${keyword}">
-        <button class="btn btn-outline-primary" type="submit">搜尋</button>
-    </form>
-    
-    <!-- ✅ 每頁顯示筆數選單 -->
-    <form method="get" th:action="@{/member/travel/list}" class="text-end mb-3 per-page">
-        <input type="hidden" name="keyword" th:value="${keyword}" />
-        <input type="hidden" name="page" value="0" />
-        <label>
-            每頁顯示：
-            <select name="size" onchange="this.form.submit()" class="form-select d-inline w-auto">
-                <option th:value="6" th:selected="${size == 6}">6 筆</option>
-                <option th:value="12" th:selected="${size == 12}">12 筆</option>
-                <option th:value="24" th:selected="${size == 24}">24 筆</option>
-            </select>
-        </label>
-    </form>
+	<!-- Banner Slider -->
+	<div class="mb-4">
+		<div id="bannerSlider" class="position-relative"></div>
+	</div>
 
-    
-    <!-- ✅ 旅程卡片清單 -->
-    <div class="row row-cols-1 row-cols-md-3 g-4" th:if="${plans.size() > 0}">
-        <div class="col" th:each="plan : ${plans}">
-            <div class="card h-100 shadow-sm">
-                <img th:src="${#strings.isEmpty(plan.travelPlanBannerUrl) ? '/images/bannerSample.jpg' : plan.travelPlanBannerUrl}"
-                     class="card-img-top" alt="旅程圖片">
-                <div class="card-body">
-                    <h5 class="card-title" th:text="${plan.travelTitle}">旅程標題</h5>
-                    <p class="card-text" th:text="${plan.travelPlanDescription}">旅程簡介</p>
-                    <a th:href="@{/member/travel/detail/{id}(id=${plan.travelPlanId})}" class="btn btn-outline-secondary">查看詳情</a>
-                    
-                    <!-- 收藏按鈕，初始狀態用data-favorited -->
-                    <button type="button"
-                            th:attr="data-plan-id=${plan.travelPlanId}, data-favorited=${favoritedIds != null and favoritedIds.contains(plan.travelPlanId) ? 'true' : 'false'}"
-                            class="btn mt-2" 
-                            th:classappend="${favoritedIds != null and favoritedIds.contains(plan.travelPlanId)} ? 'btn-secondary' : 'btn-outline-danger'"
-                            onclick="toggleFavorite(this)">
-                        <span th:text="${favoritedIds != null and favoritedIds.contains(plan.travelPlanId)} ? '❤️ 已收藏' : '♥ 收藏'"></span>
-                    </button>
-                                    
+    <div class="container mt-5">
+
+        <h2 class="mb-4">🧳 可預訂的旅程清單</h2>
+        
+        <div th:if="${avatarBase64 != null}" class="avatar">
+            <img th:src="'data:image/png;base64,' + ${avatarBase64}" alt="大頭貼" width="100" height="100" class="rounded-circle border">
+        </div>
+
+        <div class="d-flex justify-content-center gap-3 nav-buttons mb-4">
+            <a th:href="@{/index}" class="btn btn-outline-primary">首頁</a>
+            <a th:href="@{/member/favorites}" class="btn btn-outline-success">⭐ 我的收藏</a>
+            <a th:href="@{/member/orders}" class="btn btn-outline-info">🎫 我的訂單</a>
+        </div>
+        
+        <form th:action="@{/member/travel/list}" method="get" class="d-flex justify-content-center my-4 search-form" role="search">
+            <input class="form-control me-2 w-50" type="search" name="keyword" placeholder="搜尋旅程標題" aria-label="Search"
+                   th:value="${keyword}">
+            <button class="btn btn-outline-primary" type="submit">搜尋</button>
+        </form>
+        
+        <!-- ✅ 每頁顯示筆數選單 -->
+        <form method="get" th:action="@{/member/travel/list}" class="text-end mb-3 per-page">
+            <input type="hidden" name="keyword" th:value="${keyword}" />
+            <input type="hidden" name="page" value="0" />
+            <label>
+                每頁顯示：
+                <select name="size" onchange="this.form.submit()" class="form-select d-inline w-auto">
+                    <option th:value="6" th:selected="${size == 6}">6 筆</option>
+                    <option th:value="12" th:selected="${size == 12}">12 筆</option>
+                    <option th:value="24" th:selected="${size == 24}">24 筆</option>
+                </select>
+            </label>
+        </form>
+
+        
+        <!-- ✅ 旅程卡片清單 -->
+        <div class="row row-cols-1 row-cols-md-3 g-4" th:if="${plans.size() > 0}">
+            <div class="col" th:each="plan : ${plans}">
+                <div class="card h-100 shadow-sm">
+                    <img th:src="${#strings.isEmpty(plan.travelPlanBannerUrl) ? '/images/bannerSample.jpg' : plan.travelPlanBannerUrl}"
+                         class="card-img-top" alt="旅程圖片">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${plan.travelTitle}">旅程標題</h5>
+                        <p class="card-text" th:text="${plan.travelPlanDescription}">旅程簡介</p>
+                        <a th:href="@{/member/travel/detail/{id}(id=${plan.travelPlanId})}" class="btn btn-outline-secondary">查看詳情</a>
+                        
+                        <!-- 收藏按鈕，初始狀態用data-favorited -->
+                        <button type="button"
+                                th:attr="data-plan-id=${plan.travelPlanId}, data-favorited=${favoritedIds != null and favoritedIds.contains(plan.travelPlanId) ? 'true' : 'false'}"
+                                class="btn mt-2" 
+                                th:classappend="${favoritedIds != null and favoritedIds.contains(plan.travelPlanId)} ? 'btn-secondary' : 'btn-outline-danger'"
+                                onclick="toggleFavorite(this)">
+                            <span th:text="${favoritedIds != null and favoritedIds.contains(plan.travelPlanId)} ? '❤️ 已收藏' : '♥ 收藏'"></span>
+                        </button>
+                                        
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- ✅ 無結果處理 -->
-    <div th:if="${plans.size() == 0}">
-        <div th:if="${keyword != null}" class="alert alert-warning text-center">
-            沒有找到符合「<span th:text="${keyword}"></span>」的旅程，請試試其他關鍵字。
+        
+        <!-- ✅ 無結果處理 -->
+        <div th:if="${plans.size() == 0}">
+            <div th:if="${keyword != null}" class="alert alert-warning text-center">
+                沒有找到符合「<span th:text="${keyword}"></span>」的旅程，請試試其他關鍵字。
+            </div>
+            <div th:if="${keyword == null}" class="alert alert-info text-center">
+                目前尚無可預訂的旅遊行程。
+            </div>
         </div>
-        <div th:if="${keyword == null}" class="alert alert-info text-center">
-            目前尚無可預訂的旅遊行程。
+        
+        <!-- ✅ 分頁元件 -->
+        <div class="d-flex justify-content-center mt-4" th:if="${totalPages >= 1}">
+            <ul class="pagination">
+        
+                <!-- 上一頁 -->
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/member/travel/list(page=${currentPage - 1}, keyword=${keyword}, size=${size})}">
+                        上一頁
+                    </a>
+                </li>
+        
+                <!-- 頁碼 -->
+                <li class="page-item"
+                    th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                    th:classappend="${i == currentPage} ? 'active'">
+                    <a class="page-link"
+                       th:href="@{/member/travel/list(page=${i}, keyword=${keyword}, size=${size})}"
+                       th:text="${i + 1}">
+                    </a>
+                </li>
+        
+                <!-- 下一頁 -->
+                <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/member/travel/list(page=${currentPage + 1}, keyword=${keyword}, size=${size})}">
+                        下一頁
+                    </a>
+                </li>
+        
+            </ul>
         </div>
-    </div>
-    
-    <!-- ✅ 分頁元件 -->
-    <div class="d-flex justify-content-center mt-4" th:if="${totalPages >= 1}">
-        <ul class="pagination">
-    
-            <!-- 上一頁 -->
-            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                <a class="page-link"
-                   th:href="@{/member/travel/list(page=${currentPage - 1}, keyword=${keyword}, size=${size})}">
-                    上一頁
-                </a>
-            </li>
-    
-            <!-- 頁碼 -->
-            <li class="page-item"
-                th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
-                th:classappend="${i == currentPage} ? 'active'">
-                <a class="page-link"
-                   th:href="@{/member/travel/list(page=${i}, keyword=${keyword}, size=${size})}"
-                   th:text="${i + 1}">
-                </a>
-            </li>
-    
-            <!-- 下一頁 -->
-            <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
-                <a class="page-link"
-                   th:href="@{/member/travel/list(page=${currentPage + 1}, keyword=${keyword}, size=${size})}">
-                    下一頁
-                </a>
-            </li>
-    
-        </ul>
+
     </div>
 
 	<script>
+		// Regional dropdown hover delay functionality
+		document.addEventListener('DOMContentLoaded', function() {
+		    const regionDropdowns = document.querySelectorAll('.region-dropdown');
+		    
+		    regionDropdowns.forEach((dropdown, index) => {
+		        const menu = dropdown.querySelector('.region-dropdown-menu');
+		        let hideTimeout;
+		        
+		        dropdown.addEventListener('mouseenter', function() {
+		            if (hideTimeout) {
+		                clearTimeout(hideTimeout);
+		                hideTimeout = null;
+		            }
+		            menu.style.display = 'block';
+		        });
+		        
+		        dropdown.addEventListener('mouseleave', function() {
+		            hideTimeout = setTimeout(function() {
+		                menu.style.display = 'none';
+		            }, 250);
+		        });
+		        
+		        menu.addEventListener('mouseenter', function() {
+		            if (hideTimeout) {
+		                clearTimeout(hideTimeout);
+		                hideTimeout = null;
+		            }
+		        });
+		        
+		        menu.addEventListener('mouseleave', function() {
+		            hideTimeout = setTimeout(function() {
+		                menu.style.display = 'none';
+		            }, 250);
+		        });
+		    });
+		});
+
+		// User dropdown functionality
+		function toggleUserDropdown() {
+			const dropdown = document.getElementById('userDropdown');
+			if (dropdown) {
+				dropdown.classList.toggle('show');
+			}
+		}
+		
+		// Close dropdown when clicking outside
+		document.addEventListener('click', function(event) {
+			const dropdown = document.getElementById('userDropdown');
+			const userInfo = document.querySelector('.user-info, .user-info-anonymous');
+			
+			if (dropdown && userInfo && !userInfo.contains(event.target)) {
+				dropdown.classList.remove('show');
+			}
+		});
+
+		// Banner slider initialization
+		document.addEventListener('DOMContentLoaded', () => {
+		    const bannerCount = 6;
+		    const images = [];
+		    for (let i = 1; i <= bannerCount; i++) {
+		        images.push(`/homepage_images/banner${i}.png`);
+		    }
+
+		    const bannerSlider = document.getElementById('bannerSlider');
+		    if (bannerSlider) {
+			    bannerSlider.innerHTML = images.map((img, idx) => 
+			        `<img src="${img}" class="img-fluid w-100 rounded banner-img" style="display: ${idx === 0 ? 'block' : 'none'}" onerror="this.style.display='none'">`
+			    ).join('');
+
+			    if (images.length > 1) {
+			        let currentIndex = 0;
+			        setInterval(() => {
+			            const bannerImgs = bannerSlider.querySelectorAll('.banner-img');
+			            if (bannerImgs.length > 0) {
+				            bannerImgs[currentIndex].style.display = 'none';
+				            currentIndex = (currentIndex + 1) % images.length;
+				            bannerImgs[currentIndex].style.display = 'block';
+			            }
+			        }, 5000);
+			    }
+		    }
+		});
+
+		// Original toggle favorite functionality
 		function toggleFavorite(button) {
 		    const planId = button.getAttribute("data-plan-id");
 		    const isFavorited = button.getAttribute("data-favorited") === 'true';
