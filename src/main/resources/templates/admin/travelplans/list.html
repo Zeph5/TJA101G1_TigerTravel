@@ -152,15 +152,45 @@
 			</div>
 
 
-			<!-- 空狀態 -->
-			<div th:if="${#lists.isEmpty(travelPlans)}"
-				class="text-center text-muted mt-5 fs-5">
-				<p>目前沒有旅行計畫。</p>
-			</div>
+			<!-- ✅ 卡片區塊結束後 -->
+<!-- 空狀態 -->
+<div th:if="${#lists.isEmpty(travelPlans)}"
+	class="text-center text-muted mt-5 fs-5">
+	<p>目前沒有旅行計畫。</p>
+</div>
+
+<!-- ⏩ 分頁功能（建議放這）-->
+<nav class="mt-4" th:if="${travelPlanPage.totalPages > 1}">
+  <ul class="pagination justify-content-center">
+    <!-- 上一頁 -->
+    <li class="page-item" th:classappend="${travelPlanPage.first} ? 'disabled'">
+      <a class="page-link"
+         th:href="@{/admin/travelplans(page=${currentPage - 1}, size=${pageSize})}">上一頁</a>
+    </li>
+
+    <!-- 頁碼 -->
+    <li class="page-item"
+        th:each="i : ${#numbers.sequence(0, travelPlanPage.totalPages - 1)}"
+        th:classappend="${i == currentPage} ? 'active'">
+      <a class="page-link"
+         th:href="@{/admin/travelplans(page=${i}, size=${pageSize})}"
+         th:text="${i + 1}">1</a>
+    </li>
+
+    <!-- 下一頁 -->
+    <li class="page-item" th:classappend="${travelPlanPage.last} ? 'disabled'">
+      <a class="page-link"
+         th:href="@{/admin/travelplans(page=${currentPage + 1}, size=${pageSize})}">下一頁</a>
+    </li>
+  </ul>
+</nav>
+
+</div> <!-- ⬅ 這是 .container 結尾，要把分頁包進來 -->
+
+			
 		</div>
-		<div
-			th:replace="fragments/pagination :: pagination(${travelPlanPage}, ${currentPage}, ${pageSize},${keyword})"></div>
-	</div>
+		
+		
 	</div>
 
 	<!-- JS -->
