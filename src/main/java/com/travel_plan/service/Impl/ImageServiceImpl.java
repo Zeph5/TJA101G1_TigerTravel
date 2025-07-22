@@ -37,7 +37,7 @@ public class ImageServiceImpl implements ImageService {
 	    }
 	    System.out.println("📂 儲存圖片到：" + fullPath);
 	    // 回傳相對路徑存入資料庫
-	    return "/uploads/" + newFileName + ".jpg";
+	    return "/images/" + newFileName + ".jpg";
 	}
 	
 
