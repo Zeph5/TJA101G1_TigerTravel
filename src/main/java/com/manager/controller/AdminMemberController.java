@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.manager.model.DTO.MemberListDTO;
 import com.manager.service.AdminMemberService;
@@ -30,7 +31,7 @@ public class AdminMemberController {
 
 	@GetMapping("/list")
 	public String showPage(Model model,
-			@RequestParam(value = "page", defaultValue = "1") int page,
+			@RequestParam(value = "page", defaultValue = "0") int page,
 			@RequestParam(value = "size", defaultValue = "9") int size,
 			@RequestParam(required = false) String keyword,
 			@RequestParam(required = false) String status,
@@ -69,10 +70,24 @@ public class AdminMemberController {
 		adminMemberService.updateMember(id, updatedMember);
 		return "redirect:/admin/members/" + id;
 	}
+	
 	@PostMapping("/disable/{id}")
-	public String disableMember(@PathVariable Integer id) {
-		adminMemberService.toggleMemberStatus(id);
-		return "redirect:/admin/members/list"; // 重定向到會員列表頁面
+	public String toggleMemberStatus(@PathVariable Integer id,
+	                                 @RequestParam(required = false) String keyword,
+	                                 @RequestParam(required = false) String status,
+	                                 @RequestParam(required = false) String sort,
+	                                 @RequestParam(defaultValue = "0") int page,
+	                                 RedirectAttributes redirectAttributes) {
+
+	    adminMemberService.toggleMemberStatus(id); // 切換狀態的邏輯
+
+	    redirectAttributes.addFlashAttribute("successMessage", "會員狀態已更新！");
+	    
+	    // 將搜尋條件與分頁資訊保留在 redirect 中
+	    return "redirect:/admin/members/list?page=" + page +
+	            "&keyword=" + keyword +
+	            "&status=" + status +
+	            "&sort=" + sort;
 	}
 }
 

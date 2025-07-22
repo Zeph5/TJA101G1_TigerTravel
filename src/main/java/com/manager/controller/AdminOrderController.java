@@ -28,8 +28,8 @@ public class AdminOrderController {
 	}
 	@GetMapping("/list")
 	public String showOrderList(Model model,
-			@RequestParam (value = "page", defaultValue = "1") int page,
-			@RequestParam(value = "size", defaultValue = "3") int size
+			@RequestParam (value = "page", defaultValue = "0") int page,
+			@RequestParam(value = "size", defaultValue = "6") int size
 			) {
 		List<OrderListDTO> orderList = adminOrderService.findAllOrders();
 		model.addAttribute("orders", orderList);

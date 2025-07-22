@@ -107,7 +107,13 @@ table.table tbody tr:hover {
 			<h3 class="fw-bold text-white bg-primary px-4 py-2 rounded">會員清單</h3>
 
 		</div>
-		
+
+		<!-- ✅ 成功訊息 -->
+		<div th:if="${successMessage}" class="alert alert-success">
+			<i class="fa-solid fa-circle-check me-2"></i> <span
+				th:text="${successMessage}">操作成功！</span>
+		</div>
+
 
 		<!-- 🔍 篩選列 -->
 		<form method="get" th:action="@{/admin/members/list}"
@@ -165,17 +171,18 @@ table.table tbody tr:hover {
 							class="btn btn-sm btn-outline-primary"> <i
 								class="fa-solid fa-eye"></i> 詳細
 						</a>
-							<form
-								th:action="@{'/admin/members/disable/' + ${member.memberId}}"
-								method="post" class="d-inline"
-								onsubmit="return confirm('確定要切換狀態嗎？')">
-								<button type="submit"
-									th:class="'btn btn-sm ' + (member.memberStatus == 1 ? 'btn-danger' : 'btn-success')">
-									<i
-										th:class="'fa-solid ' + (member.memberStatus == 1 ? 'fa-ban' : 'fa-check')"></i>
-									<span th:text="${member.memberStatus == 1 ? '停權' : '啟用'}"></span>
-								</button>
-							</form></td>
+							<form th:action="@{'/admin/members/disable/' + ${member.memberId}}" method="post" class="d-inline">
+  <input type="hidden" name="page" th:value="${currentPage}" />
+  <input type="hidden" name="keyword" th:value="${keyword}" />
+  <input type="hidden" name="status" th:value="${status}" />
+  <input type="hidden" name="sort" th:value="${sort}" />
+  
+  <button type="submit"
+    th:class="'btn btn-sm ' + (member.memberStatus == 1 ? 'btn-danger' : 'btn-success')">
+    <i th:class="'fa-solid ' + (member.memberStatus == 1 ? 'fa-ban' : 'fa-check')"></i>
+    <span th:text="${member.memberStatus == 1 ? '停權' : '啟用'}"></span>
+  </button>
+</form></td>
 					</tr>
 				</tbody>
 			</table>
@@ -183,7 +190,7 @@ table.table tbody tr:hover {
 
 		<!-- ⏩ 分頁 -->
 		<div
-			th:replace="fragments/pagination :: pagination( ${memberPage}, ${currentPage}, ${pageSize}, ${keyword})"></div>
+			th:replace="fragments/pagination :: pagination( ${memberPage}, ${currentPage}, ${pageSize}, ${keyword}, ${status}, ${sort})"></div>
 
 
 	</div>

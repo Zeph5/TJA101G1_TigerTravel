@@ -26,6 +26,8 @@ public interface AdminMemberService {
 
 	Page<MemberListDTO> searchAndFilter(String keyword, String status, Pageable pageable);
 
+
+
 	
 	
 
